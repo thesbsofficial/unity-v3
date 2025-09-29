@@ -1,0 +1,16 @@
+{
+  "compatibility_date": "2025-04-01",
+  "main": "src/index.ts",
+  "name": "unity-v3",
+  "upload_source_maps": true,
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_id": "1235f2c7-7b73-44b7-95c2-b44260e51179",
+      "database_name": "unity-v3"
+    }
+  ],
+  "observability": {
+    "enabled": true
+  }
+}
