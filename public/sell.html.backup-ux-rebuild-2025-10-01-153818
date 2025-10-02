@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sell Your Streetwear | SBS Unity Dublin - Instant Offers, Same-Day Cash</title>
+    <meta name="description" content="Sell your streetwear to Dublin's most trusted buyer. Get instant offers via WhatsApp. Same-day collection and payment across Dublin. Nike, Adidas, Supreme welcome.">
+    
+    <!-- SEO & Social Meta -->
+    <meta property="og:title" content="Sell Your Streetwear to SBS Unity Dublin">
+    <meta property="og:description" content="Get instant cash offers for your streetwear. Same-day collection and payment across Dublin.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://thesbsofficial.com/sell">
+    <meta property="og:image" content="https://thesbsofficial.com/sbs-sell-og.jpg">
+    <meta name="twitter:card" content="summary_large_image">
+    
+    <style>
+        /* CSS RESET & VARIABLES */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-black: #000000;
+            --primary-gold: #ffd700;
+            --bg-dark: #0a0a0a;
+            --bg-card: #1a1a1a;
+            --text-primary: #ffffff;
+            --text-secondary: #cccccc;
+            --border-subtle: rgba(255, 255, 255, 0.1);
+            --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.3);
+            
+            /* Additional mappings for sell page */
+            --accent-primary: var(--primary-gold);
+            --border-color: var(--border-subtle);
+            --bg-secondary: #0d0d0d;
+            --bg-hover: rgba(255, 215, 0, 0.1);
+            --shadow-hover: 0 8px 30px rgba(255, 215, 0, 0.3);
+            --white: var(--text-primary);
+        }
+
+        html {
+            font-size: 16px;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* HEADER */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-subtle);
+            padding: 1rem 0;
+            overflow: visible;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            align-items: center;
+            gap: 2rem;
+            overflow: visible;
+        }
+
+        .nav-left {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-center {
+            display: flex;
+            justify-content: center;
+        }
+
+        .nav-right {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+            justify-content: flex-end;
+            overflow: visible;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: var(--primary-gold);
+            font-size: 1.5rem;
+            font-weight: 900;
+            letter-spacing: 2px;
+        }
+
+        .logo img {
+            height: 40px;
+            width: auto;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: var(--text-primary);
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+        }
+
+        .nav-link:hover {
+            background: var(--primary-gold);
+            color: var(--primary-black);
+        }
+
+        .cart-toggle {
+            background: none;
+            border: 2px solid var(--primary-gold);
+            color: var(--primary-gold);
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            position: relative;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+        }
+
+        .cart-toggle:hover {
+            background: var(--primary-gold);
+            color: var(--primary-black);
+        }
+
+        .cart-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #ff4444;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        /* MAIN CONTENT */
+        .main {
+            padding-top: 80px;
+        }
+
+        @media (max-width: 768px) {
+            .nav {
+                padding: 0 1rem;
+            }
+
+            .nav-left, .nav-right {
+                gap: 0.75rem;
+            }
+
+            .nav-link {
+                font-size: 0.8rem;
+                padding: 0.25rem 0.5rem;
+            }
+
+            .cart-toggle {
+                font-size: 0.7rem;
+                padding: 0.25rem 0.5rem;
+                white-space: nowrap;
+            }
+
+            .cart-count {
+                width: 16px;
+                height: 16px;
+                font-size: 10px;
+                top: -6px;
+                right: -6px;
+            }
+
+            .logo img {
+                height: 32px;
+            }
+
+            .hero h1 { font-size: 2.8rem; }
+            .hero p { font-size: 1.1rem; }
+            .cta-buttons { flex-direction: column; align-items: center; }
+            .steps { grid-template-columns: 1fr; }
+            .contact-options { grid-template-columns: 1fr; }
+            .nav-links { gap: 1rem; }
+            
+            .social-icons { gap: 1rem; }
+            .social-link { font-size: 0.9rem; }
+        }
+
+        @media (max-width: 480px) {
+            .nav-link {
+                font-size: 0.7rem;
+                padding: 0.2rem 0.4rem;
+            }
+
+            .cart-toggle {
+                font-size: 0.65rem;
+                padding: 0.2rem 0.4rem;
+            }
+        }
+
+
+
+        /* Hero */
+        .hero {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            font-weight: 900;
+            color: var(--primary-gold);
+            margin-bottom: 1rem;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 1.1rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--primary-gold);
+            color: var(--primary-black);
+        }
+
+        .btn-primary:hover {
+            background: #B8941F;
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--text-primary);
+            border: 2px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent-primary);
+            background: var(--bg-hover);
+        }
+
+        /* How It Works */
+        .how-it-works {
+            padding: 6rem 0;
+            background: var(--bg-secondary);
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 3rem;
+            color: var(--accent-primary);
+        }
+
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 3rem;
+            margin-top: 3rem;
+        }
+
+        .step {
+            background: var(--bg-card);
+            padding: 2.5rem;
+            border-radius: 20px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+            transition: transform 0.3s ease;
+        }
+
+        .step:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-primary);
+        }
+
+        .step-icon {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+            display: block;
+        }
+
+        .step h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--accent-primary);
+        }
+
+        .step p {
+            opacity: 0.8;
+            line-height: 1.6;
+        }
+
+        /* Contact Section */
+        .contact-section {
+            padding: 6rem 0;
+            text-align: center;
+        }
+
+        .contact-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+
+        .contact-card {
+            background: var(--bg-card);
+            padding: 3rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .contact-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-primary);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .contact-card h3 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            color: var(--accent-primary);
+        }
+
+        .contact-card p {
+            margin-bottom: 2rem;
+            opacity: 0.8;
+        }
+
+        .whatsapp-btn {
+            background: #25D366;
+            color: white;
+        }
+
+        .whatsapp-btn:hover {
+            background: #20b558;
+        }
+
+        /* Brands We Buy */
+        .brands-section {
+            padding: 4rem 0;
+            background: var(--bg-secondary);
+        }
+
+        .brands-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+
+        .brand-card {
+            background: var(--bg-card);
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .brand-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--accent-primary);
+        }
+
+        .brand-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Footer */
+        .footer {
+            background: #0a0a0a;
+            color: var(--white);
+            text-align: center;
+            padding: 3rem 0;
+            border-top: 2px solid var(--primary-gold);
+            margin-top: 4rem;
+        }
+
+        .social-links {
+            margin-bottom: 2rem;
+        }
+
+        .social-links p {
+            color: var(--primary-gold);
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .social-icons {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .social-link {
+            color: var(--white);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--primary-gold);
+            border-radius: 25px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .social-link:hover {
+            background: var(--primary-gold);
+            color: var(--primary-black);
+            transform: translateY(-2px);
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .nav {
+                padding: 0 1rem;
+            }
+
+            .nav-left, .nav-right {
+                gap: 0.75rem;
+            }
+
+            .nav-link {
+                font-size: 0.8rem;
+                padding: 0.25rem 0.5rem;
+            }
+
+            .cart-toggle {
+                font-size: 0.7rem;
+                padding: 0.25rem 0.5rem;
+                white-space: nowrap;
+            }
+
+            .cart-count {
+                width: 16px;
+                height: 16px;
+                font-size: 10px;
+                top: -6px;
+                right: -6px;
+            }
+
+            .logo img {
+                height: 32px;
+            }
+
+            .hero h1 { font-size: 2.8rem; }
+            .hero p { font-size: 1.1rem; }
+            .cta-buttons { flex-direction: column; align-items: center; }
+            .steps { grid-template-columns: 1fr; }
+            .contact-options { grid-template-columns: 1fr; }
+            .nav-links { gap: 1rem; }
+            
+            .social-icons { gap: 1rem; }
+            .social-link { font-size: 0.9rem; }
+        }
+
+        @media (max-width: 480px) {
+            .nav-link {
+                font-size: 0.7rem;
+                padding: 0.2rem 0.4rem;
+            }
+
+            .cart-toggle {
+                font-size: 0.65rem;
+                padding: 0.2rem 0.4rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <nav class="nav">
+            <div class="nav-left">
+                <a href="/" class="nav-link">Home</a>
+                <a href="/shop" class="nav-link">Shop</a>
+            </div>
+            <div class="nav-center">
+                <a href="/" class="logo">
+                    <img src="/SBS (Your Story).png" alt="SBS" onerror="this.style.display='none'; this.parentNode.innerHTML='SBS'">
+                </a>
+            </div>
+            <div class="nav-right">
+                <a href="/login" class="nav-link">Login</a>
+                <a href="/register" class="nav-link">Register</a>
+                <button class="cart-toggle" onclick="toggleCart()">
+                    Basket
+                    <span class="cart-count" id="cart-count">0</span>
+                </button>
+            </div>
+        </nav>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <!-- HERO SECTION -->
+            <section class="hero">
+                <h1>💰 Sell To SBS Unity</h1>
+                <p style="font-size: 1.4rem; font-weight: 600; color: var(--primary-gold); margin-bottom: 1.5rem;">Dublin's Most Trusted Buyer</p>
+                <p style="max-width: 700px; margin: 0 auto 2rem;">We buy streetwear tracksuits, trainers, tech, and luxury items. Same-day collection across Dublin with instant cash payment.</p>
+            </section>
+            
+            <!-- ALERT BOX -->
+            <div style="background: var(--bg-card); padding: 2rem; border-radius: 15px; margin-bottom: 3rem; border: 2px solid var(--primary-gold);">
+                <h3 style="color: var(--primary-gold); font-size: 1.5rem; margin-bottom: 1rem; text-align: center;">⚠️ READ BEFORE CONTACTING ⚠️</h3>
+                <p style="color: var(--text-primary); font-size: 1.1rem; text-align: center; margin-bottom: 0.5rem; font-weight: 600;">You MUST include in your message:</p>
+                <p style="color: var(--primary-gold); font-size: 1.3rem; text-align: center; font-weight: 800;">📸 PICTURES + 💰 YOUR PRICE + 📍 YOUR LOCATION</p>
+                <p style="color: var(--text-secondary); font-size: 0.95rem; text-align: center; margin-top: 1rem;">Messages without all three will NOT be answered. No exceptions.</p>
+            </div>
+
+            <!-- CTA BUTTONS -->
+            <div class="cta-buttons" style="margin-bottom: 4rem;">
+                <a href="https://wa.me/353899662211?text=🔥%20SELLING%20TO%20SBS%0A%0A📸%20PICTURES%3A%20%5Battach%20clear%20photos%20of%20your%20items%5D%0A%0A💰%20MY%20ASKING%20PRICE%3A%20€__%0A%0A📍%20MY%20LOCATION%3A%20%5BDublin%20area%5D%0A%0A✅%20Item%20description%3A%20%5Bbrand%2C%20size%2C%20condition%5D" class="btn btn-primary whatsapp-btn" style="font-size: 1.2rem; padding: 1.25rem 2.5rem;">
+                    � Sell on WhatsApp
+                </a>
+                <a href="https://instagram.com/thesbsofficial" target="_blank" class="btn btn-secondary">
+                    📸 Instagram DM
+                </a>
+                <a href="https://www.snapchat.com/@thesbs2.0?invite_id=UuaV3tmv&locale=en_IE&share_id=Pu6z_I9dQw62zoyZSOlMDg&sid=6bfda1cf1d754cc88499d0b2e3dafc4b" target="_blank" class="btn btn-secondary">
+                    👻 Snapchat
+                </a>
+            </div>
+        </div>
+
+        <section class="how-it-works">
+            <div class="container">
+                <h2 class="section-title">📸 Photo Tips - Get Better Offers!</h2>
+                <div style="background: var(--bg-card); padding: 2.5rem; border-radius: 15px; border: 2px solid var(--primary-gold); margin-bottom: 3rem; max-width: 800px; margin-left: auto; margin-right: auto;">
+                    <h3 style="color: var(--primary-gold); font-size: 1.5rem; margin-bottom: 1.5rem; text-align: center;">📷 How To Take Great Photos</h3>
+                    <div style="text-align: left;">
+                        <p style="font-size: 1.1rem; margin-bottom: 1rem; line-height: 1.8;">
+                            <strong style="color: var(--primary-gold);">📍 Location:</strong> Find a clear, open space - hallway, kitchen, or bedroom floor works best.
+                        </p>
+                        <p style="font-size: 1.1rem; margin-bottom: 1rem; line-height: 1.8;">
+                            <strong style="color: var(--primary-gold);">🧹 Background:</strong> Make sure the background is clean and clutter-free.
+                        </p>
+                        <p style="font-size: 1.1rem; margin-bottom: 1rem; line-height: 1.8;">
+                            <strong style="color: var(--primary-gold);">👕 Condition:</strong> Ensure the clothing item is free from visible defects before photographing.
+                        </p>
+                        <p style="font-size: 1.1rem; margin-bottom: 0; line-height: 1.8;">
+                            <strong style="color: var(--primary-gold);">📱 Quality:</strong> Use your phone's Camera app or Instagram camera for best quality photos.
+                        </p>
+                    </div>
+                </div>
+
+                <h2 class="section-title" style="margin-top: 3rem;">⚡ 3 Simple Steps</h2>
+                <div class="steps">
+                    <div class="step">
+                        <span class="step-icon">📸</span>
+                        <h3>1. Take Photos & Message</h3>
+                        <p style="margin-bottom: 0.5rem;">Include: Photos + Your price + Your location</p>
+                        <p style="font-size: 0.9rem; opacity: 0.8;">(Use WhatsApp template button below)</p>
+                    </div>
+                    <div class="step">
+                        <span class="step-icon">💬</span>
+                        <h3>2. Get Instant Offer</h3>
+                        <p>We respond within 30 minutes with our best offer.</p>
+                    </div>
+                    <div class="step">
+                        <span class="step-icon">💵</span>
+                        <h3>3. Same-Day Cash</h3>
+                        <p>Accept → We collect → You get paid on the spot.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="contact-section">
+            <div class="container">
+                <h2 class="section-title">� Sell Directly to SBS</h2>
+                <p style="text-align: center; font-size: 1.1rem; margin-bottom: 3rem; color: var(--text-secondary);">Choose your preferred way to contact us - WhatsApp template makes it super easy!</p>
+
+                <div class="contact-options">
+                    <div class="contact-card">
+                        <h3>💬 WhatsApp (Recommended)</h3>
+                        <p style="margin-bottom: 1.5rem;">Template fills in everything automatically - just add your photos, price & location!</p>
+                        <a href="https://wa.me/353899662211?text=🔥%20SELLING%20TO%20SBS%0A%0A📸%20PICTURES%3A%20%5Battach%20clear%20photos%20of%20your%20items%5D%0A%0A💰%20MY%20ASKING%20PRICE%3A%20€__%0A%0A📍%20MY%20LOCATION%3A%20%5BDublin%20area%5D%0A%0A✅%20Item%20description%3A%20%5Bbrand%2C%20size%2C%20condition%5D" class="btn btn-primary" style="font-size: 1.1rem;">
+                            💬 Open WhatsApp Template
+                        </a>
+                    </div>
+                    <div class="contact-card">
+                        <h3>📸 Instagram / 👻 Snapchat</h3>
+                        <p style="margin-bottom: 1.5rem;">Send DM with photos, your price, and your location.</p>
+                        <div style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center;">
+                            <a href="https://instagram.com/thesbsofficial" target="_blank" class="btn btn-secondary" style="flex: 1; min-width: 140px;">
+                                📸 Instagram
+                            </a>
+                            <a href="https://www.snapchat.com/@thesbs2.0?invite_id=UuaV3tmv&locale=en_IE&share_id=Pu6z_I9dQw62zoyZSOlMDg&sid=6bfda1cf1d754cc88499d0b2e3dafc4b" target="_blank" class="btn btn-secondary" style="flex: 1; min-width: 140px;">
+                                👻 Snapchat
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Community Groups -->
+                <div style="margin-top: 4rem; padding: 2.5rem; background: var(--bg-card); border-radius: 15px; border: 2px solid var(--border-subtle);">
+                    <h3 style="color: var(--primary-gold); margin-bottom: 1rem; font-size: 1.6rem; text-align: center;">🌐 Can't Sell to Us? Try Our Community</h3>
+                    <p style="text-align: center; margin-bottom: 2rem; color: var(--text-secondary);">If we're not interested in your items, post them in our buy/sell groups where other buyers can see them!</p>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
+                        <div style="text-align: center; padding: 1.5rem; background: var(--bg-dark); border-radius: 12px; border: 1px solid var(--border-subtle);">
+                            <p style="font-size: 2rem; margin-bottom: 0.5rem;">💬</p>
+                            <h4 style="color: var(--text-primary); margin-bottom: 0.75rem;">WhatsApp Group</h4>
+                            <p style="font-size: 0.9rem; margin-bottom: 1rem; color: var(--text-secondary);">Post your items to buyers across Dublin</p>
+                            <a href="https://chat.whatsapp.com/C9ttckKnAKvHIuDixQT9BH" target="_blank" class="btn btn-secondary" style="font-size: 0.95rem;">
+                                Join WhatsApp Group
+                            </a>
+                        </div>
+                        <div style="text-align: center; padding: 1.5rem; background: var(--bg-dark); border-radius: 12px; border: 1px solid var(--border-subtle);">
+                            <p style="font-size: 2rem; margin-bottom: 0.5rem;">✈️</p>
+                            <h4 style="color: var(--text-primary); margin-bottom: 0.75rem;">Telegram Group</h4>
+                            <p style="font-size: 0.9rem; margin-bottom: 1rem; color: var(--text-secondary);">Larger community with active buyers</p>
+                            <a href="https://tr.ee/NoBeG_MCub" target="_blank" class="btn btn-secondary" style="font-size: 0.95rem;">
+                                Join Telegram Group
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Service Info -->
+                <div style="margin-top: 3rem; padding: 2rem; background: var(--bg-card); border-radius: 15px; border: 1px solid var(--border-subtle);">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; text-align: center;">
+                        <div>
+                            <p style="font-size: 1.8rem; margin-bottom: 0.5rem;">⏰</p>
+                            <p style="font-size: 1rem; color: var(--primary-gold); font-weight: 600;">30 Min Response</p>
+                        </div>
+                        <div>
+                            <p style="font-size: 1.8rem; margin-bottom: 0.5rem;">�</p>
+                            <p style="font-size: 1rem; color: var(--primary-gold); font-weight: 600;">Same-Day Collection</p>
+                        </div>
+                        <div>
+                            <p style="font-size: 1.8rem; margin-bottom: 0.5rem;">💵</p>
+                            <p style="font-size: 1rem; color: var(--primary-gold); font-weight: 600;">Instant Cash/Transfer</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="brands-section">
+            <div class="container">
+                <h2 class="section-title">✅ What We Buy</h2>
+                
+                <!-- STREETWEAR SECTION -->
+                <div style="background: var(--bg-card); padding: 2.5rem; border-radius: 15px; border: 2px solid var(--primary-gold); margin-bottom: 2rem;">
+                    <h3 style="color: var(--primary-gold); font-size: 2rem; margin-bottom: 1.5rem;">👔 Streetwear</h3>
+                    <p style="font-size: 1.1rem; margin-bottom: 1rem; color: var(--primary-gold); font-weight: 700;">⚠️ TRACKSUITS & JACKETS ONLY - NO TEES OR LOOSE ITEMS</p>
+                    <div style="margin-bottom: 1.5rem;">
+                        <p style="font-size: 1.2rem; font-weight: 700; color: var(--primary-gold); margin-bottom: 0.75rem;">� Top Brands (ONLY THESE):</p>
+                        <ul style="list-style: none; padding: 0;">
+                            <li style="padding: 0.5rem 0; font-size: 1.1rem;">✅ The North Face</li>
+                            <li style="padding: 0.5rem 0; font-size: 1.1rem;">✅ Monterrain</li>
+                            <li style="padding: 0.5rem 0; font-size: 1.1rem;">✅ Yelir</li>
+                            <li style="padding: 0.5rem 0; font-size: 1.1rem;">✅ Montirex</li>
+                            <li style="padding: 0.5rem 0; font-size: 1.1rem;">✅ Berghaus</li>
+                            <li style="padding: 0.5rem 0; font-size: 1.1rem;">✅ Hugo Boss</li>
+                            <li style="padding: 0.5rem 0; font-size: 1.1rem;">✅ Trailberg</li>
+                            <li style="padding: 0.5rem 0; font-size: 1.1rem;">✅ OnCloud</li>
+                        </ul>
+                    </div>
+                    <p style="font-size: 1rem; opacity: 0.9; margin-top: 1rem;">✅ Other premium streetwear accepted ONLY if full sets or jackets</p>
+                    <p style="font-size: 1rem; opacity: 0.9; margin-top: 0.5rem; color: #ffd700;">⚡ Certain rarer in-demand Nike tracksuits may be purchased</p>
+                    <p style="font-size: 0.95rem; color: var(--primary-gold); font-weight: 600; margin-top: 1rem;">⚠️ I am EXTREMELY SPECIFIC - I won't take anything except what's mentioned above</p>
+                </div>
+
+                <!-- SHOES SECTION -->
+                <div style="background: var(--bg-card); padding: 2.5rem; border-radius: 15px; border: 2px solid var(--primary-gold); margin-bottom: 2rem;">
+                    <h3 style="color: var(--primary-gold); font-size: 2rem; margin-bottom: 1.5rem;">👟 Shoes</h3>
+                    <p style="font-size: 1.1rem; margin-bottom: 1rem;"><strong>Sizes:</strong> Men's UK 8–11 (half sizes included)</p>
+                    <div style="margin-bottom: 1rem;">
+                        <p style="font-size: 1.2rem; font-weight: 700; color: var(--primary-gold); margin-bottom: 0.75rem;">Brands Accepted:</p>
+                        <ul style="list-style: none; padding: 0;">
+                            <li style="padding: 0.5rem 0; font-size: 1.1rem;">✅ Nike</li>
+                            <li style="padding: 0.5rem 0; font-size: 1.1rem;">✅ New Balance</li>
+                            <li style="padding: 0.5rem 0; font-size: 1.1rem;">✅ Asics</li>
+                        </ul>
+                    </div>
+                    <p style="font-size: 1rem; opacity: 0.9; color: #ffd700;">⚡ Popular models only</p>
+                </div>
+
+                <!-- TECH SECTION -->
+                <div style="background: var(--bg-card); padding: 2.5rem; border-radius: 15px; border: 2px solid var(--primary-gold); margin-bottom: 2rem;">
+                    <h3 style="color: var(--primary-gold); font-size: 2rem; margin-bottom: 1.5rem;">💻 Tech</h3>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="padding: 0.5rem 0; font-size: 1.1rem;">✅ Smartphones (2020 and newer)</li>
+                        <li style="padding: 0.5rem 0; font-size: 1.1rem;">✅ Consoles (PlayStation, Xbox, Nintendo)</li>
+                        <li style="padding: 0.5rem 0; font-size: 1.1rem;">✅ Accessories (headsets, controllers)</li>
+                        <li style="padding: 0.5rem 0; font-size: 1.1rem;">✅ Sim racing gear & PC parts (GPUs, SSDs, monitors)</li>
+                        <li style="padding: 0.5rem 0; font-size: 1.1rem;">✅ TVs & high-demand electronics</li>
+                    </ul>
+                </div>
+
+                <!-- JEWELLERY SECTION -->
+                <div style="background: var(--bg-card); padding: 2.5rem; border-radius: 15px; border: 2px solid var(--primary-gold); margin-bottom: 2rem;">
+                    <h3 style="color: var(--primary-gold); font-size: 2rem; margin-bottom: 1.5rem;">💎 Jewellery & Watches</h3>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="padding: 0.5rem 0; font-size: 1.1rem;">✅ Gold & silver jewellery</li>
+                        <li style="padding: 0.5rem 0; font-size: 1.1rem;">✅ Luxury watches (Rolex + similar tier)</li>
+                    </ul>
+                    <p style="font-size: 1rem; opacity: 0.9; margin-top: 1rem; color: #ffd700;">⚠️ Authentication required before purchase</p>
+                </div>
+
+                <!-- NOT ACCEPTED SECTION -->
+                <div style="background: var(--bg-card); padding: 2.5rem; border-radius: 15px; border: 2px solid var(--border-subtle); margin-top: 3rem;">
+                    <h3 style="color: var(--text-secondary); font-size: 2rem; margin-bottom: 1.5rem;">❌ Not Accepted</h3>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="padding: 0.5rem 0; font-size: 1.1rem; color: var(--text-secondary);">❌ T-shirts or loose clothing items</li>
+                        <li style="padding: 0.5rem 0; font-size: 1.1rem; color: var(--text-secondary);">❌ Fast-fashion brands (Zara, H&M, etc.)</li>
+                        <li style="padding: 0.5rem 0; font-size: 1.1rem; color: var(--text-secondary);">❌ Fake or replica items</li>
+                        <li style="padding: 0.5rem 0; font-size: 1.1rem; color: var(--text-secondary);">❌ Broken or heavily damaged tech</li>
+                        <li style="padding: 0.5rem 0; font-size: 1.1rem; color: var(--text-secondary);">❌ Low-value jewellery or non-authentic watches</li>
+                    </ul>
+                    <p style="font-size: 1.1rem; margin-top: 1.5rem; color: var(--text-primary); font-weight: 600; text-align: center;">⚠️ Only authentic, good-condition items are considered</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="social-links">
+                <p style="font-size: 1.1rem; margin-bottom: 1.5rem;">Connect with SBS Unity:</p>
+                <div class="social-icons">
+                    <a href="https://wa.me/353899662211?text=🔥%20SELLING%20TO%20SBS%0A%0A📸%20PICTURES%3A%20%5Battach%20clear%20photos%20of%20your%20items%5D%0A%0A💰%20MY%20ASKING%20PRICE%3A%20€__%0A%0A📍%20MY%20LOCATION%3A%20%5BDublin%20area%5D%0A%0A✅%20Item%20description%3A%20%5Bbrand%2C%20size%2C%20condition%5D" target="_blank" class="social-link">
+                        💬 WhatsApp
+                    </a>
+                    <a href="https://instagram.com/thesbsofficial" target="_blank" class="social-link">
+                        📷 Instagram
+                    </a>
+                    <a href="https://www.snapchat.com/@thesbs2.0?invite_id=UuaV3tmv&locale=en_IE&share_id=Pu6z_I9dQw62zoyZSOlMDg&sid=6bfda1cf1d754cc88499d0b2e3dafc4b" target="_blank" class="social-link">
+                        👻 Snapchat
+                    </a>
+                    <a href="https://linktr.ee/thesbsofficial" target="_blank" class="social-link">
+                        🔗 All Links
+                    </a>
+                </div>
+            </div>
+            <p style="margin-top: 2rem;">&copy; 2025 SBS Unity. All rights reserved. | Dublin's Most Trusted Buyer</p>
+        </div>
+    </footer>
+
+    <script src="/scripts/nav-lite.js" defer></script>
+    <script>
+        // Cart toggle function (required for cart button)
+        function toggleCart() {
+            // Redirect to shop with cart open
+            window.location.href = '/shop#cart';
+        }
+    </script>
+</body>
+</html>

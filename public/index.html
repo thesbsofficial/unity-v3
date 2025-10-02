@@ -1,0 +1,1738 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SBS - Dublin's Premier Streetwear</title>
+
+  <style>
+    /* CSS RESET & VARIABLES */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --primary-black: #000000;
+      --primary-gold: #ffd700;
+      --accent-gold: #FFD700;
+      --bg-dark: #0a0a0a;
+      --bg-card: #1a1a1a;
+      --text-primary: #ffffff;
+      --text-secondary: #cccccc;
+      --border-subtle: rgba(255, 255, 255, 0.1);
+      --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.3);
+
+      /* Legacy variable mappings */
+      --white: #ffffff;
+      --cta-sell: #E53935;
+      --cta-sell-hover: #C62828;
+      --cta-shadow-sell: 0 10px 25px rgba(229, 57, 53, 0.35);
+    }
+
+    html {
+      font-size: 16px;
+      scroll-behavior: smooth;
+      overflow-x: hidden;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg-dark);
+      color: var(--text-primary);
+      line-height: 1.6;
+      overflow-x: hidden;
+      max-width: 100vw;
+    }
+
+    .main {
+      padding-top: 80px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 2rem;
+    }
+
+    /* Landing Hero Section */
+    .landing-hero {
+      min-height: 60vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px 20px 10px;
+      margin-top: 0;
+      background: var(--primary-black);
+    }
+
+    .hero-content {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      max-width: 1200px;
+      width: 100%;
+      gap: 4rem;
+    }
+
+    .hero-image {
+      flex: 1;
+      max-width: 600px;
+      position: relative;
+      cursor: pointer;
+    }
+
+    .hero-image img {
+      width: 100%;
+      height: auto;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+      transition: transform 0.3s ease;
+    }
+
+    .hero-image:hover img {
+      transform: scale(1.02);
+    }
+
+    .image-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.4);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+    }
+
+    .hero-image:hover .image-overlay,
+    .sell-image:hover .image-overlay {
+      opacity: 1;
+      background: rgba(0, 0, 0, 0.6);
+    }
+
+    /* Show overlay when section is in view */
+    .hero-image.in-view .image-overlay,
+    .sell-image.in-view .image-overlay {
+      opacity: 1;
+    }
+
+    .overlay-text {
+      color: var(--white);
+      font-size: 2.5rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      text-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
+      background: linear-gradient(45deg, var(--primary-gold), var(--accent-gold));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-align: center;
+    }
+
+    .hero-text {
+      flex: 1;
+      max-width: 500px;
+      text-align: left;
+    }
+
+    .hero-title {
+      font-size: clamp(3rem, 8vw, 5rem);
+      font-weight: 900;
+      background: linear-gradient(45deg, var(--primary-gold), var(--accent-gold));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-transform: uppercase;
+      letter-spacing: 4px;
+      line-height: 1.1;
+      margin-bottom: 1.5rem;
+    }
+
+    .hero-subtitle {
+      font-size: 1.5rem;
+      color: rgba(255, 255, 255, 0.8);
+      margin-bottom: 2rem;
+      font-weight: 400;
+      line-height: 1.4;
+    }
+
+    /* HEADER */
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      background: rgba(0, 0, 0, 0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 1rem 0;
+      overflow-x: hidden;
+      width: 100%;
+    }
+
+    .nav {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 2rem;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 2rem;
+      overflow: visible;
+    }
+
+    .nav-left {
+      display: flex;
+      gap: 2rem;
+      align-items: center;
+    }
+
+    .nav-center {
+      display: flex;
+      justify-content: center;
+    }
+
+    .nav-right {
+      display: flex;
+      gap: 1.5rem;
+      align-items: center;
+      justify-content: flex-end;
+      overflow: visible;
+    }
+
+    .cart-toggle {
+      background: none;
+      border: 2px solid var(--primary-gold);
+      color: var(--primary-gold);
+      padding: 0.5rem 1rem;
+      border-radius: 25px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      position: relative;
+      text-transform: uppercase;
+      font-size: 0.9rem;
+      letter-spacing: 1px;
+    }
+
+    .cart-toggle:hover {
+      background: var(--primary-gold);
+      color: var(--primary-black);
+    }
+
+    .cart-count {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      background: #ff4444;
+      color: white;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: bold;
+      min-width: 20px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      text-decoration: none;
+      color: var(--primary-gold);
+      font-size: 1.5rem;
+      font-weight: 900;
+      letter-spacing: 2px;
+    }
+
+    .logo img {
+      height: 40px;
+      width: auto;
+    }
+
+    .nav-link {
+      text-decoration: none;
+      color: var(--text-primary);
+      font-weight: 500;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      font-size: 0.9rem;
+      letter-spacing: 1px;
+    }
+
+    .nav-link:hover {
+      background: var(--primary-gold);
+      color: var(--primary-black);
+    }
+
+    .cart-toggle {
+      background: none;
+      border: 2px solid var(--primary-gold);
+      color: var(--primary-gold);
+      padding: 0.5rem 1rem;
+      border-radius: 25px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      position: relative;
+      text-transform: uppercase;
+      font-size: 0.9rem;
+      letter-spacing: 1px;
+    }
+
+    .cart-toggle:hover {
+      background: var(--primary-gold);
+      color: var(--primary-black);
+    }
+
+    .cart-count {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      background: #ff4444;
+      color: white;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: bold;
+    }
+
+    /* Hero Section */
+    .hero {
+      text-align: center;
+      padding: 6rem 2rem 4rem;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .hero h1 {
+      font-size: 3.5rem;
+      font-weight: 800;
+      color: var(--primary-gold);
+      margin-bottom: 1rem;
+      letter-spacing: 2px;
+    }
+
+    .hero p {
+      font-size: 1.2rem;
+      color: var(--text-secondary);
+      max-width: 600px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    /* Action Sections */
+    .action-sections {
+      padding: 4rem 0;
+    }
+
+    .action-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .action-card {
+      position: relative;
+      border-radius: 12px;
+      overflow: hidden;
+      transition: transform 0.3s ease;
+    }
+
+    .action-card:hover {
+      transform: translateY(-5px);
+    }
+
+    .action-link {
+      display: block;
+      position: relative;
+      text-decoration: none;
+    }
+
+    .action-link img {
+      width: 100%;
+      height: 250px;
+      object-fit: cover;
+      display: block;
+    }
+
+    .action-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.8) 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.3s ease;
+    }
+
+    .action-card:hover .action-overlay {
+      background: linear-gradient(135deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.6) 100%);
+    }
+
+    .action-text {
+      color: white;
+      font-size: 2rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+    }
+
+    /* Sell Section Styles - Match Landing Hero */
+    .sell-section {
+      min-height: 60vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 20px 20px;
+      margin-top: 0;
+      background: var(--primary-black);
+    }
+
+    .sell-content {
+      display: flex;
+      align-items: center;
+      gap: 4rem;
+      max-width: 1400px;
+      margin: 0 auto;
+      width: 100%;
+      justify-content: center;
+    }
+
+    .sell-image {
+      position: relative;
+      border-radius: 20px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+      text-decoration: none;
+      display: block;
+      max-width: 600px;
+      width: 100%;
+    }
+
+    .sell-image:hover {
+      transform: scale(1.02);
+    }
+
+    .sell-image img {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 20px;
+    }
+
+    /* Ensure sell-image also uses image-overlay styling */
+    .sell-image .image-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.4);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+    }
+
+    @media (max-width: 768px) {
+
+      .landing-hero,
+      .sell-section {
+        min-height: 50vh;
+        padding: 15px 20px;
+      }
+
+      .hero-content,
+      .sell-content {
+        gap: 1rem;
+      }
+    }
+
+    /* Footer Styles */
+    .main-footer {
+      background: var(--dark-bg);
+      color: var(--white);
+      padding: 3rem 1rem 2rem;
+      margin-top: 4rem;
+      border-top: 1px solid rgba(255, 215, 0, 0.2);
+    }
+
+    .footer-section {
+      margin-bottom: 2rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding-bottom: 1.5rem;
+    }
+
+    .footer-section:last-of-type {
+      border-bottom: none;
+    }
+
+    .footer-section-toggle {
+      width: 100%;
+      background: none;
+      border: none;
+      color: var(--white);
+      text-align: left;
+      cursor: pointer;
+      padding: 1rem 0;
+      transition: color 0.2s ease;
+    }
+
+    .footer-section-toggle:hover {
+      color: var(--primary-gold);
+    }
+
+    .footer-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 0;
+      font-size: 1.2rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .footer-section-icon {
+      font-size: 1.5rem;
+      font-weight: 300;
+      transition: transform 0.2s ease;
+    }
+
+    .footer-content,
+    .footer-links,
+    .trust-badges,
+    .faq-container {
+      padding: 1rem 0;
+      animation: slideDown 0.3s ease;
+    }
+
+    .footer-content p,
+    .trust-item p {
+      margin: 0.5rem 0;
+      line-height: 1.6;
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .footer-content h4,
+    .trust-item h4 {
+      color: var(--primary-gold);
+      margin: 1rem 0 0.5rem 0;
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .delivery-option {
+      margin-bottom: 1.5rem;
+    }
+
+    .footer-links {
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+    }
+
+    .footer-link {
+      color: rgba(255, 255, 255, 0.9);
+      text-decoration: none;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid transparent;
+      transition: all 0.2s ease;
+    }
+
+    .footer-link:hover {
+      color: var(--primary-gold);
+      border-bottom-color: var(--primary-gold);
+    }
+
+    .social-links a {
+      color: var(--primary-gold);
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.2s ease;
+    }
+
+    .social-links a:hover {
+      color: var(--white);
+    }
+
+    .about-expandable {
+      margin-top: 1.5rem;
+    }
+
+    .about-header {
+      background: none;
+      border: none;
+      color: var(--primary-gold);
+      cursor: pointer;
+      padding: 0.5rem 0;
+      width: 100%;
+      text-align: left;
+    }
+
+    .about-header h4 {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 0;
+      font-size: 1rem;
+    }
+
+    .about-icon {
+      transition: transform 0.2s ease;
+    }
+
+    .faq-item {
+      margin-bottom: 1rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding-bottom: 1rem;
+    }
+
+    .faq-question {
+      width: 100%;
+      background: none;
+      border: none;
+      color: var(--white);
+      text-align: left;
+      cursor: pointer;
+      padding: 0.8rem 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 1rem;
+      font-weight: 500;
+    }
+
+    .faq-question:hover {
+      color: var(--primary-gold);
+    }
+
+    .faq-icon {
+      font-size: 1.2rem;
+      font-weight: 300;
+    }
+
+    .faq-answer {
+      padding: 0.5rem 0;
+      animation: slideDown 0.3s ease;
+    }
+
+    .footer-bottom {
+      text-align: center;
+      margin-top: 3rem;
+      padding-top: 2rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .copyright {
+      margin: 0 0 0.5rem 0;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 0.9rem;
+    }
+
+    .tagline {
+      margin: 0;
+      color: var(--primary-gold);
+      font-weight: 600;
+      font-size: 1rem;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        max-height: 0;
+        transform: translateY(-10px);
+      }
+
+      to {
+        opacity: 1;
+        max-height: 1000px;
+        transform: translateY(0);
+      }
+    }
+
+    .nav-logo img {
+      width: clamp(120px, 18vw, 168px);
+      height: auto;
+      display: block;
+      transition: transform 0.25s ease;
+    }
+
+    .nav-logo-text {
+      font-size: 1.5rem;
+      font-weight: 900;
+      color: var(--primary-gold);
+      text-align: center;
+      line-height: 1.1;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      display: none;
+    }
+
+    .nav-auth {
+      color: var(--white);
+      font-weight: 600;
+      font-size: 0.95rem;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      transition: color 0.2s ease;
+    }
+
+    .nav-auth:hover,
+    .nav-auth:focus-visible {
+      color: var(--primary-gold);
+    }
+
+    /* Landing Page Styles */
+    .landing-hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      background: var(--primary-black);
+      padding: 100px 20px 50px;
+    }
+
+    .hero-content {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      max-width: 1400px;
+      width: 100%;
+      gap: 4rem;
+    }
+
+    .hero-image {
+      flex: 1;
+      max-width: 800px;
+      position: relative;
+    }
+
+    .hero-image img {
+      width: 100%;
+      height: auto;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+    }
+
+    .hero-text {
+      flex: 1;
+      max-width: 500px;
+      text-align: center;
+    }
+
+    .hero-title {
+      font-size: clamp(2.5rem, 8vw, 4rem);
+      font-weight: 900;
+      background: linear-gradient(45deg, var(--primary-gold), var(--accent-gold));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-transform: uppercase;
+      letter-spacing: 4px;
+      margin-bottom: 1.5rem;
+      line-height: 1.1;
+    }
+
+    .hero-subtitle {
+      font-size: 1.3rem;
+      color: var(--white);
+      margin-bottom: 3rem;
+      opacity: 0.9;
+      font-weight: 500;
+    }
+
+    .shop-now-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem 3rem;
+      background: linear-gradient(45deg, var(--primary-gold), var(--accent-gold));
+      color: var(--primary-black);
+      text-decoration: none;
+      font-size: 1.3rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      border-radius: 50px;
+      transition: all 0.3s ease;
+      box-shadow: 0 15px 35px rgba(255, 215, 0, 0.4);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .shop-now-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 20px 45px rgba(255, 215, 0, 0.6);
+    }
+
+    .shop-now-btn:active {
+      transform: translateY(-1px);
+    }
+
+    /* Mobile Responsiveness */
+    @media (max-width: 768px) {
+
+      .nav-side--left,
+      .nav-side--right {
+        display: none;
+      }
+
+      .nav-logo {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .nav-logo img {
+        width: clamp(140px, 45vw, 180px);
+      }
+
+      .nav-logo-text {
+        font-size: 1.8rem;
+        letter-spacing: 3px;
+      }
+
+      .nav {
+        padding: 0 1rem;
+        gap: 1rem;
+      }
+
+      .nav-left,
+      .nav-right {
+        gap: 1rem;
+      }
+
+      .btn {
+        padding: 0.6rem 1.2rem;
+        font-size: 0.85rem;
+      }
+
+      .nav-links a:hover {
+        color: var(--primary-black);
+        background: var(--primary-gold);
+        border-color: var(--primary-gold);
+        transform: translateY(-2px);
+      }
+
+      .nav-links .nav-cta {
+        background: var(--cta-sell);
+        border-color: var(--cta-sell);
+        color: var(--white);
+        font-weight: 800;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+      }
+
+      .nav-links .nav-cta:hover {
+        background: var(--cta-sell-hover);
+        border-color: var(--cta-sell-hover);
+        color: var(--white);
+      }
+
+      .hero-content {
+        flex-direction: column;
+        gap: 3rem;
+        text-align: center;
+      }
+
+      .hero-image {
+        order: 2;
+        max-width: 100%;
+      }
+
+      .hero-text {
+        order: 1;
+        max-width: 100%;
+      }
+
+      .landing-hero {
+        padding: 20px 20px 10px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .nav {
+        padding: 0 1rem;
+      }
+
+      .nav-left,
+      .nav-right {
+        gap: 0.75rem;
+      }
+
+      .nav-link {
+        font-size: 0.8rem;
+        padding: 0.25rem 0.5rem;
+      }
+
+      .cart-toggle {
+        font-size: 0.7rem;
+        padding: 0.25rem 0.5rem;
+        white-space: nowrap;
+      }
+
+      .cart-count {
+        width: 16px;
+        height: 16px;
+        font-size: 10px;
+        top: -6px;
+        right: -6px;
+      }
+
+      .logo img {
+        height: 32px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .hero-content {
+        gap: 1rem;
+      }
+
+      .overlay-text {
+        font-size: 2rem;
+        letter-spacing: 2px;
+      }
+
+      .landing-hero {
+        padding: 15px 20px 5px;
+      }
+
+      .nav-link {
+        font-size: 0.7rem;
+        padding: 0.2rem 0.4rem;
+      }
+
+      .cart-toggle {
+        font-size: 0.65rem;
+        padding: 0.2rem 0.4rem;
+      }
+    }
+  </style>
+  <script src="/scripts/error-logger.js"></script>
+  <script src="/scripts/nav-lite.js" defer></script>
+</head>
+
+<body>
+  <header class="header" id="site-header">
+    <nav class="nav">
+      <div class="nav-left">
+        <a href="/shop" class="nav-link">Shop</a>
+        <a href="/sell" class="nav-link">Sell</a>
+      </div>
+      <div class="nav-center">
+        <a href="/" class="logo">
+          <img src="/SBS (Your Story).png" alt="SBS"
+            onerror="this.style.display='none'; this.parentNode.innerHTML='SBS'">
+        </a>
+      </div>
+      <div class="nav-right">
+        <a href="/login" class="nav-link">Login</a>
+        <button class="cart-toggle" onclick="toggleCart()">
+          Basket
+          <span class="cart-count" id="cart-count">0</span>
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <main class="main">
+    <div class="container">
+      <!-- HERO SECTION -->
+      <section class="hero">
+        <h1>SBS</h1>
+        <p>Your story marketplace. Discover authentic stories or share your own journey with the world.</p>
+      </section>
+
+      <!-- SHOP & SELL SECTIONS -->
+      <section class="action-sections">
+        <div class="action-grid">
+          <div class="action-card">
+            <a href="/shop" class="action-link">
+              <img src="/assets/images/shop-hero-image.png" alt="SBS Shop" loading="lazy">
+              <div class="action-overlay">
+                <div class="action-text">Shop Now</div>
+              </div>
+            </a>
+          </div>
+          <div class="action-card">
+            <a href="/sell" class="action-link">
+              <img src="/assets/images/sell-hero-image.png" alt="SBS Sell" loading="lazy">
+              <div class="action-overlay">
+                <div class="action-text">Sell Now</div>
+              </div>
+            </a>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    // Basket functionality
+    function toggleCart() {
+      window.location.href = 'shop.html#basket';
+    }
+
+    // Update basket count on page load
+    function updateBasketCount() {
+      try {
+        const basket = JSON.parse(localStorage.getItem('shopping_basket') || '[]');
+        const count = basket.reduce((total, item) => total + (item.quantity || 1), 0);
+        const basketCount = document.getElementById('basket-count');
+        if (basketCount) {
+          basketCount.textContent = count;
+          basketCount.style.display = count > 0 ? 'block' : 'none';
+        }
+      } catch (e) {
+        console.error('Error updating basket count:', e);
+      }
+    }
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', () => {
+      updateBasketCount();
+
+      // Close menu with escape key
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+          toggleMobileMenu(false);
+        }
+      });
+
+      // Header scroll effect
+      const header = document.getElementById('site-header');
+      if (header) {
+        window.addEventListener('scroll', () => {
+          const shouldShrink = window.scrollY > 10;
+          header.classList.toggle('header--shrink', shouldShrink);
+        });
+      }
+
+
+    });
+
+    // About SBS Accordion Functionality
+    document.addEventListener('DOMContentLoaded', function () {
+      const aboutHeaders = document.querySelectorAll('.about-header');
+
+      aboutHeaders.forEach(header => {
+        header.addEventListener('click', function () {
+          const contentId = this.getAttribute('aria-controls');
+          const content = document.getElementById(contentId);
+          const isExpanded = this.getAttribute('aria-expanded') === 'true';
+
+          if (isExpanded) {
+            this.setAttribute('aria-expanded', 'false');
+            content.setAttribute('aria-hidden', 'true');
+          } else {
+            this.setAttribute('aria-expanded', 'true');
+            content.setAttribute('aria-hidden', 'false');
+          }
+        });
+      });
+    });
+
+    // FAQ Accordion Functionality
+    document.addEventListener('DOMContentLoaded', function () {
+      const faqQuestions = document.querySelectorAll('.faq-question');
+
+      faqQuestions.forEach(question => {
+        question.addEventListener('click', function () {
+          const answerId = this.getAttribute('aria-controls');
+          const answer = document.getElementById(answerId);
+          const isExpanded = this.getAttribute('aria-expanded') === 'true';
+
+          // Close all other FAQ items (optional: only one open at a time)
+          faqQuestions.forEach(otherQuestion => {
+            if (otherQuestion !== this) {
+              otherQuestion.setAttribute('aria-expanded', 'false');
+              const otherAnswer = document.getElementById(otherQuestion.getAttribute('aria-controls'));
+              if (otherAnswer) {
+                otherAnswer.setAttribute('aria-hidden', 'true');
+              }
+            }
+          });
+
+          // Toggle current FAQ item
+          if (isExpanded) {
+            this.setAttribute('aria-expanded', 'false');
+            answer.setAttribute('aria-hidden', 'true');
+          } else {
+            this.setAttribute('aria-expanded', 'true');
+            answer.setAttribute('aria-hidden', 'false');
+          }
+        });
+      });
+    });
+
+    // FAQ Main Section Toggle
+    function toggleFAQSection() {
+      const faqContent = document.getElementById('faq-main-content');
+      const faqToggle = document.querySelector('.faq-main-toggle');
+      const faqIcon = document.querySelector('.faq-main-icon');
+
+      const isHidden = faqContent.style.display === 'none';
+
+      if (isHidden) {
+        faqContent.style.display = 'block';
+        faqContent.setAttribute('aria-hidden', 'false');
+        faqToggle.setAttribute('aria-expanded', 'true');
+        faqIcon.textContent = '−';
+      } else {
+        faqContent.style.display = 'none';
+        faqContent.setAttribute('aria-hidden', 'true');
+        faqToggle.setAttribute('aria-expanded', 'false');
+        faqIcon.textContent = '+';
+      }
+    }
+
+    // Footer Section Toggle
+    function toggleFooterSection(sectionId) {
+      const contentMap = {
+        'quick-links': 'quick-links-content',
+        'connect': 'connect-content',
+        'trust': 'trust-content',
+        'about': 'about-content',
+        'delivery': 'delivery-content',
+        'same-day': 'same-day-content',
+        'shipping': 'shipping-content',
+        'collection': 'collection-content'
+      };
+
+      const contentId = contentMap[sectionId] || sectionId + '-content';
+      const content = document.getElementById(contentId);
+      const toggle = document.querySelector(`[onclick="toggleFooterSection('${sectionId}')"]`);
+      const icon = toggle.querySelector('.footer-section-icon');
+
+      const isHidden = content.style.display === 'none';
+
+      if (isHidden) {
+        content.style.display = 'block';
+        content.setAttribute('aria-hidden', 'false');
+        toggle.setAttribute('aria-expanded', 'true');
+        icon.textContent = '−';
+      } else {
+        content.style.display = 'none';
+        content.setAttribute('aria-hidden', 'true');
+        toggle.setAttribute('aria-expanded', 'false');
+        icon.textContent = '+';
+      }
+    }
+
+    // Intersection Observer for showing overlays when scrolled into view
+    const observerOptions = {
+      threshold: 0.3,
+      rootMargin: '-50px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('in-view');
+        } else {
+          entry.target.classList.remove('in-view');
+        }
+      });
+    }, observerOptions);
+
+    // Observe both hero images and add click handlers
+    document.addEventListener('DOMContentLoaded', () => {
+      const heroImage = document.querySelector('.hero-image');
+      const sellImage = document.querySelector('.sell-image');
+
+      if (heroImage) {
+        observer.observe(heroImage);
+      }
+
+      if (sellImage) {
+        observer.observe(sellImage);
+      }
+    });
+  </script>
+
+  <!-- 
+    ============================================================================
+    FOOTER AREA - FOOTER ACCORDION SECTIONS  
+    ============================================================================
+    
+    This section contains all footer accordions that use the UNIFIED SYSTEM:
+    
+    CSS CONNECTIONS:
+    - <footer class="main-footer"> → styles.css .main-footer
+    - <section class="footer-section"> → styles.css .unified-section  
+    - <button class="footer-section-toggle"> → styles.css .unified-toggle
+    - <h3 class="footer-title"> → styles.css .unified-title
+    - <span class="footer-section-icon"> → styles.css .unified-icon
+    
+    SPECIAL FEATURE: 2-Stage Dropdown for Delivery & Collection
+    - Stage 1: Click "Delivery & Collection" to see 3 options
+    - Stage 2: Click individual delivery methods for details
+    
+    SPACING: Uses var(--spacing-md) for gaps between sections
+    -->
+  <footer class="main-footer">
+    <!-- Delivery & Collection Section -->
+    <section class="footer-section delivery-section">
+      <button class="footer-section-toggle" onclick="toggleFooterSection('delivery')" aria-expanded="false"
+        aria-controls="delivery-content">
+        <h3 class="footer-title" style="margin:0;display:flex;justify-content:space-between;align-items:center;">
+          Delivery & Collection
+          <span class="footer-section-icon" style="font-size:1.2rem;font-weight:bold;">+</span>
+        </h3>
+      </button>
+
+      <div class="footer-content" id="delivery-content" style="display: none;" aria-hidden="true">
+        <div class="delivery-option">
+          <button class="footer-section-toggle" onclick="toggleFooterSection('same-day')" aria-expanded="false"
+            aria-controls="same-day-content">
+            <h4 class="footer-title" style="margin:0;display:flex;justify-content:space-between;align-items:center;">
+              <span style="display:flex;align-items:center;gap:0.5rem;"><i data-lucide="truck"
+                  style="width:20px;height:20px;"></i> Same-Day Dublin Delivery</span>
+              <span class="footer-section-icon" style="font-size:1.2rem;font-weight:bold;">+</span>
+            </h4>
+          </button>
+          <div class="footer-content" id="same-day-content" style="display: none;" aria-hidden="true">
+            <p class="delivery-text">Order by 6PM → arrives before midnight</p>
+            <div class="delivery-rates">
+              <div class="rate-item">North Dublin: €15</div>
+              <div class="rate-item">South Dublin: €20</div>
+              <div class="rate-item">Outside Dublin: from €25+</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="delivery-option">
+          <button class="footer-section-toggle" onclick="toggleFooterSection('shipping')" aria-expanded="false"
+            aria-controls="shipping-content">
+            <h4 class="footer-title" style="margin:0;display:flex;justify-content:space-between;align-items:center;">
+              📦 Nationwide Shipping (An Post, tracked)
+              <span class="footer-section-icon" style="font-size:1.2rem;font-weight:bold;">+</span>
+            </h4>
+          </button>
+          <div class="footer-content" id="shipping-content" style="display: none;" aria-hidden="true">
+            <p class="delivery-text">€10 flat rate</p>
+            <p class="delivery-text">Standard ETA: 1–3 working days (per An Post guidelines)</p>
+            <p class="delivery-text delivery-disclaimer">In rare cases, can take up to 30 days for lost/delayed packages
+            </p>
+          </div>
+        </div>
+
+        <div class="delivery-option">
+          <button class="footer-section-toggle" onclick="toggleFooterSection('collection')" aria-expanded="false"
+            aria-controls="collection-content">
+            <h4 class="footer-title" style="margin:0;display:flex;justify-content:space-between;align-items:center;">
+              🏪 Free Collection
+              <span class="footer-section-icon" style="font-size:1.2rem;font-weight:bold;">+</span>
+            </h4>
+          </button>
+          <div class="footer-content" id="collection-content" style="display: none;" aria-hidden="true">
+            <p class="delivery-text">Location: Swords, Boroimhe</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Quick Links Section -->
+    <section class="footer-section links-section">
+      <button class="footer-section-toggle" onclick="toggleFooterSection('quick-links')" aria-expanded="false"
+        aria-controls="quick-links-content">
+        <h3 class="footer-title" style="margin:0;display:flex;justify-content:space-between;align-items:center;">
+          Quick Links
+          <span class="footer-section-icon" style="font-size:1.2rem;font-weight:bold;">+</span>
+        </h3>
+      </button>
+      <div class="footer-links" id="quick-links-content" style="display:none;" aria-hidden="true">
+        <a href="/shop.html" class="footer-link">Shop All</a>
+        <a href="/sell.html" class="footer-link">Sell to SBS</a>
+        <a href="/shop.html" class="footer-link">How to Buy</a>
+        <a href="#" class="footer-link">Delivery & Collection</a>
+        <a href="#" class="footer-link">Contact</a>
+        <a href="#" class="footer-link">About</a>
+      </div>
+    </section>
+
+    <!-- Contact & Social Section -->
+    <section class="footer-section contact-section">
+      <button class="footer-section-toggle" onclick="toggleFooterSection('connect')" aria-expanded="false"
+        aria-controls="connect-content">
+        <h3 class="footer-title" style="margin:0;display:flex;justify-content:space-between;align-items:center;">
+          Connect
+          <span class="footer-section-icon" style="font-size:1.2rem;font-weight:bold;">+</span>
+        </h3>
+      </button>
+      <div id="connect-content" style="display:none;" aria-hidden="true">
+        <div class="contact-info">
+          <p class="contact-item"><i data-lucide="smartphone"
+              style="width:16px;height:16px;display:inline-block;vertical-align:middle;margin-right:0.5rem;"></i> DM us
+            for instant quotes</p>
+          <p class="contact-item"><i data-lucide="map-pin"
+              style="width:16px;height:16px;display:inline-block;vertical-align:middle;margin-right:0.5rem;"></i>
+            Swords, Dublin</p>
+          <p class="contact-item"><i data-lucide="truck"
+              style="width:16px;height:16px;display:inline-block;vertical-align:middle;margin-right:0.5rem;"></i>
+            Same-day delivery available</p>
+        </div>
+        <div class="social-links">
+          <a href="#" class="social-link instagram" aria-label="Instagram"><i data-lucide="instagram"
+              style="width:24px;height:24px;"></i></a>
+          <a href="#" class="social-link whatsapp" aria-label="WhatsApp"><i data-lucide="message-circle"
+              style="width:24px;height:24px;"></i></a>
+          <a href="#" class="social-link snapchat" aria-label="Snapchat"><i data-lucide="ghost"
+              style="width:24px;height:24px;"></i></a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Trust & Security Section -->
+    <section class="footer-section trust-section">
+      <button class="footer-section-toggle" onclick="toggleFooterSection('trust')" aria-expanded="false"
+        aria-controls="trust-content">
+        <h3 class="footer-title" style="margin:0;display:flex;justify-content:space-between;align-items:center;">
+          Trust & Security
+          <span class="footer-section-icon" style="font-size:1.2rem;font-weight:bold;">+</span>
+        </h3>
+      </button>
+      <div class="trust-badges" id="trust-content" style="display:none;" aria-hidden="true">
+        <div class="trust-item">
+          <span class="trust-icon"><i data-lucide="check-circle" style="width:20px;height:20px;"></i></span>
+          <span class="trust-text">Verified Authentic</span>
+        </div>
+        <div class="trust-item">
+          <span class="trust-icon"><i data-lucide="lock" style="width:20px;height:20px;"></i></span>
+          <span class="trust-text">Verified Deals</span>
+        </div>
+        <div class="trust-item">
+          <span class="trust-icon">⚡</span>
+          <span class="trust-text">Lightning Fast</span>
+        </div>
+        <div class="trust-item">
+          <span class="trust-icon">💯</span>
+          <span class="trust-text">100% Genuine</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- About SBS Section -->
+    <section class="footer-section about-section">
+      <button class="footer-section-toggle" onclick="toggleFooterSection('about')" aria-expanded="false"
+        aria-controls="about-content">
+        <h3 class="footer-title" style="margin:0;display:flex;justify-content:space-between;align-items:center;">
+          About SBS
+          <span class="footer-section-icon" style="font-size:1.2rem;font-weight:bold;">+</span>
+        </h3>
+      </button>
+
+      <div id="about-content" style="display:none;" aria-hidden="true">
+        <div class="about-intro">
+          <p class="about-text">SBS is Dublin's plug for brand new & pre-owned fashion. What started as a simple hustle
+            to keep fresh clothes has grown into a trusted catalogue, serving thousands with same-day Dublin delivery,
+            nationwide shipping, and a reputation for authenticity and speed.</p>
+        </div>
+
+        <div class="about-expandable">
+          <button class="about-header" aria-expanded="false" aria-controls="full-story-content">
+            <h4 class="about-subtitle">The Full Story</h4>
+            <span class="about-icon">▼</span>
+          </button>
+          <div class="about-content" id="full-story-content" aria-hidden="true">
+            <p class="about-text">SBS didn't start as a business — it started as survival and hustle. When I was 14 or
+              15, I realised something simple but powerful: if I bought a jacket or pair of trainers, wore them for a
+              bit, and then sold them, I could put that money towards the next thing. It meant I could always keep my
+              wardrobe fresh without being out of pocket.</p>
+
+            <p class="about-text">That small trick turned into a habit, and then into an opportunity. I figured out that
+              you could actually make money doing this — and more than that, you could connect with people. Every sale
+              wasn't just about clothes; it was about trust.</p>
+
+            <p class="about-text">The name SBS comes from a local Facebook marketplace called The Swords Buy and Sale.
+              That's where it all started. I posted my pieces there, met up with people all over Dublin, and showed up
+              no matter the weather — rain, sleet, snow, Christmas Day, or even on my own birthday. If a boss needed
+              something, I made sure they got it. That consistency is what built the foundation of SBS.</p>
+
+            <p class="about-text">From bus rides with bags full of clothes, to late-night meetups after school, to
+              building relationships one sale at a time, SBS slowly grew from a side-hustle into something real. By 17,
+              I wasn't just flipping for myself — I was serving a community. People started to rely on me for their
+              fashion, their sneakers, even their tech.</p>
+
+            <p class="about-text">Now at 23, SBS has grown from those solo bus rides into a 3-person team. What started
+              with me moving a few pieces after school has become a trusted name with a catalogue that bosses across
+              Dublin and beyond rely on.</p>
+
+            <p class="about-text">Over the years, SBS has grown into a name that stands for authenticity, speed, and
+              service. Every item is checked, every deal is straightforward, and every delivery is made with the same
+              energy I had when I started — giving it my all for the people who support me.</p>
+
+            <p class="about-text">But SBS is more than just buying and selling. It's a Dublin story. It's about building
+              trust from the ground up, proving that you don't need big investors or fancy shops to create something
+              that matters. You need consistency, honesty, and respect for the people you serve.</p>
+
+            <p class="about-text">Today, SBS is still independent, still rooted in Dublin, and still run with that same
+              hustle from day one. The catalogue is bigger, the audience wider, and the team stronger — but the spirit
+              hasn't changed.</p>
+
+            <p class="about-text">And none of it would be possible without you. Every boss who bought, sold, or even
+              just shared the page helped this grow. From one teenager hustling on Facebook Marketplace to a proper team
+              serving thousands, it's all thanks to the trust and support you've shown along the way.</p>
+          </div>
+        </div>
+
+        <div class="about-outro">
+          <p class="about-text outro-text">None of this would be possible without you — every boss who buys, sells, or
+            even just supports has helped make SBS what it is today. Thank you for being part of the journey.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="footer-section faq-section">
+      <button class="faq-main-toggle" onclick="toggleFAQSection()" aria-expanded="false"
+        aria-controls="faq-main-content">
+        <h3 class="footer-title" style="margin:0;display:flex;justify-content:space-between;align-items:center;">
+          Frequently Asked Questions
+          <span class="faq-main-icon" style="font-size:1.2rem;font-weight:bold;">+</span>
+        </h3>
+      </button>
+
+      <div class="faq-container" id="faq-main-content" style="display:none;" aria-hidden="true">
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false" aria-controls="faq-1">
+            <span class="faq-text">What is SBS?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer" id="faq-1" aria-hidden="true">
+            <p>SBS is Dublin's plug for brand new & pre-owned fashion, plus tech. Built on trust, speed, and community
+              since 2016.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false" aria-controls="faq-2">
+            <span class="faq-text">Where are you based?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer" id="faq-2" aria-hidden="true">
+            <p>Swords, Dublin (Boroimhe).</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false" aria-controls="faq-3">
+            <span class="faq-text">How do I buy from SBS?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer" id="faq-3" aria-hidden="true">
+            <p>Browse → Screenshot → DM us → Confirm → Done.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false" aria-controls="faq-4">
+            <span class="faq-text">What payment methods do you accept?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer" id="faq-4" aria-hidden="true">
+            <p>Cash (local only), Revolut, bank transfer, cryptocurrency. No PayPal.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false" aria-controls="faq-5">
+            <span class="faq-text">Do you deliver the same day?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer" id="faq-5" aria-hidden="true">
+            <p>Yes — Dublin orders placed before cut-off are delivered that night.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false" aria-controls="faq-6">
+            <span class="faq-text">Do you offer free collection?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer" id="faq-6" aria-hidden="true">
+            <p>Yes — from Swords, Boroimhe.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false" aria-controls="faq-7">
+            <span class="faq-text">Do you ship nationwide?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer" id="faq-7" aria-hidden="true">
+            <p>Yes — via An Post tracked service. Tracking provided for all shipments.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false" aria-controls="faq-8">
+            <span class="faq-text">What happens if my package is delayed?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer" id="faq-8" aria-hidden="true">
+            <p>If An Post delays, tracking will update. In rare cases of lost packages, refunds are issued only once the
+              case is fully settled with An Post (can take up to 30 working days). 👉 <a
+                href="https://www.anpost.com/Help-Support" target="_blank" rel="noopener noreferrer"
+                class="faq-link">Contact An Post</a>.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false" aria-controls="faq-9">
+            <span class="faq-text">What if I want a refund?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer" id="faq-9" aria-hidden="true">
+            <ul class="faq-list">
+              <li><strong>If SBS is at fault</strong> → instant refund.</li>
+              <li><strong>If An Post is responsible</strong> → refund issued once the case is fully settled (up to 30
+                working days).</li>
+              <li><strong>If the package is returned to us with tracking</strong> → refund is issued immediately.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false" aria-controls="faq-10">
+            <span class="faq-text">Are all items authentic?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer" id="faq-10" aria-hidden="true">
+            <p>Yes — 100% authentic only. No fakes, no illegal items.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false" aria-controls="faq-11">
+            <span class="faq-text">Do you buy items too?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer" id="faq-11" aria-hidden="true">
+            <p>Yes — we buy streetwear, sneakers, tech, and more. DM for a same-day offer.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false" aria-controls="faq-12">
+            <span class="faq-text">What brands do you buy?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer" id="faq-12" aria-hidden="true">
+            <p>The North Face, Monterrain, Yelir, Montirex, Berghaus, Nike Tech, Hugo Boss, and other premium labels.
+            </p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false" aria-controls="faq-13">
+            <span class="faq-text">Do you buy jewellery or watches?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer" id="faq-13" aria-hidden="true">
+            <p>Yes — but high-value items (like Rolex/jewellery) are only purchased at a jeweller's or agreed store with
+              authentication. No "cash at the door."</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false" aria-controls="faq-14">
+            <span class="faq-text">Are sales final?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer" id="faq-14" aria-hidden="true">
+            <p>Yes — once complete, all sales are final unless there's a mistake on our side.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false" aria-controls="faq-15">
+            <span class="faq-text">Can prices change after a deal?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer" id="faq-15" aria-hidden="true">
+            <p>Yes — if the item isn't as described (wrong condition, fake, missing parts).</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false" aria-controls="faq-16">
+            <span class="faq-text">Do you take crypto?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer" id="faq-16" aria-hidden="true">
+            <p>Yes — both as payment and payout.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false" aria-controls="faq-17">
+            <span class="faq-text">How fast do you reply?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer" id="faq-17" aria-hidden="true">
+            <p>Usually within 30 minutes on Instagram during the day.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false" aria-controls="faq-18">
+            <span class="faq-text">Do you take bulk sales?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer" id="faq-18" aria-hidden="true">
+            <p>Yes — DM details and we'll make an offer.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false" aria-controls="faq-19">
+            <span class="faq-text">Do you offer discounts?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer" id="faq-19" aria-hidden="true">
+            <p>Sometimes for bundles or repeat bosses. Always worth asking.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false" aria-controls="faq-20">
+            <span class="faq-text">What if I have another question?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer" id="faq-20" aria-hidden="true">
+            <p>Just DM us on Instagram <a href="https://instagram.com/thesbsofficial" target="_blank"
+                rel="noopener noreferrer" class="faq-link">@thesbsofficial</a>, Snapchat <a
+                href="https://www.snapchat.com/@thesbs2.0?invite_id=UuaV3tmv&locale=en_IE&share_id=Pu6z_I9dQw62zoyZSOlMDg&sid=6bfda1cf1d754cc88499d0b2e3dafc4b"
+                target="_blank" rel="noopener noreferrer" class="faq-link">@thesbs2.0</a>, or Linktree <a
+                href="https://linktr.ee/thesbsofficial" target="_blank" rel="noopener noreferrer"
+                class="faq-link">linktr.ee/thesbsofficial</a>.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Copyright Section -->
+    <section class="footer-bottom">
+      <p class="copyright">© 2025 SBS - Dublin's King of Pre-Owned Fashion. All rights reserved.</p>
+      <p class="tagline">Built for the culture, by the culture</p>
+    </section>
+  </footer>
+
+  <!-- Load Icons with Multiple CDN Fallbacks -->
+  <script>
+    // Try loading Lucide from multiple CDNs with fallback to Font Awesome
+    (function () {
+      const cdns = [
+        'https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js',
+        'https://unpkg.com/lucide@latest/dist/umd/lucide.min.js',
+        'https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.min.js'
+      ];
+
+      let currentCdn = 0;
+
+      function loadScript(url) {
+        return new Promise((resolve, reject) => {
+          const script = document.createElement('script');
+          script.src = url;
+          script.onload = resolve;
+          script.onerror = reject;
+          document.body.appendChild(script);
+        });
+      }
+
+      function tryNextCdn() {
+        if (currentCdn >= cdns.length) {
+          console.log('Lucide failed, loading Font Awesome...');
+          loadFontAwesome();
+          return;
+        }
+
+        loadScript(cdns[currentCdn])
+          .then(() => {
+            if (typeof lucide !== 'undefined') {
+              lucide.createIcons();
+              console.log('Lucide loaded from:', cdns[currentCdn]);
+            } else {
+              currentCdn++;
+              tryNextCdn();
+            }
+          })
+          .catch(() => {
+            currentCdn++;
+            tryNextCdn();
+          });
+      }
+
+      function loadFontAwesome() {
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css';
+        document.head.appendChild(link);
+
+        setTimeout(() => {
+          document.querySelectorAll('[data-lucide]').forEach(el => {
+            const iconName = el.getAttribute('data-lucide');
+            const iconMap = {
+              'instagram': 'fab fa-instagram',
+              'ghost': 'fab fa-snapchat-ghost',
+              'link': 'fas fa-link',
+              'message-circle': 'fab fa-whatsapp',
+              'camera': 'fas fa-camera',
+              'dollar-sign': 'fas fa-dollar-sign',
+              'map-pin': 'fas fa-map-marker-alt',
+              'banknote': 'fas fa-money-bill',
+              'smartphone': 'fas fa-mobile-alt',
+              'truck': 'fas fa-truck',
+              'check-circle': 'fas fa-check-circle',
+              'lock': 'fas fa-lock'
+            };
+
+            if (iconMap[iconName]) {
+              el.className = iconMap[iconName];
+              el.removeAttribute('data-lucide');
+            }
+          });
+        }, 100);
+      }
+
+      tryNextCdn();
+    })();
+  </script>
+</body>
+
+</html>

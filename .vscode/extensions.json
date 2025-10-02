@@ -1,0 +1,22 @@
+{
+  "recommendations": [
+    // SPELL CHECKING & AUTOCORRECT
+    "streetsidesoftware.code-spell-checker",
+    // BETTER INTELLISENSE
+    "christian-kohler.path-intellisense",
+    "zignd.html-css-class-completion",
+    "ecmel.vscode-html-css",
+    // AUTO-COMPLETE ENHANCEMENTS
+    "formulahendry.auto-close-tag",
+    "formulahendry.auto-rename-tag",
+    "pranaygp.vscode-css-peek",
+    // FORMATTING (OPTIONAL)
+    "esbenp.prettier-vscode",
+    // LIVE PREVIEW
+    "ritwickdey.LiveServer",
+    // GIT INTEGRATION
+    "eamodio.gitlens",
+    // ERROR DETECTION
+    "dbaeumer.vscode-eslint"
+  ]
+}

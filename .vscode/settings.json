@@ -1,0 +1,133 @@
+{
+  // ===== EDITOR AUTOCORRECT & AUTOCOMPLETE =====
+  // Enable better IntelliSense
+  "editor.quickSuggestions": {
+    "other": true,
+    "comments": true,
+    "strings": true
+  },
+  "editor.suggestOnTriggerCharacters": true,
+  "editor.acceptSuggestionOnCommitCharacter": true,
+  "editor.acceptSuggestionOnEnter": "on",
+  "editor.tabCompletion": "on",
+  "editor.wordBasedSuggestions": "allDocuments",
+  "editor.suggest.showWords": true,
+  "editor.suggest.showKeywords": true,
+  "editor.suggest.localityBonus": true,
+  // Show suggestions automatically
+  "editor.quickSuggestionsDelay": 10,
+  "editor.suggestSelection": "first",
+  "editor.suggest.insertMode": "replace",
+  // Auto-fix on save
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "explicit",
+    "source.organizeImports": "never"
+  },
+  // Format on save
+  "editor.formatOnSave": true,
+  "editor.formatOnPaste": true,
+  "editor.formatOnType": true,
+  // ===== SPELL CHECKER =====
+  // Enable spell checking (requires Code Spell Checker extension)
+  "cSpell.enabled": true,
+  "cSpell.language": "en-GB,en-US",
+  "cSpell.words": [
+    "SBS",
+    "streetwear",
+    "Cloudflare",
+    "Wrangler",
+    "jsDelivr",
+    "unpkg",
+    "Lucide",
+    "navbar",
+    "signup",
+    "signin",
+    "logout",
+    "WhatsApp",
+    "Instagram",
+    "Snapchat",
+    "Linktree",
+    "Emmet",
+    "IntelliSense"
+  ],
+  // ===== HTML/CSS/JAVASCRIPT SPECIFIC =====
+  // HTML autocomplete
+  "html.autoClosingTags": true,
+  "html.suggest.html5": true,
+  "html.completion.attributeDefaultValue": "doublequotes",
+  // CSS autocomplete
+  "css.completion.triggerPropertyValueCompletion": true,
+  "css.completion.completePropertyWithSemicolon": true,
+  "css.validate": true,
+  // JavaScript/TypeScript
+  "javascript.suggest.autoImports": true,
+  "javascript.suggest.completeFunctionCalls": true,
+  "javascript.suggest.names": true,
+  "javascript.updateImportsOnFileMove.enabled": "always",
+  "javascript.inlayHints.parameterNames.enabled": "all",
+  // ===== AUTO-CLOSING & PAIRING =====
+  "editor.autoClosingBrackets": "always",
+  "editor.autoClosingQuotes": "always",
+  "editor.autoClosingComments": "always",
+  "editor.autoSurround": "languageDefined",
+  // ===== EMMET (HTML/CSS shortcuts) =====
+  "emmet.triggerExpansionOnTab": true,
+  "emmet.showExpandedAbbreviation": "always",
+  "emmet.showSuggestionsAsSnippets": true,
+  "emmet.includeLanguages": {
+    "javascript": "javascriptreact",
+    "typescript": "typescriptreact"
+  },
+  // ===== BETTER TYPING EXPERIENCE =====
+  "editor.snippetSuggestions": "top",
+  "editor.parameterHints.enabled": true,
+  "editor.suggestFontSize": 14,
+  "editor.suggestLineHeight": 22,
+  // Auto-save
+  "files.autoSave": "afterDelay",
+  "files.autoSaveDelay": 1000,
+  // Better cursor
+  "editor.cursorBlinking": "smooth",
+  "editor.cursorSmoothCaretAnimation": "on",
+  // ===== FILE ASSOCIATIONS =====
+  "files.associations": {
+    "*.html": "html",
+    "*.css": "css",
+    "*.js": "javascript",
+    "*.json": "jsonc"
+  },
+  // ===== BUILT-IN FORMATTING =====
+  "[html]": {
+    "editor.defaultFormatter": "vscode.html-language-features",
+    "editor.formatOnSave": true
+  },
+  "[css]": {
+    "editor.defaultFormatter": "vscode.css-language-features",
+    "editor.formatOnSave": true
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "vscode.typescript-language-features",
+    "editor.formatOnSave": true
+  },
+  "[json]": {
+    "editor.defaultFormatter": "vscode.json-language-features",
+    "editor.formatOnSave": true
+  },
+  // ===== PATH INTELLISENSE =====
+  "path-intellisense.autoSlashAfterDirectory": true,
+  "path-intellisense.extensionOnImport": true,
+  // ===== BETTER AUTOCOMPLETE FOR THIS PROJECT =====
+  "files.exclude": {
+    "**/node_modules": true,
+    "**/.git": true,
+    "**/dist": true,
+    "**/.wrangler": true
+  },
+  // Search optimization
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/bower_components": true,
+    "**/.wrangler": true,
+    "**/dist": true
+  }
+}

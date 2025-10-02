@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page Not Found - SBS</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #000;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 600px;
+            padding: 2rem;
+        }
+
+        .error-code {
+            font-size: 8rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: #fff;
+        }
+
+        p {
+            font-size: 1.2rem;
+            color: #ccc;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+        }
+
+        .nav-link {
+            color: #FFD700;
+            text-decoration: none;
+            padding: 0.75rem 1.5rem;
+            border: 2px solid #FFD700;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover {
+            background: #FFD700;
+            color: #000;
+            transform: translateY(-2px);
+        }
+
+        .back-link {
+            color: #888;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .back-link:hover {
+            color: #FFD700;
+        }
+
+        @media (max-width: 768px) {
+            .error-code {
+                font-size: 6rem;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .nav-links {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .nav-link {
+                width: 200px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="error-code">404</div>
+        <h1>Page Not Found</h1>
+        <p>The page you're looking for doesn't exist or has been moved. Check out our main sections below.</p>
+
+        <div class="nav-links">
+            <a href="/" class="nav-link">Home</a>
+            <a href="/shop" class="nav-link">Shop</a>
+            <a href="/sell" class="nav-link">Sell</a>
+            <a href="/login" class="nav-link">Login</a>
+        </div>
+
+        <a href="javascript:history.back()" class="back-link">← Go Back</a>
+    </div>
+
+    <script>
+        // Track 404 errors for analytics
+        console.log('📊 404 Error - Page not found:', window.location.href);
+
+        // Optional: Send to analytics service
+        if (typeof gtag !== 'undefined') {
+            gtag('event', 'page_not_found', {
+                page_location: window.location.href,
+                page_title: document.title
+            });
+        }
+    </script>
+</body>
+
+</html>

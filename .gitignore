@@ -1,0 +1,42 @@
+# Dependencies
+node_modules/
+
+# Cloudflare Wrangler caches
+.wrangler/
+functions/.wrangler/
+
+# Environment variables and local configs
+.env
+.env.*
+wrangler.toml.local
+*.local
+
+# Logs and debug output
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# OS-generated files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Backup and archive directories (ready for removal)
+backup-*/
+AUTH-SYSTEM-REVIEW/
+AUTH-SYSTEM-REVIEW.zip
+sbs-backups/
+*MOVE-OUT-THEN-DELETE*/
+*.bak
+*.tmp
+
+# Database migrations (already applied, kept for reference)
+database/migrations/
+
+# Build artifacts
+public/dist/
+dist/
+
+# Generated assets
+public/assets/generated/

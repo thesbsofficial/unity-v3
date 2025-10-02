@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reset Password - SBS</title>
+
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        :root {
+            --primary-black: #000000;
+            --primary-gold: #ffd700;
+            --accent-gold: #FFA500;
+            --dark-gold: #B8860B;
+            --bg-dark: #0a0a0a;
+            --bg-card: #1a1a1a;
+            --text-primary: #ffffff;
+            --text-secondary: #cccccc;
+            --border-subtle: rgba(255, 255, 255, 0.1);
+            --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.3);
+            --shadow-hover: 0 10px 40px rgba(0, 0, 0, 0.5);
+            --success-color: var(--primary-gold);
+            --cta-sell: #e53935;
+            --cta-sell-hover: #d32f2f;
+            --cta-buy: #00c853;
+            --cta-buy-hover: #00b84f;
+            --cta-shadow-sell: 0 10px 25px rgba(229, 57, 53, 0.35);
+            --cta-shadow-buy: 0 10px 25px rgba(0, 200, 83, 0.35);
+            --nav-blur-bg: rgba(0, 0, 0, 0.95);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        body.menu-open {
+            overflow: hidden;
+        }
+
+        .header {
+            background: var(--nav-blur-bg);
+            border-bottom: 2px solid rgba(255, 255, 255, 0.08);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            padding: 1.25rem 0;
+            transition: padding 0.25s ease, border-color 0.25s ease, background 0.25s ease, backdrop-filter 0.25s ease;
+            backdrop-filter: blur(14px);
+        }
+
+        .header.header--shrink {
+            padding: 0.75rem 0;
+            border-bottom-color: rgba(255, 255, 255, 0.18);
+        }
+
+        .nav {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1.5rem;
+            position: relative;
+        }
+
+        .nav-side {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            min-width: 0;
+        }
+
+        .nav-side--left {
+            justify-content: flex-start;
+        }
+
+        .nav-side--right {
+            justify-content: flex-end;
+        }
+
+        .nav-logo {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.25rem;
+            border-radius: 999px;
+            transition: transform 0.2s ease;
+        }
+
+        .nav-logo img {
+            width: clamp(120px, 18vw, 168px);
+            height: auto;
+            display: block;
+            transition: transform 0.25s ease;
+        }
+
+        .header.header--shrink .nav-logo img {
+            transform: scale(0.88);
+        }
+
+        .nav-auth {
+            color: var(--white);
+            font-weight: 600;
+            font-size: 0.95rem;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            transition: color 0.2s ease;
+        }
+
+        .nav-auth:hover,
+        .nav-auth:focus-visible {
+            color: var(--primary-gold);
+        }
+
+        @media (max-width: 768px) {
+            .nav {
+                padding: 0 1rem;
+            }
+
+            .nav-left,
+            .nav-right {
+                gap: 0.75rem;
+            }
+
+            .nav-link {
+                font-size: 0.8rem;
+                padding: 0.25rem 0.5rem;
+            }
+
+            .cart-toggle {
+                font-size: 0.7rem;
+                padding: 0.25rem 0.5rem;
+                white-space: nowrap;
+            }
+
+            .cart-count {
+                width: 16px;
+                height: 16px;
+                font-size: 10px;
+                top: -6px;
+                right: -6px;
+            }
+
+            .logo img {
+                height: 32px;
+            }
+
+            .reset-container {
+                padding: 2rem;
+                margin: 1rem;
+            }
+
+            .reset-header h1 {
+                font-size: 1.5rem;
+            }
+
+            .contact-method {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .nav-link {
+                font-size: 0.7rem;
+                padding: 0.2rem 0.4rem;
+            }
+
+            .cart-toggle {
+                font-size: 0.65rem;
+                padding: 0.2rem 0.4rem;
+            }
+        }
+
+
+
+        .main {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 4rem 2rem;
+        }
+
+        .reset-container {
+            background: var(--bg-card);
+            border: 2px solid var(--primary-gold);
+            border-radius: 12px;
+            padding: 3rem;
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        .reset-header {
+            margin-bottom: 2rem;
+        }
+
+        .reset-header h1 {
+            color: var(--primary-gold);
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .reset-header p {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        .contact-methods {
+            display: grid;
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .contact-method {
+            background: var(--bg-dark);
+            border: 2px solid var(--primary-gold);
+            border-radius: 8px;
+            padding: 2rem;
+            text-decoration: none;
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+
+        .contact-method:hover {
+            background: var(--primary-gold);
+            color: var(--primary-black);
+            transform: translateY(-2px);
+        }
+
+        .contact-method-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .contact-method-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .contact-method-description {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .divider {
+            margin: 2rem 0;
+            position: relative;
+            text-align: center;
+        }
+
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #333;
+        }
+
+        .divider span {
+            background: var(--bg-card);
+            padding: 0 1rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .login-link {
+            color: var(--primary-gold);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .login-link:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .reset-container {
+                padding: 2rem;
+                margin: 1rem;
+            }
+
+            .reset-header h1 {
+                font-size: 1.5rem;
+            }
+
+            .contact-method {
+                padding: 1.5rem;
+            }
+        }
+
+        /* Footer */
+        .footer {
+            background: #0a0a0a;
+            color: var(--white);
+            text-align: center;
+            padding: 2rem 0;
+            border-top: 2px solid var(--primary-gold);
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .social-links {
+            margin-bottom: 1.5rem;
+        }
+
+        .social-links p {
+            color: var(--primary-gold);
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .social-icons {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .social-link {
+            color: var(--white);
+            text-decoration: none;
+            padding: 0.4rem 0.8rem;
+            border: 1px solid var(--primary-gold);
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .social-link:hover {
+            background: var(--primary-gold);
+            color: var(--primary-black);
+            transform: translateY(-2px);
+        }
+    </style>
+    <script src="/scripts/nav-lite.js" defer></script>
+</head>
+
+<body>
+    <header class="header" id="site-header">
+        <nav class="nav container" aria-label="Primary navigation">
+            <div class="nav-side nav-side--left">
+                <a href="/login.html" class="nav-auth" data-auth-link>Sign In</a>
+                <button type="button" class="nav-basket" onclick="openCartFromNav()" aria-label="View basket">
+                    <span class="nav-basket-icon" aria-hidden="true">🧺</span>
+                    <span class="nav-basket-label">Basket</span>
+                    <span class="nav-basket-count" id="nav-cart-count" aria-live="polite">0</span>
+                </button>
+            </div>
+
+            <a href="/" class="nav-logo" aria-label="SBS home">
+                <img src="/SBS (Your Story).png" alt="SBS logo">
+            </a>
+
+            <div class="nav-side nav-side--right">
+                <a href="/sell.html" class="nav-cta nav-cta--sell" id="nav-cta">Sell</a>
+            </div>
+
+            <button class="mobile-menu-toggle" type="button" aria-label="Toggle menu" aria-expanded="false"
+                onclick="toggleMobileMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+            <ul class="nav-links" id="nav-links">
+                <li><a href="/">Home</a></li>
+                <li><a href="/shop.html">Shop</a></li>
+                <li><a href="/sell.html" class="nav-cta nav-cta--sell">Sell</a></li>
+                <li>
+                    <button type="button" class="nav-basket mobile-basket" onclick="openCartFromNav()"
+                        aria-label="View basket">
+                        <span class="nav-basket-icon" aria-hidden="true">🧺</span>
+                        <span>Basket (<span class="nav-basket-count" id="mobile-cart-count"
+                                aria-live="polite">0</span>)</span>
+                    </button>
+                </li>
+                <li><a href="/login.html" data-auth-link>Sign In</a></li>
+            </ul>
+        </nav>
+    </header>
+    <div class="mobile-menu-overlay" id="mobile-menu-overlay" onclick="toggleMobileMenu(false)"></div>
+
+    <main class="main">
+        <div class="reset-container">
+            <div class="reset-header">
+                <h1>Reset Password</h1>
+                <p>Need to reset your password? Contact us directly on your preferred platform and we'll help you get
+                    back into your account.</p>
+            </div>
+
+            <div class="contact-methods">
+                <a href="https://instagram.com/thesbsofficial" target="_blank" class="contact-method">
+                    <div class="contact-method-icon"><i data-lucide="instagram" style="width:32px;height:32px;"></i>
+                    </div>
+                    <div class="contact-method-title">Instagram DM</div>
+                    <div class="contact-method-description">Message @thesbsofficial with your account details</div>
+                </a>
+
+                <a href="https://wa.me/353899662211?text=Hi%20SBS,%20I%20need%20help%20resetting%20my%20password"
+                    target="_blank" class="contact-method">
+                    <div class="contact-method-icon"><i data-lucide="message-circle"
+                            style="width:32px;height:32px;"></i></div>
+                    <div class="contact-method-title">WhatsApp</div>
+                    <div class="contact-method-description">Quick response for password resets</div>
+                </a>
+
+                <div class="contact-method" onclick="showEmailInfo()">
+                    <div class="contact-method-icon"><i data-lucide="mail" style="width:32px;height:32px;"></i></div>
+                    <div class="contact-method-title">Email Support</div>
+                    <div class="contact-method-description">Click to see our support email</div>
+                </div>
+            </div>
+
+            <div class="divider">
+                <span>or</span>
+            </div>
+
+            <p style="color: var(--text-secondary); margin-bottom: 1rem;">
+                Remember your password?
+            </p>
+            <a href="/login.html" class="login-link">Sign In Instead</a>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="social-links">
+                <p>Follow SBS:</p>
+                <div class="social-icons">
+                    <a href="https://instagram.com/thesbsofficial" target="_blank" class="social-link">
+                        <i data-lucide="instagram"
+                            style="width:20px;height:20px;display:inline-block;vertical-align:middle;"></i> Instagram
+                    </a>
+                    <a href="https://www.snapchat.com/@thesbs2.0?invite_id=UuaV3tmv&locale=en_IE&share_id=Pu6z_I9dQw62zoyZSOlMDg&sid=6bfda1cf1d754cc88499d0b2e3dafc4b"
+                        target="_blank" class="social-link">
+                        <i data-lucide="ghost"
+                            style="width:20px;height:20px;display:inline-block;vertical-align:middle;"></i> Snapchat
+                    </a>
+                    <a href="https://linktr.ee/thesbsofficial" target="_blank" class="social-link">
+                        <i data-lucide="link"
+                            style="width:20px;height:20px;display:inline-block;vertical-align:middle;"></i> All Links
+                    </a>
+                </div>
+            </div>
+            <p>&copy; 2025 SBS. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Initialize Lucide Icons -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        });
+    </script>
+
+    <script>
+        function showEmailInfo() {
+            alert('Email us at: support@thesbsofficial.com\n\nInclude your social media handle and we\'ll verify your account and help reset your password.');
+        }
+    </script>
+</body>
+
+</html>

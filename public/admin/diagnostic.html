@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Access Test - SBS</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #000;
+            color: #fff;
+        }
+        
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .test-result {
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+        }
+        
+        .success { background: #1a4a2e; border-left: 4px solid #00ff41; }
+        .error { background: #4a1a1a; border-left: 4px solid #ff6b6b; }
+        .loading { background: #1a3a4a; border-left: 4px solid #4fc3f7; }
+        
+        .retry-btn {
+            background: #FFD700;
+            color: #000;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🔍 SBS File Access Diagnostic</h1>
+        <p>Testing direct access to HTML files to diagnose 308 redirect issues...</p>
+        
+        <div id="test-results"></div>
+        
+        <button onclick="runTests()" style="background: #FFD700; color: #000; border: none; padding: 12px 24px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 20px;">
+            🔄 Re-run Tests
+        </button>
+    </div>
+    
+    <script>
+        const testUrls = [
+            { url: '/', name: 'Root (index.html)' },
+            { url: '/index.html', name: 'Direct index.html' },
+            { url: '/shop.html', name: 'Direct shop.html' },
+            { url: '/login.html', name: 'Direct login.html' },
+            { url: '/sell.html', name: 'Direct sell.html' },
+            { url: '/shop', name: 'Clean shop URL' },
+            { url: '/test-clean.html', name: 'Test clean page' },
+            { url: '/shop-simple.html', name: 'Simple shop page' }
+        ];
+        
+        async function testUrl(urlTest) {
+            const resultDiv = document.createElement('div');
+            resultDiv.className = 'test-result loading';
+            resultDiv.innerHTML = `⏳ Testing: ${urlTest.name} (${urlTest.url})`;
+            document.getElementById('test-results').appendChild(resultDiv);
+            
+            try {
+                const response = await fetch(urlTest.url, { 
+                    method: 'HEAD',
+                    redirect: 'manual' // Don't follow redirects automatically
+                });
+                
+                let status = response.status;
+                let statusText = response.statusText;
+                let icon = '✅';
+                let className = 'success';
+                
+                if (status === 200) {
+                    icon = '✅';
+                    className = 'success';
+                } else if (status === 301 || status === 302 || status === 308) {
+                    icon = '🔄';
+                    className = 'error';
+                    const location = response.headers.get('Location');
+                    statusText += ` → ${location}`;
+                } else if (status === 404) {
+                    icon = '❌';
+                    className = 'error';
+                } else {
+                    icon = '⚠️';
+                    className = 'error';
+                }
+                
+                resultDiv.className = `test-result ${className}`;
+                resultDiv.innerHTML = `${icon} ${urlTest.name}: ${status} ${statusText}`;
+                
+            } catch (error) {
+                resultDiv.className = 'test-result error';
+                resultDiv.innerHTML = `❌ ${urlTest.name}: ${error.message}`;
+            }
+        }
+        
+        async function runTests() {
+            const resultsDiv = document.getElementById('test-results');
+            resultsDiv.innerHTML = '<div class="test-result loading">🚀 Starting diagnostic tests...</div>';
+            
+            for (const urlTest of testUrls) {
+                await testUrl(urlTest);
+                await new Promise(resolve => setTimeout(resolve, 100)); // Small delay
+            }
+            
+            // Summary
+            const summaryDiv = document.createElement('div');
+            summaryDiv.className = 'test-result';
+            summaryDiv.style.marginTop = '20px';
+            summaryDiv.style.background = '#1a1a1a';
+            summaryDiv.innerHTML = `
+                <h3>📊 Test Summary</h3>
+                <p>If you see any 308 redirects above, those are causing the navigation issues.</p>
+                <p>Direct .html file access should return 200 OK status.</p>
+            `;
+            resultsDiv.appendChild(summaryDiv);
+        }
+        
+        // Run tests on page load
+        runTests();
+        
+        console.log('🔍 File access diagnostic loaded');
+    </script>
+</body>
+</html>

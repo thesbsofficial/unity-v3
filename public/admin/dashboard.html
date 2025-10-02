@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Dashboard - SBS Unity</title>
+    <style>
+        :root {
+            --primary-black: #000000;
+            --primary-gold: #FFD700;
+            --accent-gold: #FFA500;
+            --dark-gold: #B8860B;
+            --white: #ffffff;
+            --text-dark: var(--white);
+            --text-muted: #ccc;
+            --border-light: var(--primary-gold);
+            --border-lighter: var(--dark-gold);
+            --bg-light: var(--primary-black);
+            --bg-white: #1a1a1a;
+            --shadow-light: 0 2px 10px rgba(255, 215, 0, 0.2);
+            --success-color: var(--primary-gold);
+            --accent-gradient: linear-gradient(45deg, var(--primary-gold), var(--accent-gold));
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-light);
+            color: var(--text-dark);
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            background: var(--bg-white);
+            border-bottom: 2px solid var(--primary-gold);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: var(--primary-gold);
+            text-decoration: none;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .welcome-text {
+            color: var(--primary-gold);
+            font-weight: 600;
+        }
+
+        .logout-btn {
+            background: transparent;
+            border: 2px solid var(--primary-gold);
+            color: var(--primary-gold);
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: var(--primary-gold);
+            color: var(--primary-black);
+        }
+
+        /* Dashboard Container */
+        .dashboard {
+            max-width: 1200px;
+            margin: 3rem auto;
+            padding: 0 2rem;
+        }
+
+        .admin-menu-container {
+            background: var(--bg-white);
+            border: 2px solid var(--primary-gold);
+            border-radius: 12px;
+            padding: 1.5rem 2rem;
+            margin-bottom: 2.5rem;
+            display: none;
+        }
+
+        .admin-menu-container h2 {
+            color: var(--primary-gold);
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .admin-menu-container ul {
+            list-style: none;
+            padding-left: 0;
+            margin: 0;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .admin-menu-container a,
+        .admin-menu-container button {
+            background: var(--accent-gradient);
+            color: var(--primary-black);
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            border: none;
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .admin-menu-container button:hover,
+        .admin-menu-container a:hover {
+            transform: translateY(-2px);
+        }
+
+        .admin-diagnostics {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255, 215, 0, 0.4);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2.5rem;
+            display: none;
+        }
+
+        .admin-diagnostics h3 {
+            margin-bottom: 1rem;
+            color: var(--primary-gold);
+        }
+
+        .admin-diagnostics pre {
+            margin: 0;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 1rem;
+            border-radius: 8px;
+            color: var(--white);
+            overflow-x: auto;
+        }
+
+        .dashboard-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .dashboard-header h1 {
+            color: var(--primary-gold);
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .dashboard-header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        /* Dashboard Cards */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .dashboard-card {
+            background: var(--bg-white);
+            border: 2px solid var(--primary-gold);
+            border-radius: 12px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.2);
+        }
+
+        .card-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .card-title {
+            color: var(--primary-gold);
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .card-description {
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .card-button {
+            background: var(--accent-gradient);
+            color: var(--primary-black);
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .card-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4);
+        }
+
+        .social-buttons {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+        }
+
+        .mini-social-btn {
+            background: transparent;
+            border: 1px solid var(--primary-gold);
+            color: var(--primary-gold);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .mini-social-btn:hover {
+            background: var(--primary-gold);
+            color: var(--primary-black);
+            transform: translateY(-1px);
+        }
+
+        /* Recent Activity */
+        .recent-activity {
+            background: var(--bg-white);
+            border: 2px solid var(--primary-gold);
+            border-radius: 12px;
+            padding: 2rem;
+        }
+
+        .activity-header {
+            color: var(--primary-gold);
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid #333;
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-icon {
+            font-size: 1.5rem;
+            margin-right: 1rem;
+            color: var(--primary-gold);
+        }
+
+        .activity-text {
+            color: var(--text-muted);
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .nav {
+                padding: 0 1rem;
+            }
+
+            .dashboard {
+                padding: 0 1rem;
+                margin: 2rem auto;
+            }
+
+            .dashboard-header h1 {
+                font-size: 2rem;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .dashboard-card {
+                padding: 1.5rem;
+            }
+
+            .user-info {
+                flex-direction: column;
+                gap: 0.5rem;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header class="header">
+        <nav class="nav">
+            <a href="/" class="logo">SBS Unity</a>
+            <div class="user-info">
+                <span class="welcome-text">Welcome, <span id="user-name">Customer</span>!</span>
+                <button class="logout-btn" onclick="logout()">Sign Out</button>
+            </div>
+        </nav>
+    </header>
+
+    <main class="dashboard">
+        <div class="dashboard-header">
+            <h1>Your Dashboard</h1>
+            <p>Manage your account and explore Dublin's streetwear scene</p>
+        </div>
+
+
+        <div id="adminMenuContainer" class="admin-menu-container"></div>
+        <div id="adminDiagnostics" class="admin-diagnostics">
+            <h3>Admin Diagnostics</h3>
+            <pre id="adminDiagnosticsOutput">Run diagnostics to view system checks.</pre>
+        </div>
+        <div class="dashboard-grid">
+            <div class="dashboard-card">
+                <div class="card-icon">🛍️</div>
+                <h3 class="card-title">Shop Latest</h3>
+                <p class="card-description">Browse our curated collection of streetwear and authentic pieces from Dublin
+                </p>
+                <a href="/" class="card-button">Browse Collection</a>
+            </div>
+
+            <div class="dashboard-card">
+                <div class="card-icon">💸</div>
+                <h3 class="card-title">Sell Items</h3>
+                <p class="card-description">Turn your unwanted streetwear into cash with our instant offer system</p>
+                <a href="/sell.html" class="card-button">Get Instant Offer</a>
+            </div>
+
+            <div class="dashboard-card">
+                <div class="card-icon">📱</div>
+                <h3 class="card-title">Follow SBS Unity</h3>
+                <p class="card-description">Stay updated with the latest drops and streetwear culture on our socials</p>
+                <div class="social-buttons">
+                    <a href="https://instagram.com/thesbsofficial" target="_blank" class="mini-social-btn">📷
+                        Instagram</a>
+                    <a href="https://www.snapchat.com/@thesbs2.0?invite_id=UuaV3tmv&locale=en_IE&share_id=Pu6z_I9dQw62zoyZSOlMDg&sid=6bfda1cf1d754cc88499d0b2e3dafc4b"
+                        target="_blank" class="mini-social-btn">👻 Snapchat</a>
+                    <a href="https://linktr.ee/thesbsofficial" target="_blank" class="mini-social-btn">🔗 All Links</a>
+                </div>
+            </div>
+
+            <div class="dashboard-card">
+                <div class="card-icon">⚡</div>
+                <h3 class="card-title">Quick Contact</h3>
+                <p class="card-description">Need help? Get instant responses on WhatsApp or Instagram DMs</p>
+                <a href="https://wa.me/353899662211" target="_blank" class="card-button">WhatsApp Us</a>
+            </div>
+        </div>
+
+        <div class="recent-activity">
+            <h3 class="activity-header">Recent Activity</h3>
+            <div class="activity-item">
+                <div class="activity-icon">🎉</div>
+                <div class="activity-text">Welcome to SBS Unity! Explore our collection to get started.</div>
+            </div>
+            <div class="activity-item">
+                <div class="activity-icon">🔥</div>
+                <div class="activity-text">Check out our latest streetwear drops from Dublin's top brands.</div>
+            </div>
+            <div class="activity-item">
+                <div class="activity-icon">💎</div>
+                <div class="activity-text">Earn cash by selling your unwanted items through our platform.</div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const userNameEl = document.getElementById('user-name');
+        const adminMenuContainer = document.getElementById('adminMenuContainer');
+        const diagnosticsWrapper = document.getElementById('adminDiagnostics');
+        const diagnosticsOutput = document.getElementById('adminDiagnosticsOutput');
+
+        async function loadCurrentUser() {
+            try {
+                const response = await fetch('/api/users/me', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    redirectToLogin();
+                    return;
+                }
+
+                const data = await response.json();
+                if (!data.success || !data.user) {
+                    redirectToLogin();
+                    return;
+                }
+
+                if (data.csrf_token) {
+                    sessionStorage.setItem('sbs_csrf_token', data.csrf_token);
+                }
+                sessionStorage.setItem('sbs_user', JSON.stringify(data.user));
+
+                const handle = data.user.social_handle || data.user.first_name || 'Customer';
+                userNameEl.textContent = handle.startsWith('@') ? handle : `@${handle}`;
+
+                if (data.is_admin) {
+                    await loadAdminMenu();
+                }
+            } catch (error) {
+                console.error('Failed to load user profile', error);
+                redirectToLogin();
+            }
+        }
+
+        function redirectToLogin() {
+            const redirect = encodeURIComponent(window.location.pathname);
+            window.location.href = `/login.html?redirect=${redirect}`;
+        }
+
+        async function loadAdminMenu() {
+            try {
+                const response = await fetch('/api/admin/menu', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+
+                if (!response.ok) return;
+                const html = await response.text();
+                if (!html) return;
+
+                adminMenuContainer.innerHTML = html;
+                adminMenuContainer.style.display = 'block';
+
+                const diagnosticsButton = document.getElementById('runBoard07');
+                if (diagnosticsButton) {
+                    diagnosticsButton.addEventListener('click', runDiagnostics);
+                }
+            } catch (error) {
+                console.error('Failed to load admin menu', error);
+            }
+        }
+
+        async function runDiagnostics() {
+            diagnosticsWrapper.style.display = 'block';
+            diagnosticsOutput.textContent = 'Running diagnostics...';
+
+            try {
+                const response = await fetch('/api/admin/tests/board07', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    diagnosticsOutput.textContent = JSON.stringify(data.checks, null, 2);
+                } else {
+                    diagnosticsOutput.textContent = data.error || 'Diagnostics failed.';
+                }
+            } catch (error) {
+                console.error('Diagnostics error', error);
+                diagnosticsOutput.textContent = 'Diagnostics failed. Please try again later.';
+            }
+        }
+
+        async function logout() {
+            try {
+                await fetch('/api/users/logout', {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+            } catch (error) {
+                console.warn('Logout request failed', error);
+            } finally {
+                sessionStorage.removeItem('sbs_csrf_token');
+                sessionStorage.removeItem('sbs_user');
+                window.location.href = '/';
+            }
+        }
+
+        loadCurrentUser();
+    </script>
+</body>
+
+</html>

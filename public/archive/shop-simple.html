@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SBS Shop - Simple Version</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #000;
+            color: #fff;
+            min-height: 100vh;
+        }
+        
+        .header {
+            background: #1a1a1a;
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .nav-logo {
+            color: #FFD700;
+            text-decoration: none;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+        
+        .nav-links a {
+            color: #fff;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            transition: background 0.3s;
+        }
+        
+        .nav-links a:hover {
+            background: #FFD700;
+            color: #000;
+        }
+        
+        .main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+        
+        .hero {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .products {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        
+        .product-card {
+            background: #1a1a1a;
+            border-radius: 8px;
+            padding: 1rem;
+            border: 2px solid #333;
+            transition: all 0.3s;
+        }
+        
+        .product-card:hover {
+            border-color: #FFD700;
+            transform: translateY(-4px);
+        }
+        
+        .product-image {
+            width: 100%;
+            height: 200px;
+            background: #333;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+        }
+        
+        .pill {
+            display: inline-block;
+            background: #FFD700;
+            color: #000;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin: 0.25rem 0.25rem 0.25rem 0;
+        }
+        
+        .basket-button {
+            width: 100%;
+            background: #FFD700;
+            color: #000;
+            border: none;
+            padding: 0.75rem;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 1rem;
+            transition: background 0.3s;
+        }
+        
+        .basket-button:hover {
+            background: #FFA500;
+        }
+        
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            
+            .hero h1 {
+                font-size: 2rem;
+            }
+            
+            .products {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <nav class="nav">
+            <a href="/" class="nav-logo">SBS UNITY</a>
+            <ul class="nav-links">
+                <li><a href="/">Home</a></li>
+                <li><a href="/shop.html">Shop</a></li>
+                <li><a href="/sell.html">Sell</a></li>
+                <li><a href="/login.html">Login</a></li>
+            </ul>
+        </nav>
+    </header>
+    
+    <main class="main">
+        <div class="hero">
+            <h1>Dublin Streetwear</h1>
+            <p>Premium streetwear from the heart of Dublin</p>
+        </div>
+        
+        <div class="products" id="products-grid">
+            <!-- Sample products -->
+            <div class="product-card">
+                <div class="product-image">📸 Product Image</div>
+                <div>
+                    <span class="pill">Size M</span>
+                    <span class="pill">Brand New</span>
+                </div>
+                <button class="basket-button">Add to Basket</button>
+            </div>
+            
+            <div class="product-card">
+                <div class="product-image">📸 Product Image</div>
+                <div>
+                    <span class="pill">Size L</span>
+                    <span class="pill">Pre-owned</span>
+                </div>
+                <button class="basket-button">Add to Basket</button>
+            </div>
+            
+            <div class="product-card">
+                <div class="product-image">📸 Product Image</div>
+                <div>
+                    <span class="pill">Size XL</span>
+                    <span class="pill">Brand New</span>
+                </div>
+                <button class="basket-button">Add to Basket</button>
+            </div>
+        </div>
+    </main>
+    
+    <script>
+        console.log('✅ Simple shop page loaded successfully');
+        
+        // Test navigation
+        document.addEventListener('click', (e) => {
+            if (e.target.tagName === 'A' && e.target.href) {
+                console.log('🖱️ Navigating to:', e.target.href);
+                
+                // Visual feedback
+                e.target.style.background = '#00ff41';
+                setTimeout(() => {
+                    e.target.style.background = '';
+                }, 200);
+            }
+            
+            if (e.target.classList.contains('basket-button')) {
+                e.preventDefault();
+                e.target.textContent = '✅ Added!';
+                setTimeout(() => {
+                    e.target.textContent = 'Add to Basket';
+                }, 1500);
+            }
+        });
+        
+        // Test mobile responsiveness
+        function checkViewport() {
+            console.log('📱 Viewport:', window.innerWidth + 'x' + window.innerHeight);
+        }
+        
+        window.addEventListener('resize', checkViewport);
+        checkViewport();
+    </script>
+</body>
+</html>
