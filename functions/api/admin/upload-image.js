@@ -1,0 +1,190 @@
+/**
+ * POST /api/admin/upload-image
+ * 
+ * Uploads image to Cloudflare Images with smart metadata extraction
+ * Automatically parses filename and stores: name, category, size, price, status
+ * Admin-only endpoint
+ */
+
+export async function onRequestPost({ request, env }) {
+    // Check authentication
+    const cookie = request.headers.get('Cookie') || '';
+    const sessionId = cookie.split('session_id=')[1]?.split(';')[0];
+    
+    if (!sessionId) {
+        return new Response(JSON.stringify({ 
+            success: false, 
+            error: 'Not authenticated' 
+        }), {
+            status: 401,
+            headers: { 'Content-Type': 'application/json' }
+        });
+    }
+
+    try {
+        // Verify admin user
+        const userResult = await env.DB.prepare(
+            'SELECT u.*, s.user_id FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.session_id = ? AND s.expires_at > ?'
+        ).bind(sessionId, Date.now()).first();
+
+        if (!userResult || !userResult.is_admin) {
+            return new Response(JSON.stringify({ 
+                success: false, 
+                error: 'Admin access required' 
+            }), {
+                status: 403,
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
+
+        // Parse form data
+        const formData = await request.formData();
+        const file = formData.get('file');
+        const filename = formData.get('filename');
+        const metadataJson = formData.get('metadata');
+
+        if (!file) {
+            return new Response(JSON.stringify({ 
+                success: false, 
+                error: 'No file provided' 
+            }), {
+                status: 400,
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
+
+        // Parse metadata
+        let uploadMetadata = {};
+        if (metadataJson) {
+            try {
+                uploadMetadata = JSON.parse(metadataJson);
+            } catch (e) {
+                console.warn('Failed to parse metadata:', e);
+            }
+        }
+
+        // Get Cloudflare credentials
+        const accountId = env.CLOUDFLARE_ACCOUNT_ID;
+        const apiToken = env.CLOUDFLARE_IMAGES_API_TOKEN || env.CLOUDFLARE_API_TOKEN;
+
+        if (!accountId || !apiToken) {
+            return new Response(JSON.stringify({ 
+                success: false, 
+                error: 'Missing Cloudflare credentials' 
+            }), {
+                status: 500,
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
+
+        // 🎯 SMART METADATA EXTRACTION FROM FILENAME
+        // Parse filename like: "CAT-BN-SHOES-SIZE-UK105-DATE-20251003-BATCH-B10030403-ITEM-001.jpeg"
+        const cleanFilename = filename || file.name || 'untitled';
+        
+        // Extract product name from filename
+        let productName = cleanFilename
+            .replace(/\.(jpg|jpeg|png|webp|gif)$/i, '') // Remove extension
+            .replace(/DESC-([^-]+)-CAT/i, '$1') // Extract description if present
+            .replace(/CAT-[^-]+-SIZE-[^-]+-/gi, '') // Remove category and size markers
+            .replace(/DATE-\d+-/gi, '') // Remove date
+            .replace(/TIME-\d+-/gi, '') // Remove time
+            .replace(/BATCH-[^-]+-/gi, '') // Remove batch
+            .replace(/ITEM-\d+/gi, '') // Remove item number
+            .replace(/[-_]/g, ' ') // Convert separators to spaces
+            .trim();
+        
+        // If name is empty or too short, generate from category
+        if (!productName || productName.length < 3) {
+            const category = uploadMetadata.category || 'Unknown';
+            const size = uploadMetadata.size || '';
+            productName = `${category.replace('-', ' ')} ${size}`.trim();
+        }
+
+        // Capitalize first letter of each word
+        productName = productName
+            .split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+            .join(' ');
+
+        // 🏷️ BUILD CLOUDFLARE IMAGES METADATA
+        const cfMetadata = {
+            // Product Info
+            name: uploadMetadata.description || productName, // Use description as name if provided
+            category: uploadMetadata.category || '', // BN-CLOTHES, BN-SHOES, etc.
+            size: uploadMetadata.size || '',
+            
+            // Pricing (default to 0 - admin must set)
+            price: '0', // Store as string for CF Images
+            
+            // Inventory
+            status: 'active', // New uploads are active by default
+            stock: '1',
+            
+            // Additional Info
+            description: productName, // Fallback description
+            batch: uploadMetadata.batch || '',
+            item: uploadMetadata.item || '',
+            originalName: uploadMetadata.originalName || file.name,
+            uploadedBy: userResult.email,
+            uploadedAt: new Date().toISOString()
+        };
+
+        // Upload to Cloudflare Images
+        const uploadFormData = new FormData();
+        uploadFormData.append('file', file);
+        
+        // Add metadata as individual fields
+        Object.entries(cfMetadata).forEach(([key, value]) => {
+            if (value) {
+                uploadFormData.append(`metadata[${key}]`, String(value));
+            }
+        });
+
+        const uploadUrl = `https://api.cloudflare.com/client/v4/accounts/${accountId}/images/v1`;
+        
+        const uploadResponse = await fetch(uploadUrl, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${apiToken}`
+            },
+            body: uploadFormData
+        });
+
+        const uploadResult = await uploadResponse.json();
+
+        if (!uploadResponse.ok || !uploadResult.success) {
+            console.error('CF Images upload failed:', uploadResult);
+            return new Response(JSON.stringify({ 
+                success: false, 
+                error: uploadResult.errors?.[0]?.message || 'Failed to upload image to Cloudflare' 
+            }), {
+                status: uploadResponse.status,
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
+
+        const imageId = uploadResult.result.id;
+
+        return new Response(JSON.stringify({
+            success: true,
+            message: 'Image uploaded successfully with metadata',
+            uploadedId: imageId,
+            filename: cleanFilename,
+            metadata: cfMetadata,
+            productName: cfMetadata.name
+        }), {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' }
+        });
+
+    } catch (error) {
+        console.error('Upload error:', error);
+        return new Response(JSON.stringify({
+            success: false,
+            error: error.message || 'Internal server error'
+        }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json' }
+        });
+    }
+}
