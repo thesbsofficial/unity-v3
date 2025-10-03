@@ -14,6 +14,9 @@
 
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Analytics Tracker -->
+    <script src="/js/analytics-tracker.js"></script>
 
     <style>
         * {
@@ -1623,10 +1626,15 @@
         // =================================================================================
         import { SIZES } from '/js/taxonomy.js';
 
+        // Initialize analytics
+        const analytics = new SBSAnalytics();
+
         // =================================================================================
         // INITIALIZATION & CORE UI
         // =================================================================================
         document.addEventListener('DOMContentLoaded', () => {
+            analytics.trackPageView();
+            
             // Initialize Lucide icons
             if (typeof lucide !== 'undefined') {
                 lucide.createIcons();

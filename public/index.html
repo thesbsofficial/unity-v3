@@ -9,6 +9,9 @@
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
 
+  <!-- Analytics Tracker -->
+  <script src="/js/analytics-tracker.js"></script>
+
   <style>
     /* CSS RESET & VARIABLES */
     * {
@@ -1159,8 +1162,12 @@
       }
     }
 
+    // Initialize analytics
+    const analytics = new SBSAnalytics();
+
     // Initialize on page load
     document.addEventListener('DOMContentLoaded', () => {
+      analytics.trackPageView();
       updateBasketCount();
 
       // Close menu with escape key

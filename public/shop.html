@@ -21,6 +21,9 @@
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
 
+    <!-- Analytics Tracker -->
+    <script src="/js/analytics-tracker.js"></script>
+
     <style>
         /* CSS RESET & VARIABLES */
         * {
@@ -1126,8 +1129,14 @@
         // SESSION ID FOR TRACKING
         const sessionId = `SBS_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
+        // INITIALIZE ANALYTICS
+        const analytics = new SBSAnalytics();
+
         // INITIALIZE APP
         document.addEventListener('DOMContentLoaded', () => {
+            // Track page view
+            analytics.trackPageView();
+            
             loadProducts();
             updateCartCount();
             renderCart();
@@ -1376,6 +1385,20 @@
             updateCartCount();
             renderCart();
             showToast('Added to basket!');
+
+            // Track add to cart event
+            const product = allProducts.find(p => p.id === productId);
+            if (product) {
+                analytics.trackAddToCart({
+                    product_id: productId,
+                    product_name: product.name,
+                    category: category,
+                    brand: product.brand,
+                    size: size,
+                    price: product.price,
+                    quantity: 1
+                });
+            }
         }
 
         function removeFromCart(index) {
