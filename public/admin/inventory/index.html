@@ -574,6 +574,7 @@
         let selectedImages = new Set();
         const CF_ACCOUNT_HASH = '7B8CAeDtA5h1f1Dyh_X-hg';
         let selectedFilenameFormat = 'auto-timestamp';
+        let selectedFiles = null; // Store selected files temporarily
 
         // ============================================================
         // SMART FILENAME GENERATOR (From Media Hub)
@@ -899,6 +900,9 @@
             
             modal.classList.add('active');
             
+            // Reset selected files
+            selectedFiles = null;
+            
             // Reset form fields
             const fileInput = document.getElementById('fileInput');
             if (fileInput) fileInput.value = '';
@@ -1088,15 +1092,11 @@
                 
                 if (!fileInput) return;
                 
-                // Store files but DON'T upload yet - wait for processUpload button
-                const dt = new DataTransfer();
-                for (let file of e.dataTransfer.files) {
-                    dt.items.add(file);
-                }
-                fileInput.files = dt.files;
+                // STORE FILES GLOBALLY so they persist after innerHTML changes
+                selectedFiles = Array.from(e.dataTransfer.files);
                 
                 // Show how many files were dropped
-                const fileCount = dt.files.length;
+                const fileCount = selectedFiles.length;
                 if (zone) {
                     zone.innerHTML = `
                         <div style="font-size: 48px; margin-bottom: 16px;">✅</div>
@@ -1110,8 +1110,11 @@
             };
 
             fileInput.onchange = (e) => {
+                // STORE FILES GLOBALLY so they persist after innerHTML changes
+                selectedFiles = Array.from(e.target.files);
+                
                 // Show how many files were selected
-                const fileCount = e.target.files.length;
+                const fileCount = selectedFiles.length;
                 if (fileCount > 0 && zone) {
                     zone.innerHTML = `
                         <div style="font-size: 48px; margin-bottom: 16px;">✅</div>
@@ -1129,9 +1132,10 @@
             const category = document.getElementById('uploadCategory')?.value;
             const size = document.getElementById('uploadSize')?.value;
             const description = document.getElementById('uploadDescription')?.value || '';
-            const fileInput = document.getElementById('fileInput');
-            const files = fileInput.files;
             const uploadBtn = document.getElementById('startUploadBtn');
+
+            // Use globally stored files instead of file input (which gets replaced)
+            const files = selectedFiles;
 
             // Validate files selected
             if (!files || files.length === 0) {
@@ -1295,11 +1299,20 @@
             bar.style.width = '0%';
             bar.textContent = '';
             
-            // Clear form
-            document.getElementById('fileInput').value = '';
-            document.getElementById('uploadCategory').value = '';
-            document.getElementById('uploadSize').value = '';
-            document.getElementById('uploadDescription').value = '';
+            // Clear form and selected files
+            selectedFiles = null;
+            const fileInput = document.getElementById('fileInput');
+            if (fileInput) fileInput.value = '';
+            
+            const uploadCategory = document.getElementById('uploadCategory');
+            if (uploadCategory) uploadCategory.value = '';
+            
+            const uploadSize = document.getElementById('uploadSize');
+            if (uploadSize) uploadSize.value = '';
+            
+            const uploadDescription = document.getElementById('uploadDescription');
+            if (uploadDescription) uploadDescription.value = '';
+            
             updateUploadFilenamePreview();
             
             await refreshImages();
