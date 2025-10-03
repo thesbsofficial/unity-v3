@@ -449,20 +449,19 @@
 
                     <div class="form-group">
                         <label>Delivery Address <span class="required">*</span></label>
-                        <input type="text" name="address" required placeholder="123 Main Street">
+                        <div style="position: relative;">
+                            <input type="text" name="address" id="address-input" required placeholder="Start typing your address or Eircode..." autocomplete="off">
+                            <div id="address-suggestions" style="position: absolute; top: 100%; left: 0; right: 0; background: var(--bg-dark); border: 2px solid var(--primary-gold); border-radius: 8px; max-height: 300px; overflow-y: auto; z-index: 1000; display: none;"></div>
+                        </div>
+                        <div style="font-size: 12px; color: var(--text-muted); margin-top: 5px;">
+                            💡 Type your address or Eircode for suggestions
+                        </div>
                     </div>
 
                     <div class="form-row">
                         <div class="form-group">
                             <label>Eircode <span class="required">*</span></label>
-                            <div style="position: relative;">
-                                <input type="text" name="eircode" id="eircode-input" required placeholder="D02 XY45" style="text-transform: uppercase;">
-                                <button type="button" id="lookup-btn" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: var(--primary-gold); color: var(--primary-black); border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer;">
-                                    <i data-lucide="search" style="width: 14px; height: 14px;"></i>
-                                    LOOKUP
-                                </button>
-                            </div>
-                            <div id="eircode-status" style="font-size: 12px; margin-top: 5px;"></div>
+                            <input type="text" name="eircode" id="eircode-input" required placeholder="D02 XY45" style="text-transform: uppercase;">
                         </div>
                         <div class="form-group">
                             <label>City <span class="required">*</span></label>
@@ -657,6 +656,109 @@
                 // Scroll to top
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }, 1500);
+        });
+
+        // ============================================
+        // OPENCAGE ADDRESS AUTOCOMPLETE
+        // ============================================
+        const OPENCAGE_API_KEY = '837470acedca44beb5f7fa55a393d3b3';
+        let searchTimeout;
+        let addressCache = {};
+
+        const addressInput = document.getElementById('address-input');
+        const suggestionsDiv = document.getElementById('address-suggestions');
+        const eircodeInput = document.getElementById('eircode-input');
+        const cityInput = document.getElementById('city-input');
+
+        // Address autocomplete
+        addressInput.addEventListener('input', function(e) {
+            clearTimeout(searchTimeout);
+            const query = e.target.value.trim();
+
+            if (query.length < 3) {
+                suggestionsDiv.style.display = 'none';
+                return;
+            }
+
+            suggestionsDiv.innerHTML = '<div style="padding: 10px; color: var(--primary-gold); text-align: center;"><i data-lucide="loader" class="animate-spin" style="width: 16px; height: 16px; display: inline-block;"></i> Searching...</div>';
+            suggestionsDiv.style.display = 'block';
+            lucide.createIcons();
+
+            // Debounce search
+            searchTimeout = setTimeout(() => searchAddress(query), 800);
+        });
+
+        async function searchAddress(query) {
+            // Check cache first
+            if (addressCache[query]) {
+                displaySuggestions(addressCache[query]);
+                return;
+            }
+
+            try {
+                const url = `https://api.opencagedata.com/geocode/v1/json?q=${encodeURIComponent(query + ' Ireland')}&key=${OPENCAGE_API_KEY}&limit=5&countrycode=ie&no_annotations=1`;
+                
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (data.results && data.results.length > 0) {
+                    addressCache[query] = data.results;
+                    displaySuggestions(data.results);
+                } else {
+                    suggestionsDiv.innerHTML = '<div style="padding: 10px; color: var(--text-muted); text-align: center;">No addresses found. Try another search.</div>';
+                }
+            } catch (error) {
+                console.error('Address search error:', error);
+                suggestionsDiv.innerHTML = '<div style="padding: 10px; color: #ff4444; text-align: center;">❌ Search failed. Please try again.</div>';
+            }
+        }
+
+        function displaySuggestions(results) {
+            suggestionsDiv.innerHTML = results.map((result, index) => {
+                const addr = result.components;
+                const formatted = result.formatted;
+                
+                return `
+                    <div onclick="selectAddress(${index})" style="padding: 12px; border-bottom: 1px solid var(--border-subtle); cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='var(--bg-card)'" onmouseout="this.style.background='transparent'">
+                        <div style="color: var(--text-primary); font-weight: 500;">${formatted}</div>
+                        ${addr.postcode ? `<div style="color: var(--primary-gold); font-size: 12px; margin-top: 4px;">Eircode: ${addr.postcode}</div>` : ''}
+                    </div>
+                `;
+            }).join('');
+
+            // Store results for selection
+            window.currentResults = results;
+        }
+
+        function selectAddress(index) {
+            if (!window.currentResults || !window.currentResults[index]) return;
+
+            const result = window.currentResults[index];
+            const addr = result.components;
+
+            // Fill in the form
+            const road = addr.road || addr.street || '';
+            const house = addr.house_number || '';
+            const addressLine = `${house} ${road}`.trim();
+            
+            addressInput.value = addressLine || result.formatted;
+            eircodeInput.value = addr.postcode || '';
+            cityInput.value = addr.city || addr.town || addr.village || addr.county || '';
+
+            // Hide suggestions
+            suggestionsDiv.style.display = 'none';
+
+            // Focus on next field
+            if (!addr.postcode) {
+                eircodeInput.focus();
+            }
+        }
+
+        // Close suggestions when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!addressInput.contains(e.target) && !suggestionsDiv.contains(e.target)) {
+                suggestionsDiv.style.display = 'none';
+            }
         });
 
         // Load items on page load
