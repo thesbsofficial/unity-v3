@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics Test Data Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="/js/analytics-tracker.js"></script>
+</head>
+<body class="bg-gray-900 text-white min-h-screen p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-4xl font-bold mb-2">🧪 Analytics Test Data Generator</h1>
+        <p class="text-gray-400 mb-8">Generate random analytics events to test your dashboard</p>
+
+        <!-- Status -->
+        <div id="status" class="bg-blue-900 border border-blue-500 rounded-lg p-4 mb-6">
+            <p class="font-semibold">Ready to generate test data</p>
+        </div>
+
+        <!-- Controls -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+            <button onclick="generatePageViews()" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-6 rounded-lg transition">
+                📊 Generate 10 Page Views
+            </button>
+            <button onclick="generateProductViews()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-6 rounded-lg transition">
+                👁️ Generate 5 Product Views
+            </button>
+            <button onclick="generateCartAdds()" class="bg-pink-600 hover:bg-pink-700 text-white font-bold py-4 px-6 rounded-lg transition">
+                🛒 Generate 3 Cart Additions
+            </button>
+            <button onclick="generatePurchases()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-6 rounded-lg transition">
+                💰 Generate 2 Purchases
+            </button>
+            <button onclick="generateSearches()" class="bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-4 px-6 rounded-lg transition">
+                🔍 Generate 4 Searches
+            </button>
+            <button onclick="generateFullSession()" class="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-4 px-6 rounded-lg transition">
+                🎯 Generate Full Customer Journey
+            </button>
+        </div>
+
+        <!-- Event Log -->
+        <div class="bg-gray-800 rounded-lg p-6">
+            <h2 class="text-2xl font-bold mb-4">Event Log</h2>
+            <div id="eventLog" class="space-y-2 max-h-96 overflow-y-auto font-mono text-sm">
+                <p class="text-gray-500">No events generated yet...</p>
+            </div>
+        </div>
+
+        <!-- Quick Links -->
+        <div class="mt-8 p-6 bg-gray-800 rounded-lg">
+            <h3 class="text-xl font-bold mb-4">Quick Links</h3>
+            <div class="space-y-2">
+                <a href="/admin/analytics/" class="text-blue-400 hover:text-blue-300 block">→ View Analytics Dashboard</a>
+                <a href="/shop.html" class="text-blue-400 hover:text-blue-300 block">→ Go to Shop</a>
+                <a href="/" class="text-blue-400 hover:text-blue-300 block">→ Go to Home</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize analytics
+        const analytics = new SBSAnalytics();
+
+        // Sample data
+        const products = [
+            { id: 'TSHIRT-M-NIKE-001', name: 'Nike Air T-Shirt', category: 'T-SHIRTS', brand: 'Nike', price: 45, size: 'M' },
+            { id: 'HOODIE-L-ADIDAS-002', name: 'Adidas Essentials Hoodie', category: 'HOODIES', brand: 'Adidas', price: 89, size: 'L' },
+            { id: 'JEANS-32-LEVIS-003', name: 'Levis 501 Original', category: 'JEANS', brand: 'Levis', price: 120, size: '32' },
+            { id: 'SNEAKERS-10-JORDAN-004', name: 'Air Jordan 1 High', category: 'SNEAKERS', brand: 'Jordan', price: 180, size: '10' },
+            { id: 'JACKET-M-NORTH-005', name: 'North Face Nuptse', category: 'JACKETS', brand: 'The North Face', price: 299, size: 'M' },
+            { id: 'TSHIRT-L-SUPREME-006', name: 'Supreme Box Logo Tee', category: 'T-SHIRTS', brand: 'Supreme', price: 65, size: 'L' },
+            { id: 'HOODIE-XL-PALACE-007', name: 'Palace Tri-Ferg Hoodie', category: 'HOODIES', brand: 'Palace', price: 95, size: 'XL' },
+            { id: 'JEANS-34-CARHARTT-008', name: 'Carhartt Double Knee', category: 'JEANS', brand: 'Carhartt', price: 85, size: '34' }
+        ];
+
+        const searchTerms = ['nike hoodie', 'jordan 1', 'supreme tee', 'black jeans', 'vintage jacket'];
+
+        function log(message, type = 'info') {
+            const eventLog = document.getElementById('eventLog');
+            if (eventLog.querySelector('.text-gray-500')) {
+                eventLog.innerHTML = '';
+            }
+            
+            const colors = {
+                info: 'text-blue-400',
+                success: 'text-green-400',
+                error: 'text-red-400'
+            };
+
+            const entry = document.createElement('div');
+            entry.className = colors[type];
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            eventLog.insertBefore(entry, eventLog.firstChild);
+        }
+
+        function updateStatus(message) {
+            document.getElementById('status').innerHTML = `<p class="font-semibold">${message}</p>`;
+        }
+
+        function randomProduct() {
+            return products[Math.floor(Math.random() * products.length)];
+        }
+
+        function randomSearch() {
+            return searchTerms[Math.floor(Math.random() * searchTerms.length)];
+        }
+
+        async function generatePageViews() {
+            updateStatus('Generating page views...');
+            const pages = ['/shop.html', '/index.html', '/sell.html'];
+            
+            for (let i = 0; i < 10; i++) {
+                const page = pages[Math.floor(Math.random() * pages.length)];
+                analytics.track('page_view', { page });
+                log(`Page view: ${page}`, 'success');
+                await new Promise(r => setTimeout(r, 100));
+            }
+            
+            updateStatus('✅ Generated 10 page views');
+        }
+
+        async function generateProductViews() {
+            updateStatus('Generating product views...');
+            
+            for (let i = 0; i < 5; i++) {
+                const product = randomProduct();
+                analytics.trackProductView(product);
+                log(`Product view: ${product.name} (${product.category})`, 'success');
+                await new Promise(r => setTimeout(r, 150));
+            }
+            
+            updateStatus('✅ Generated 5 product views');
+        }
+
+        async function generateCartAdds() {
+            updateStatus('Generating cart additions...');
+            
+            for (let i = 0; i < 3; i++) {
+                const product = randomProduct();
+                analytics.trackAddToCart({
+                    product_id: product.id,
+                    product_name: product.name,
+                    category: product.category,
+                    brand: product.brand,
+                    size: product.size,
+                    price: product.price,
+                    quantity: 1
+                });
+                log(`Cart add: ${product.name} - €${product.price}`, 'success');
+                await new Promise(r => setTimeout(r, 200));
+            }
+            
+            updateStatus('✅ Generated 3 cart additions');
+        }
+
+        async function generatePurchases() {
+            updateStatus('Generating purchases...');
+            
+            for (let i = 0; i < 2; i++) {
+                const itemCount = Math.floor(Math.random() * 3) + 1;
+                const items = [];
+                let total = 0;
+                
+                for (let j = 0; j < itemCount; j++) {
+                    const product = randomProduct();
+                    items.push({
+                        product_id: product.id,
+                        product_name: product.name,
+                        category: product.category,
+                        brand: product.brand,
+                        size: product.size,
+                        price: product.price,
+                        quantity: 1
+                    });
+                    total += product.price;
+                }
+                
+                const orderId = `TEST-${Date.now()}-${i}`;
+                analytics.trackPurchase({
+                    order_id: orderId,
+                    total: total,
+                    items: items,
+                    payment_method: 'test'
+                });
+                
+                log(`Purchase: Order ${orderId} - €${total.toFixed(2)} (${itemCount} items)`, 'success');
+                await new Promise(r => setTimeout(r, 300));
+            }
+            
+            updateStatus('✅ Generated 2 purchases');
+        }
+
+        async function generateSearches() {
+            updateStatus('Generating searches...');
+            
+            for (let i = 0; i < 4; i++) {
+                const query = randomSearch();
+                const resultsCount = Math.floor(Math.random() * 15) + 5;
+                analytics.trackSearch(query, resultsCount);
+                log(`Search: "${query}" (${resultsCount} results)`, 'success');
+                await new Promise(r => setTimeout(r, 150));
+            }
+            
+            updateStatus('✅ Generated 4 searches');
+        }
+
+        async function generateFullSession() {
+            updateStatus('Generating full customer journey...');
+            
+            // 1. Land on homepage
+            analytics.track('page_view', { page: '/index.html' });
+            log('1. Customer lands on homepage', 'info');
+            await new Promise(r => setTimeout(r, 500));
+            
+            // 2. Navigate to shop
+            analytics.track('page_view', { page: '/shop.html' });
+            log('2. Customer navigates to shop', 'info');
+            await new Promise(r => setTimeout(r, 500));
+            
+            // 3. Search for products
+            const searchQuery = randomSearch();
+            analytics.trackSearch(searchQuery, 12);
+            log(`3. Customer searches: "${searchQuery}"`, 'info');
+            await new Promise(r => setTimeout(r, 500));
+            
+            // 4. View 3 products
+            for (let i = 0; i < 3; i++) {
+                const product = randomProduct();
+                analytics.trackProductView(product);
+                log(`4.${i+1} Customer views: ${product.name}`, 'info');
+                await new Promise(r => setTimeout(r, 400));
+            }
+            
+            // 5. Add 2 items to cart
+            const cartItems = [];
+            for (let i = 0; i < 2; i++) {
+                const product = randomProduct();
+                analytics.trackAddToCart({
+                    product_id: product.id,
+                    product_name: product.name,
+                    category: product.category,
+                    brand: product.brand,
+                    size: product.size,
+                    price: product.price,
+                    quantity: 1
+                });
+                cartItems.push(product);
+                log(`5.${i+1} Customer adds to cart: ${product.name} - €${product.price}`, 'info');
+                await new Promise(r => setTimeout(r, 400));
+            }
+            
+            // 6. Complete purchase
+            const total = cartItems.reduce((sum, item) => sum + item.price, 0);
+            const orderId = `TEST-JOURNEY-${Date.now()}`;
+            analytics.trackPurchase({
+                order_id: orderId,
+                total: total,
+                items: cartItems.map(p => ({
+                    product_id: p.id,
+                    product_name: p.name,
+                    category: p.category,
+                    brand: p.brand,
+                    size: p.size,
+                    price: p.price,
+                    quantity: 1
+                })),
+                payment_method: 'test'
+            });
+            log(`6. Customer completes purchase: €${total.toFixed(2)}`, 'success');
+            
+            updateStatus('✅ Generated complete customer journey!');
+        }
+
+        // Track this page view
+        analytics.trackPageView();
+        log('Analytics test page loaded', 'info');
+    </script>
+</body>
+</html>

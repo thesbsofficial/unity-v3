@@ -1423,19 +1423,37 @@
                 return;
             }
 
+            // Calculate total
+            const total = basket.reduce((sum, item) => sum + (item.price || 0), 0);
+
             cartItems.innerHTML = basket.map((item, index) => `
                 <div class="cart-item">
                     <img src="${item.imageUrl}" alt="${item.category}">
                     <div class="cart-item-info">
                         <h4>${item.category}</h4>
                         <p>Size: ${item.size}</p>
+                        ${item.price ? `<p style="color: #ffd700; font-weight: bold;">€${item.price.toFixed(2)}</p>` : ''}
                     </div>
                     <button class="remove-btn" onclick="removeFromCart(${index})">Remove</button>
                 </div>
             `).join('');
             
-            // Show checkout button when items exist
-            if (cartFooter) cartFooter.style.display = 'block';
+            // Show checkout button with total when items exist
+            if (cartFooter) {
+                cartFooter.style.display = 'block';
+                cartFooter.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding: 0 4px;">
+                        <span style="font-size: 18px; font-weight: bold;">Total:</span>
+                        <span style="font-size: 24px; font-weight: bold; color: #ffd700;">€${total.toFixed(2)}</span>
+                    </div>
+                    <button onclick="checkout()" class="btn-checkout" style="width: 100%; margin-bottom: 8px;">
+                        Proceed to Checkout
+                    </button>
+                    <button onclick="clearCart()" style="width: 100%; padding: 12px; background: #333; color: white; border: 1px solid #555; border-radius: 8px; cursor: pointer; font-size: 14px;" onmouseover="this.style.background='#444'" onmouseout="this.style.background='#333'">
+                        Clear Basket
+                    </button>
+                `;
+            }
         }
 
         function toggleCart() {
@@ -1444,6 +1462,73 @@
 
             cartModal.style.display = isOpen ? 'none' : 'flex';
             document.body.style.overflow = isOpen ? '' : 'hidden';
+        }
+
+        // CHECKOUT FUNCTION
+        function checkout() {
+            const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+            
+            if (cart.length === 0) {
+                showToast('Your basket is empty', 'error');
+                return;
+            }
+
+            // Calculate total
+            const total = cart.reduce((sum, item) => sum + (item.price || 0), 0);
+
+            // Generate order ID
+            const orderId = `ORDER-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+            // Track checkout start
+            analytics.track('checkout_start', {
+                order_id: orderId,
+                item_count: cart.length,
+                total: total
+            });
+
+            // Simulate checkout process
+            showToast('Processing checkout...', 'info');
+
+            // Simulate API call delay
+            setTimeout(() => {
+                // Track purchase
+                analytics.trackPurchase({
+                    order_id: orderId,
+                    total: total,
+                    items: cart.map(item => ({
+                        product_id: item.id,
+                        product_name: item.category || 'Product',
+                        category: item.category,
+                        brand: item.brand || 'Unknown',
+                        size: item.size,
+                        price: item.price,
+                        quantity: 1
+                    })),
+                    payment_method: 'test'
+                });
+
+                // Show success message
+                showToast(`Order ${orderId} placed successfully! Total: €${total.toFixed(2)}`, 'success');
+
+                // Clear cart
+                localStorage.removeItem('cart');
+                updateCartCount();
+                renderCart();
+                toggleCart();
+
+                console.log('✅ Purchase tracked:', {
+                    orderId,
+                    total,
+                    itemCount: cart.length
+                });
+            }, 1500);
+        }
+
+        function clearCart() {
+            localStorage.removeItem('cart');
+            updateCartCount();
+            renderCart();
+            showToast('Basket cleared', 'info');
         }
 
         // IMAGE VIEWER
