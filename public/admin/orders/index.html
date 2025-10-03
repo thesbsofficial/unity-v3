@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Management - SBS Admin</title>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-blue: #3b82f6;
+            --success-green: #10b981;
+            --warning-orange: #f59e0b;
+            --danger-red: #ef4444;
+            --bg-dark: #0a0a0a;
+            --bg-card: #1a1a1a;
+            --bg-hover: #2a2a2a;
+            --border: #333;
+            --text-primary: #ffffff;
+            --text-secondary: #999;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        /* Header */
+        .header {
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #ffd700;
+        }
+
+        .header-nav {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .header-link {
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            text-decoration: none;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+            font-size: 0.875rem;
+        }
+
+        .header-link:hover {
+            color: var(--text-primary);
+            background: var(--bg-hover);
+        }
+
+        .header-link.active {
+            color: var(--primary-blue);
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        /* Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Page Title */
+        .page-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .page-title h1 {
+            font-size: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .stat-info h3 {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-info .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .stat-icon.pending { background: rgba(249, 115, 22, 0.1); color: #f97316; }
+        .stat-icon.ready { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+        .stat-icon.completed { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+        .stat-icon.revenue { background: rgba(212, 175, 55, 0.1); color: #ffd700; }
+
+        /* Filters */
+        .filters {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .filter-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.875rem;
+        }
+
+        .filter-btn:hover {
+            border-color: var(--primary-blue);
+            color: var(--primary-blue);
+        }
+
+        .filter-btn.active {
+            background: var(--primary-blue);
+            border-color: var(--primary-blue);
+            color: white;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 300px;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 3rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--bg-hover);
+            color: var(--text-primary);
+            font-size: 0.875rem;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+        }
+
+        /* Orders Table */
+        .orders-table {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: var(--bg-hover);
+        }
+
+        th {
+            padding: 1rem;
+            text-align: left;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        tbody tr {
+            border-top: 1px solid var(--border);
+            transition: background 0.2s;
+            cursor: pointer;
+        }
+
+        tbody tr:hover {
+            background: var(--bg-hover);
+        }
+
+        td {
+            padding: 1rem;
+            font-size: 0.875rem;
+        }
+
+        .order-number {
+            font-weight: 600;
+            color: var(--primary-blue);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge.pending {
+            background: rgba(249, 115, 22, 0.1);
+            color: #f97316;
+        }
+
+        .badge.ready {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+
+        .badge.completed {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+        }
+
+        .badge.collection {
+            background: rgba(168, 85, 247, 0.1);
+            color: #a855f7;
+        }
+
+        .badge.delivery {
+            background: rgba(234, 179, 8, 0.1);
+            color: #eab308;
+        }
+
+        .customer-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .customer-name {
+            font-weight: 600;
+        }
+
+        .customer-phone {
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+        }
+
+        .actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .btn-icon:hover {
+            border-color: var(--primary-blue);
+            color: var(--primary-blue);
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .modal-close {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .modal-close:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .detail-value {
+            font-weight: 600;
+            text-align: right;
+        }
+
+        .items-list {
+            margin-top: 1rem;
+        }
+
+        .item-card {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem;
+            background: var(--bg-hover);
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+        }
+
+        .item-image {
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+
+        .item-info {
+            flex: 1;
+        }
+
+        .item-info h4 {
+            font-size: 1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .item-info p {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .modal-footer {
+            padding: 1.5rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background: var(--primary-blue);
+            color: white;
+            flex: 1;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+
+        .btn-success {
+            background: var(--success-green);
+            color: white;
+            flex: 1;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--text-primary);
+            color: var(--text-primary);
+        }
+
+        /* Empty State */
+        .empty-state {
+            padding: 4rem 2rem;
+            text-align: center;
+            color: var(--text-secondary);
+        }
+
+        .empty-state svg {
+            margin-bottom: 1rem;
+        }
+
+        /* Loading */
+        .loading {
+            padding: 4rem 2rem;
+            text-align: center;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border);
+            border-top-color: var(--primary-blue);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .filters {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-box {
+                min-width: 100%;
+            }
+
+            .orders-table {
+                overflow-x: auto;
+            }
+
+            table {
+                min-width: 800px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">SBS Admin</div>
+        <nav class="header-nav">
+            <a href="/admin" class="header-link">Dashboard</a>
+            <a href="/admin/inventory" class="header-link">Inventory</a>
+            <a href="/admin/orders" class="header-link active">Orders</a>
+            <a href="/admin/sell-requests" class="header-link">Sell Requests</a>
+            <a href="/" class="header-link">View Site</a>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Page Title -->
+        <div class="page-title">
+            <h1>
+                <i data-lucide="shopping-bag"></i>
+                Order Management
+            </h1>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-info">
+                    <h3>Pending Orders</h3>
+                    <div class="stat-value" id="pendingCount">0</div>
+                </div>
+                <div class="stat-icon pending">
+                    <i data-lucide="clock"></i>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-info">
+                    <h3>Ready for Pickup</h3>
+                    <div class="stat-value" id="readyCount">0</div>
+                </div>
+                <div class="stat-icon ready">
+                    <i data-lucide="check-circle"></i>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-info">
+                    <h3>Completed Today</h3>
+                    <div class="stat-value" id="completedCount">0</div>
+                </div>
+                <div class="stat-icon completed">
+                    <i data-lucide="package-check"></i>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-info">
+                    <h3>Today's Revenue</h3>
+                    <div class="stat-value" id="revenueCount">€0</div>
+                </div>
+                <div class="stat-icon revenue">
+                    <i data-lucide="euro"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters">
+            <div class="filter-group">
+                <button class="filter-btn active" data-status="all" onclick="filterByStatus('all')">All</button>
+                <button class="filter-btn" data-status="pending" onclick="filterByStatus('pending')">Pending</button>
+                <button class="filter-btn" data-status="ready" onclick="filterByStatus('ready')">Ready</button>
+                <button class="filter-btn" data-status="completed" onclick="filterByStatus('completed')">Completed</button>
+            </div>
+
+            <div class="search-box">
+                <i data-lucide="search" class="search-icon"></i>
+                <input type="text" id="searchInput" placeholder="Search by order number, customer name, or phone..." oninput="searchOrders()">
+            </div>
+        </div>
+
+        <!-- Orders Table -->
+        <div class="orders-table">
+            <div id="loadingState" class="loading">
+                <div class="spinner"></div>
+                <p>Loading orders...</p>
+            </div>
+
+            <div id="emptyState" class="empty-state" style="display: none;">
+                <i data-lucide="inbox" style="width: 64px; height: 64px; color: var(--text-secondary);"></i>
+                <p>No orders found</p>
+            </div>
+
+            <table id="ordersTable" style="display: none;">
+                <thead>
+                    <tr>
+                        <th>Order #</th>
+                        <th>Customer</th>
+                        <th>Items</th>
+                        <th>Type</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="ordersBody">
+                    <!-- Orders will be inserted here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Order Details Modal -->
+    <div class="modal" id="orderModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>
+                    <i data-lucide="shopping-bag"></i>
+                    Order Details
+                </h2>
+                <button class="modal-close" onclick="closeOrderModal()">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+
+            <div class="modal-body" id="modalBody">
+                <!-- Order details will be inserted here -->
+            </div>
+
+            <div class="modal-footer" id="modalFooter">
+                <!-- Action buttons will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let allOrders = [];
+        let filteredOrders = [];
+        let currentFilter = 'all';
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            loadOrders();
+        });
+
+        // Load orders from API
+        async function loadOrders() {
+            try {
+                // Try to fetch from real API first
+                try {
+                    const response = await fetch('/api/admin/orders', {
+                        headers: {
+                            'Authorization': 'Bearer ' + sessionStorage.getItem('adminToken')
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        allOrders = data.orders;
+                        filteredOrders = allOrders;
+                        
+                        // Update stats from API
+                        if (data.stats) {
+                            document.getElementById('pendingCount').textContent = data.stats.pending;
+                            document.getElementById('readyCount').textContent = data.stats.ready;
+                            document.getElementById('completedCount').textContent = data.stats.completed;
+                            document.getElementById('revenueCount').textContent = `€${data.stats.revenue}`;
+                        }
+                        
+                        renderOrders();
+                        document.getElementById('loadingState').style.display = 'none';
+                        document.getElementById('ordersTable').style.display = 'table';
+                        lucide.createIcons();
+                        return;
+                    }
+                } catch (apiError) {
+                    console.log('API not available, using mock data');
+                }
+                
+                // Fallback to mock data if API fails
+                allOrders = generateMockOrders(25);
+                filteredOrders = allOrders;
+                
+                updateStats();
+                renderOrders();
+                
+                document.getElementById('loadingState').style.display = 'none';
+                document.getElementById('ordersTable').style.display = 'table';
+                
+                lucide.createIcons();
+            } catch (error) {
+                console.error('Failed to load orders:', error);
+                document.getElementById('loadingState').innerHTML = '<p>Failed to load orders</p>';
+            }
+        }
+
+        // Update stats
+        function updateStats() {
+            const pending = allOrders.filter(o => o.status === 'pending').length;
+            const ready = allOrders.filter(o => o.status === 'ready').length;
+            const completed = allOrders.filter(o => o.status === 'completed' && isToday(o.created_at)).length;
+            const revenue = allOrders
+                .filter(o => o.status === 'completed' && isToday(o.created_at))
+                .reduce((sum, o) => sum + o.total_amount, 0);
+
+            document.getElementById('pendingCount').textContent = pending;
+            document.getElementById('readyCount').textContent = ready;
+            document.getElementById('completedCount').textContent = completed;
+            document.getElementById('revenueCount').textContent = `€${revenue}`;
+        }
+
+        // Render orders table
+        function renderOrders() {
+            const tbody = document.getElementById('ordersBody');
+            
+            if (filteredOrders.length === 0) {
+                document.getElementById('ordersTable').style.display = 'none';
+                document.getElementById('emptyState').style.display = 'block';
+                lucide.createIcons();
+                return;
+            }
+
+            document.getElementById('emptyState').style.display = 'none';
+            document.getElementById('ordersTable').style.display = 'table';
+
+            tbody.innerHTML = filteredOrders.map(order => `
+                <tr onclick="viewOrder('${order.order_number}')">
+                    <td><span class="order-number">${order.order_number}</span></td>
+                    <td>
+                        <div class="customer-info">
+                            <span class="customer-name">${order.customer_name}</span>
+                            <span class="customer-phone">${order.customer_phone}</span>
+                        </div>
+                    </td>
+                    <td>${order.items.length} item(s)</td>
+                    <td><span class="badge ${order.delivery_method}">${order.delivery_method}</span></td>
+                    <td>€${order.total_amount}</td>
+                    <td><span class="badge ${order.status}">${order.status}</span></td>
+                    <td>${formatDate(order.created_at)}</td>
+                    <td>
+                        <div class="actions" onclick="event.stopPropagation()">
+                            <button class="btn-icon" onclick="openWhatsApp('${order.customer_phone}')" title="WhatsApp">
+                                <i data-lucide="message-circle"></i>
+                            </button>
+                            <button class="btn-icon" onclick="viewOrder('${order.order_number}')" title="View Details">
+                                <i data-lucide="eye"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+
+            lucide.createIcons();
+        }
+
+        // View order details
+        function viewOrder(orderNumber) {
+            const order = allOrders.find(o => o.order_number === orderNumber);
+            if (!order) return;
+
+            const modalBody = document.getElementById('modalBody');
+            const modalFooter = document.getElementById('modalFooter');
+
+            modalBody.innerHTML = `
+                <div class="detail-row">
+                    <span class="detail-label">Order Number</span>
+                    <span class="detail-value order-number">${order.order_number}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Customer Name</span>
+                    <span class="detail-value">${order.customer_name}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Phone Number</span>
+                    <span class="detail-value">${order.customer_phone}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Delivery Method</span>
+                    <span class="detail-value"><span class="badge ${order.delivery_method}">${order.delivery_method}</span></span>
+                </div>
+                ${order.delivery_method === 'delivery' ? `
+                <div class="detail-row">
+                    <span class="detail-label">Delivery Address</span>
+                    <span class="detail-value">${order.delivery_address}, ${order.delivery_city} ${order.delivery_eircode || ''}</span>
+                </div>
+                ` : ''}
+                <div class="detail-row">
+                    <span class="detail-label">Status</span>
+                    <span class="detail-value"><span class="badge ${order.status}">${order.status}</span></span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Total Amount</span>
+                    <span class="detail-value">€${order.total_amount}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Order Date</span>
+                    <span class="detail-value">${formatDate(order.created_at)}</span>
+                </div>
+
+                <div class="items-list">
+                    <h3 style="margin-bottom: 1rem;">Ordered Items</h3>
+                    ${order.items.map(item => `
+                        <div class="item-card">
+                            <img src="${item.image_url}" alt="${item.category}" class="item-image">
+                            <div class="item-info">
+                                <h4>${item.category}</h4>
+                                <p>Size: ${item.size}</p>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+
+            // Action buttons based on status
+            if (order.status === 'pending') {
+                modalFooter.innerHTML = `
+                    <button class="btn btn-success" onclick="updateOrderStatus('${order.order_number}', 'ready')">
+                        <i data-lucide="check-circle"></i>
+                        Mark as Ready
+                    </button>
+                    <button class="btn btn-primary" onclick="openWhatsApp('${order.customer_phone}')">
+                        <i data-lucide="message-circle"></i>
+                        WhatsApp Customer
+                    </button>
+                    <button class="btn btn-secondary" onclick="closeOrderModal()">Close</button>
+                `;
+            } else if (order.status === 'ready') {
+                modalFooter.innerHTML = `
+                    <button class="btn btn-success" onclick="updateOrderStatus('${order.order_number}', 'completed')">
+                        <i data-lucide="package-check"></i>
+                        Mark as Completed
+                    </button>
+                    <button class="btn btn-primary" onclick="openWhatsApp('${order.customer_phone}')">
+                        <i data-lucide="message-circle"></i>
+                        WhatsApp Customer
+                    </button>
+                    <button class="btn btn-secondary" onclick="closeOrderModal()">Close</button>
+                `;
+            } else {
+                modalFooter.innerHTML = `
+                    <button class="btn btn-primary" onclick="openWhatsApp('${order.customer_phone}')">
+                        <i data-lucide="message-circle"></i>
+                        WhatsApp Customer
+                    </button>
+                    <button class="btn btn-secondary" onclick="closeOrderModal()">Close</button>
+                `;
+            }
+
+            document.getElementById('orderModal').classList.add('active');
+            lucide.createIcons();
+        }
+
+        // Close order modal
+        function closeOrderModal() {
+            document.getElementById('orderModal').classList.remove('active');
+        }
+
+        // Update order status
+        async function updateOrderStatus(orderNumber, newStatus) {
+            try {
+                // Try to update via API
+                try {
+                    const response = await fetch('/api/admin/orders', {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + sessionStorage.getItem('adminToken')
+                        },
+                        body: JSON.stringify({
+                            order_number: orderNumber,
+                            status: newStatus
+                        })
+                    });
+
+                    if (response.ok) {
+                        // Reload orders from API
+                        await loadOrders();
+                        closeOrderModal();
+                        alert(`✅ Order ${orderNumber} marked as ${newStatus}!`);
+                        return;
+                    }
+                } catch (apiError) {
+                    console.log('API not available, using local update');
+                }
+
+                // Fallback to local update
+                const order = allOrders.find(o => o.order_number === orderNumber);
+                if (order) {
+                    order.status = newStatus;
+                }
+                
+                updateStats();
+                renderOrders();
+                closeOrderModal();
+                
+                alert(`✅ Order ${orderNumber} marked as ${newStatus}!`);
+            } catch (error) {
+                console.error('Failed to update order status:', error);
+                alert('❌ Failed to update order status');
+            }
+        }
+
+        // Filter by status
+        function filterByStatus(status) {
+            currentFilter = status;
+            
+            // Update active button
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.status === status) {
+                    btn.classList.add('active');
+                }
+            });
+
+            // Filter orders
+            if (status === 'all') {
+                filteredOrders = allOrders;
+            } else {
+                filteredOrders = allOrders.filter(o => o.status === status);
+            }
+
+            renderOrders();
+        }
+
+        // Search orders
+        function searchOrders() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            
+            filteredOrders = allOrders.filter(order => {
+                const matchesSearch = 
+                    order.order_number.toLowerCase().includes(query) ||
+                    order.customer_name.toLowerCase().includes(query) ||
+                    order.customer_phone.includes(query);
+                
+                const matchesFilter = currentFilter === 'all' || order.status === currentFilter;
+                
+                return matchesSearch && matchesFilter;
+            });
+
+            renderOrders();
+        }
+
+        // Open WhatsApp
+        function openWhatsApp(phone) {
+            const cleanPhone = phone.replace(/[^0-9+]/g, '');
+            window.open(`https://wa.me/${cleanPhone}`, '_blank');
+        }
+
+        // Utility functions
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMs / 3600000);
+            const diffDays = Math.floor(diffMs / 86400000);
+
+            if (diffMins < 60) return `${diffMins}m ago`;
+            if (diffHours < 24) return `${diffHours}h ago`;
+            if (diffDays < 7) return `${diffDays}d ago`;
+            
+            return date.toLocaleDateString('en-IE', { day: 'numeric', month: 'short' });
+        }
+
+        function isToday(dateString) {
+            const date = new Date(dateString);
+            const today = new Date();
+            return date.toDateString() === today.toDateString();
+        }
+
+        // Mock data generator
+        function generateMockOrders(count) {
+            const statuses = ['pending', 'ready', 'completed'];
+            const methods = ['collection', 'delivery'];
+            const names = ['John Smith', 'Emma Wilson', 'Michael Brown', 'Sarah Davis', 'James Jones'];
+            
+            return Array.from({ length: count }, (_, i) => {
+                const status = statuses[Math.floor(Math.random() * statuses.length)];
+                const method = methods[Math.floor(Math.random() * methods.length)];
+                const itemCount = Math.floor(Math.random() * 3) + 1;
+                
+                return {
+                    order_number: `ORD-${String(1000 + i).padStart(5, '0')}`,
+                    customer_name: names[Math.floor(Math.random() * names.length)],
+                    customer_phone: '+353 87 123 4567',
+                    delivery_method: method,
+                    delivery_address: method === 'delivery' ? '123 Main Street' : null,
+                    delivery_city: method === 'delivery' ? 'Dublin' : null,
+                    delivery_eircode: method === 'delivery' ? 'D01 F5P2' : null,
+                    status: status,
+                    total_amount: method === 'delivery' ? 5 : 0,
+                    created_at: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
+                    items: Array.from({ length: itemCount }, (_, j) => ({
+                        category: 'Nike Air Max 97',
+                        size: 'UK 9',
+                        image_url: 'https://imagedelivery.net/625959b904a63f24f6bb7ec9b8c1ed7c/example/w=360,h=640'
+                    }))
+                };
+            });
+        }
+
+        // Close modal on escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeOrderModal();
+            }
+        });
+    </script>
+</body>
+
+</html>
