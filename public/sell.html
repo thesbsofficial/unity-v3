@@ -8,6 +8,10 @@
     <meta name="description"
         content="Sell your streetwear to Dublin's most trusted buyer. Get instant offers via WhatsApp. Same-day collection and payment across Dublin.">
 
+    <!-- Helper System -->
+    <link rel="stylesheet" href="/css/helper.css">
+    <script src="/js/helper.js" defer></script>
+
     <style>
         * {
             margin: 0;
@@ -1162,8 +1166,9 @@
         </section>
 
         <!-- QUICK BUILDER (Hidden by default) -->
-        <section class="quick-builder is-gated" id="quick-builder-section">
+        <section class="quick-builder is-gated" id="quick-builder-section" style="position: relative;">
             <div class="container">
+                <button class="sbs-help-btn" data-help="sell-how-to-sell" title="How to sell" style="position: absolute; top: 20px; right: 20px;">?</button>
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
                     <h2 class="section-title" style="margin: 0;"><i data-lucide="settings"
                             class="icon icon-large icon-gold"></i> Quick Sell
