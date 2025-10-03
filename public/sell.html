@@ -12,6 +12,9 @@
     <link rel="stylesheet" href="/css/helper.css">
     <script src="/js/helper.js" defer></script>
 
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
     <style>
         * {
             margin: 0;
@@ -1628,6 +1631,27 @@
             if (typeof lucide !== 'undefined') {
                 lucide.createIcons();
             }
+
+            // Initialize accordion functionality
+            const accordionHeaders = document.querySelectorAll('.accordion-header');
+            accordionHeaders.forEach(header => {
+                header.addEventListener('click', function() {
+                    const accordionItem = this.parentElement;
+                    const isActive = accordionItem.classList.contains('active');
+                    
+                    // Close all accordion items
+                    document.querySelectorAll('.accordion-item').forEach(item => {
+                        item.classList.remove('active');
+                        item.querySelector('.accordion-header').setAttribute('aria-expanded', 'false');
+                    });
+                    
+                    // Toggle clicked item
+                    if (!isActive) {
+                        accordionItem.classList.add('active');
+                        this.setAttribute('aria-expanded', 'true');
+                    }
+                });
+            });
 
             // Sticky reminder bar
             window.addEventListener('scroll', function () {
