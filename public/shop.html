@@ -1508,7 +1508,7 @@
 
         // CHECKOUT FUNCTION - Opens checkout modal
         function checkout() {
-            const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+            const cart = JSON.parse(localStorage.getItem('sbs-basket') || '[]');
             
             if (cart.length === 0) {
                 showToast('Your basket is empty', 'error');
