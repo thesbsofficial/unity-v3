@@ -900,25 +900,43 @@
             modal.classList.add('active');
             
             // Reset form fields
-            document.getElementById('fileInput').value = '';
-            document.getElementById('uploadCategory').value = '';
-            document.getElementById('uploadSize').value = '';
-            document.getElementById('uploadDescription').value = '';
-            document.getElementById('uploadCategory').style.borderColor = '#333';
-            document.getElementById('uploadSize').style.borderColor = '#333';
+            const fileInput = document.getElementById('fileInput');
+            if (fileInput) fileInput.value = '';
+            
+            const uploadCategory = document.getElementById('uploadCategory');
+            if (uploadCategory) {
+                uploadCategory.value = '';
+                uploadCategory.style.borderColor = '#333';
+            }
+            
+            const uploadSize = document.getElementById('uploadSize');
+            if (uploadSize) {
+                uploadSize.value = '';
+                uploadSize.style.borderColor = '#333';
+            }
+            
+            const uploadDescription = document.getElementById('uploadDescription');
+            if (uploadDescription) uploadDescription.value = '';
+            
             updateUploadFilenamePreview();
             
-            // Reset drop zone
+            // Reset drop zone BUT keep the file input
             const zone = document.getElementById('uploadZone');
-            zone.innerHTML = `
-                <div style="font-size: 48px; margin-bottom: 16px;">📤</div>
-                <p style="color: #999; margin-bottom: 8px;">Drop images here or click to browse</p>
-                <p style="color: #666; font-size: 12px;">Supports: JPG, PNG, WebP (max 10MB each)</p>
-            `;
+            if (zone) {
+                zone.innerHTML = `
+                    <div style="font-size: 48px; margin-bottom: 16px;">📤</div>
+                    <p style="color: #999; margin-bottom: 8px;">Drop images here or click to browse</p>
+                    <p style="color: #666; font-size: 12px;">Supports: JPG, PNG, WebP (max 10MB each)</p>
+                    <input type="file" id="fileInput" multiple accept="image/*" style="display: none;">
+                `;
+            }
             
             // Hide progress and errors
-            document.getElementById('uploadProgress').style.display = 'none';
-            document.getElementById('uploadErrors').style.display = 'none';
+            const uploadProgress = document.getElementById('uploadProgress');
+            if (uploadProgress) uploadProgress.style.display = 'none';
+            
+            const uploadErrors = document.getElementById('uploadErrors');
+            if (uploadErrors) uploadErrors.style.display = 'none';
             
             setupDropZone();
             
@@ -940,16 +958,19 @@
 
         function closeUploadModal() {
             const modal = document.getElementById('uploadModal');
-            modal.classList.remove('active');
+            if (modal) modal.classList.remove('active');
             document.removeEventListener('keydown', handleEscapeKey);
             
-            // Reset drop zone when closing
+            // Reset drop zone when closing BUT keep file input
             const zone = document.getElementById('uploadZone');
-            zone.innerHTML = `
-                <div style="font-size: 48px; margin-bottom: 16px;">📤</div>
-                <p style="color: #999; margin-bottom: 8px;">Drop images here or click to browse</p>
-                <p style="color: #666; font-size: 12px;">Supports: JPG, PNG, WebP (max 10MB each)</p>
-            `;
+            if (zone) {
+                zone.innerHTML = `
+                    <div style="font-size: 48px; margin-bottom: 16px;">📤</div>
+                    <p style="color: #999; margin-bottom: 8px;">Drop images here or click to browse</p>
+                    <p style="color: #666; font-size: 12px;">Supports: JPG, PNG, WebP (max 10MB each)</p>
+                    <input type="file" id="fileInput" multiple accept="image/*" style="display: none;">
+                `;
+            }
         }
 
         function handleEscapeKey(e) {
@@ -1037,27 +1058,35 @@
             const zone = document.getElementById('uploadZone');
             const fileInput = document.getElementById('fileInput');
 
+            // Safety check - exit if elements don't exist
+            if (!zone || !fileInput) {
+                console.warn('Upload zone or file input not found');
+                return;
+            }
+
             // Make entire upload zone clickable
             zone.onclick = (e) => {
                 e.stopPropagation(); // Prevent modal backdrop click
-                fileInput.click();
+                if (fileInput) fileInput.click();
             };
 
             zone.ondragover = (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                zone.classList.add('dragging');
+                if (zone) zone.classList.add('dragging');
             };
 
             zone.ondragleave = (e) => {
                 e.stopPropagation();
-                zone.classList.remove('dragging');
+                if (zone) zone.classList.remove('dragging');
             };
 
             zone.ondrop = (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                zone.classList.remove('dragging');
+                if (zone) zone.classList.remove('dragging');
+                
+                if (!fileInput) return;
                 
                 // Store files but DON'T upload yet - wait for processUpload button
                 const dt = new DataTransfer();
@@ -1068,22 +1097,30 @@
                 
                 // Show how many files were dropped
                 const fileCount = dt.files.length;
-                zone.innerHTML = `
-                    <div style="font-size: 48px; margin-bottom: 16px;">✅</div>
-                    <p style="color: #10b981; margin-bottom: 8px; font-weight: bold;">${fileCount} file(s) ready to upload</p>
-                    <p style="color: #666; font-size: 12px;">Select category & size below, then click "Start Upload"</p>
-                `;
+                if (zone) {
+                    zone.innerHTML = `
+                        <div style="font-size: 48px; margin-bottom: 16px;">✅</div>
+                        <p style="color: #10b981; margin-bottom: 8px; font-weight: bold;">${fileCount} file(s) ready to upload</p>
+                        <p style="color: #666; font-size: 12px;">Select category & size below, then click "Start Upload"</p>
+                        <input type="file" id="fileInput" multiple accept="image/*" style="display: none;">
+                    `;
+                    // Need to re-setup after innerHTML change
+                    setTimeout(() => setupDropZone(), 0);
+                }
             };
 
             fileInput.onchange = (e) => {
                 // Show how many files were selected
                 const fileCount = e.target.files.length;
-                if (fileCount > 0) {
+                if (fileCount > 0 && zone) {
                     zone.innerHTML = `
                         <div style="font-size: 48px; margin-bottom: 16px;">✅</div>
                         <p style="color: #10b981; margin-bottom: 8px; font-weight: bold;">${fileCount} file(s) ready to upload</p>
                         <p style="color: #666; font-size: 12px;">Select category & size below, then click "Start Upload"</p>
+                        <input type="file" id="fileInput" multiple accept="image/*" style="display: none;">
                     `;
+                    // Need to re-setup after innerHTML change
+                    setTimeout(() => setupDropZone(), 0);
                 }
             };
         }
