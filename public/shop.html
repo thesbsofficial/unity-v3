@@ -1032,6 +1032,48 @@
         </div>
     </div>
 
+    <!-- CHECKOUT MODAL -->
+    <div class="checkout-modal" id="checkout-modal" style="display: none;">
+        <div class="checkout-overlay" onclick="closeCheckout()"></div>
+        <div class="checkout-content">
+            <button class="checkout-close" onclick="closeCheckout()">&times;</button>
+            <h2 class="checkout-title">Checkout</h2>
+            
+            <!-- Order Summary -->
+            <div class="checkout-items">
+                <h3>Order Summary</h3>
+                <div class="checkout-items-list" id="checkout-items-list"></div>
+                <div class="checkout-total">
+                    <span>Total:</span>
+                    <span id="checkout-total-amount">€0.00</span>
+                </div>
+            </div>
+
+            <!-- Customer Details Form -->
+            <form id="checkout-form">
+                <h3 style="margin-bottom: 16px;">Delivery Details</h3>
+                
+                <input type="text" name="name" class="checkout-input" placeholder="Full Name *" required>
+                <input type="email" name="email" class="checkout-input" placeholder="Email Address *" required>
+                <input type="tel" name="phone" class="checkout-input" placeholder="Phone Number *" required>
+                
+                <input type="text" name="address" class="checkout-input" placeholder="Street Address *" required>
+                <input type="text" name="city" class="checkout-input" placeholder="City *" required>
+                <input type="text" name="eircode" class="checkout-input" placeholder="Eircode (Optional)">
+                
+                <textarea name="notes" class="checkout-input" placeholder="Delivery Notes (Optional)" rows="3"></textarea>
+                
+                <div class="checkout-note">
+                    💳 Payment on delivery via cash or card
+                </div>
+
+                <button type="submit" class="btn-checkout" id="submit-order-btn">
+                    Place Order
+                </button>
+            </form>
+        </div>
+    </div>
+
     <!-- IMAGE VIEWER -->
     <div class="image-viewer" id="image-viewer" onclick="closeImageViewer()">
         <img id="viewer-image" src="" alt="Product Image">
@@ -1464,7 +1506,7 @@
             document.body.style.overflow = isOpen ? '' : 'hidden';
         }
 
-        // CHECKOUT FUNCTION
+        // CHECKOUT FUNCTION - Opens checkout modal
         function checkout() {
             const cart = JSON.parse(localStorage.getItem('cart') || '[]');
             
@@ -1476,22 +1518,86 @@
             // Calculate total
             const total = cart.reduce((sum, item) => sum + (item.price || 0), 0);
 
-            // Generate order ID
-            const orderId = `ORDER-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+            // Populate order summary
+            const checkoutItemsList = document.getElementById('checkout-items-list');
+            checkoutItemsList.innerHTML = cart.map(item => `
+                <div class="checkout-item">
+                    <img src="${item.imageUrl}" alt="${item.category}">
+                    <div class="checkout-item-details">
+                        <strong>${item.category}</strong>
+                        <p>Size: ${item.size}</p>
+                        ${item.price ? `<p style="color: #ffd700;">€${item.price.toFixed(2)}</p>` : ''}
+                    </div>
+                </div>
+            `).join('');
+
+            // Set total
+            document.getElementById('checkout-total-amount').textContent = `€${total.toFixed(2)}`;
+
+            // Close cart modal
+            toggleCart();
+
+            // Open checkout modal
+            document.getElementById('checkout-modal').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
 
             // Track checkout start
             analytics.track('checkout_start', {
-                order_id: orderId,
                 item_count: cart.length,
                 total: total
             });
+        }
 
-            // Simulate checkout process
-            showToast('Processing checkout...', 'info');
+        function closeCheckout() {
+            document.getElementById('checkout-modal').style.display = 'none';
+            document.body.style.overflow = '';
+        }
 
-            // Simulate API call delay
-            setTimeout(() => {
-                // Track purchase
+        // Handle checkout form submission
+        document.getElementById('checkout-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const submitBtn = document.getElementById('submit-order-btn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Processing Order...';
+
+            const formData = new FormData(e.target);
+            const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+            const total = cart.reduce((sum, item) => sum + (item.price || 0), 0);
+
+            // Generate order ID
+            const orderId = `ORDER-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+            // Prepare order data
+            const orderData = {
+                order_id: orderId,
+                customer: {
+                    name: formData.get('name'),
+                    email: formData.get('email'),
+                    phone: formData.get('phone'),
+                    address: formData.get('address'),
+                    city: formData.get('city'),
+                    eircode: formData.get('eircode'),
+                    notes: formData.get('notes')
+                },
+                items: cart,
+                total: total,
+                status: 'pending',
+                created_at: new Date().toISOString()
+            };
+
+            try {
+                // TODO: Send to /api/orders endpoint when ready
+                // const response = await fetch('/api/orders', {
+                //     method: 'POST',
+                //     headers: { 'Content-Type': 'application/json' },
+                //     body: JSON.stringify(orderData)
+                // });
+
+                // For now, just simulate success
+                console.log('📦 Order created:', orderData);
+
+                // Track purchase in analytics
                 analytics.trackPurchase({
                     order_id: orderId,
                     total: total,
@@ -1504,25 +1610,31 @@
                         price: item.price,
                         quantity: 1
                     })),
-                    payment_method: 'test'
+                    payment_method: 'cash_on_delivery'
                 });
 
                 // Show success message
-                showToast(`Order ${orderId} placed successfully! Total: €${total.toFixed(2)}`, 'success');
+                showToast(`Order ${orderId} placed successfully! We'll contact you to arrange delivery.`, 'success');
 
                 // Clear cart
                 localStorage.removeItem('cart');
                 updateCartCount();
                 renderCart();
-                toggleCart();
 
-                console.log('✅ Purchase tracked:', {
-                    orderId,
-                    total,
-                    itemCount: cart.length
-                });
-            }, 1500);
-        }
+                // Close checkout modal
+                closeCheckout();
+
+                // Reset form
+                e.target.reset();
+
+            } catch (error) {
+                console.error('Order submission error:', error);
+                showToast('Failed to place order. Please try again.', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Place Order';
+            }
+        });
 
         function clearCart() {
             localStorage.removeItem('cart');
@@ -1596,6 +1708,7 @@
         window.clearCart = clearCart;
         window.toggleCart = toggleCart;
         window.checkout = checkout;
+        window.closeCheckout = closeCheckout;
         window.openImageViewer = openImageViewer;
         window.closeImageViewer = closeImageViewer;
     </script>
