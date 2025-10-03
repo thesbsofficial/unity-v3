@@ -22,15 +22,42 @@ export async function onRequestPost({ request, env }) {
     }
 
     try {
-        // Verify admin user
+        // Verify admin user - simplified query
+        const sessionResult = await env.DB.prepare(
+            'SELECT user_id, expires_at FROM sessions WHERE token = ? AND invalidated_at IS NULL'
+        ).bind(sessionId).first();
+
+        if (!sessionResult) {
+            return new Response(JSON.stringify({ 
+                success: false, 
+                error: 'Session not found. Please log in again.' 
+            }), {
+                status: 401,
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
+
+        // Check if session expired
+        const now = new Date().toISOString();
+        if (sessionResult.expires_at < now) {
+            return new Response(JSON.stringify({ 
+                success: false, 
+                error: 'Session expired. Please log in again.' 
+            }), {
+                status: 401,
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
+
+        // Get user details
         const userResult = await env.DB.prepare(
-            'SELECT u.*, s.user_id FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token = ? AND s.expires_at > ? AND s.invalidated_at IS NULL'
-        ).bind(sessionId, new Date().toISOString()).first();
+            'SELECT role FROM users WHERE id = ?'
+        ).bind(sessionResult.user_id).first();
 
         if (!userResult) {
             return new Response(JSON.stringify({ 
                 success: false, 
-                error: 'Session not found or expired. Please log in again.' 
+                error: 'User not found.' 
             }), {
                 status: 401,
                 headers: { 'Content-Type': 'application/json' }
