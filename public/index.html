@@ -524,13 +524,49 @@
 
       .landing-hero,
       .sell-section {
-        min-height: 50vh;
-        padding: 15px 20px;
+        min-height: auto;
+        padding: 80px 15px 30px;
       }
 
       .hero-content,
       .sell-content {
-        gap: 1rem;
+        flex-direction: column;
+        gap: 2rem;
+        text-align: center;
+      }
+
+      .hero-image,
+      .sell-image {
+        order: 2;
+        max-width: 100%;
+      }
+
+      .hero-text {
+        order: 1;
+        max-width: 100%;
+        text-align: center;
+      }
+
+      .hero-title {
+        font-size: clamp(2rem, 10vw, 3.5rem);
+        letter-spacing: 2px;
+      }
+
+      .hero-subtitle {
+        font-size: 1.1rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .overlay-text {
+        font-size: 1.8rem;
+        letter-spacing: 1px;
+      }
+
+      .hero-image img,
+      .sell-image img {
+        border-radius: 12px;
+        max-height: 300px;
+        object-fit: cover;
       }
     }
 
@@ -920,9 +956,15 @@
         color: var(--white);
       }
 
+      /* Mobile banner optimizations */
+      .landing-hero {
+        padding: 80px 15px 30px;
+        min-height: auto;
+      }
+
       .hero-content {
         flex-direction: column;
-        gap: 3rem;
+        gap: 2rem;
         text-align: center;
       }
 
@@ -934,10 +976,6 @@
       .hero-text {
         order: 1;
         max-width: 100%;
-      }
-
-      .landing-hero {
-        padding: 20px 20px 10px;
       }
     }
 
@@ -991,12 +1029,34 @@
 
     @media (max-width: 480px) {
       .hero-content {
-        gap: 1rem;
+        gap: 1.5rem;
+      }
+
+      .hero-title {
+        font-size: clamp(1.8rem, 12vw, 2.5rem);
+        letter-spacing: 1px;
+        margin-bottom: 1rem;
+      }
+
+      .hero-subtitle {
+        font-size: 1rem;
+        margin-bottom: 1rem;
       }
 
       .overlay-text {
-        font-size: 2rem;
-        letter-spacing: 2px;
+        font-size: 1.5rem;
+        letter-spacing: 1px;
+      }
+
+      .hero-image img,
+      .sell-image img {
+        max-height: 250px;
+        border-radius: 8px;
+      }
+
+      .shop-now-btn {
+        padding: 1rem 2rem;
+        font-size: 1rem;
       }
 
       .landing-hero {
