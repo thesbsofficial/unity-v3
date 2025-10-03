@@ -20,13 +20,13 @@ export default {
         }
 
         const url = new URL(request.url);
-        
+
         try {
             // Route: Get all products with images
             if (url.pathname === '/api/products') {
                 return await handleGetProducts(env, corsHeaders);
             }
-            
+
             // Route: Get single product
             if (url.pathname.startsWith('/api/products/')) {
                 const productId = url.pathname.split('/')[3];
@@ -35,26 +35,26 @@ export default {
 
             // Route: Health check
             if (url.pathname === '/api/health') {
-                return new Response(JSON.stringify({ 
+                return new Response(JSON.stringify({
                     status: 'healthy',
                     timestamp: new Date().toISOString(),
                     service: 'SBS Products API'
                 }), { headers: corsHeaders });
             }
 
-            return new Response(JSON.stringify({ error: 'Not found' }), { 
-                status: 404, 
-                headers: corsHeaders 
+            return new Response(JSON.stringify({ error: 'Not found' }), {
+                status: 404,
+                headers: corsHeaders
             });
 
         } catch (error) {
             console.error('Worker error:', error);
-            return new Response(JSON.stringify({ 
+            return new Response(JSON.stringify({
                 error: 'Internal server error',
-                message: error.message 
-            }), { 
-                status: 500, 
-                headers: corsHeaders 
+                message: error.message
+            }), {
+                status: 500,
+                headers: corsHeaders
             });
         }
     }
@@ -88,12 +88,10 @@ async function handleGetProducts(env, corsHeaders) {
             // Extract product info from filename or metadata
             const filename = image.filename || `Product ${index + 1}`;
             const category = extractCategory(filename);
-            const price = generatePrice(category);
-            
+
             return {
                 id: image.id,
                 name: formatProductName(filename),
-                price: price,
                 image: `https://imagedelivery.net/${env.CLOUDFLARE_IMAGES_HASH}/${image.id}/public`,
                 thumbnail: `https://imagedelivery.net/${env.CLOUDFLARE_IMAGES_HASH}/${image.id}/thumbnail`,
                 category: category,
@@ -140,9 +138,9 @@ async function handleGetProduct(productId, env, corsHeaders) {
         );
 
         if (!imageResponse.ok) {
-            return new Response(JSON.stringify({ error: 'Product not found' }), { 
-                status: 404, 
-                headers: corsHeaders 
+            return new Response(JSON.stringify({ error: 'Product not found' }), {
+                status: 404,
+                headers: corsHeaders
             });
         }
 
@@ -168,9 +166,9 @@ async function handleGetProduct(productId, env, corsHeaders) {
         }), { headers: corsHeaders });
 
     } catch (error) {
-        return new Response(JSON.stringify({ error: error.message }), { 
-            status: 500, 
-            headers: corsHeaders 
+        return new Response(JSON.stringify({ error: error.message }), {
+            status: 500,
+            headers: corsHeaders
         });
     }
 }
@@ -180,7 +178,7 @@ async function handleGetProduct(productId, env, corsHeaders) {
  */
 function extractCategory(filename) {
     if (!filename) return 'clothing';
-    
+
     const name = filename.toLowerCase();
     if (name.includes('hoodie') || name.includes('sweatshirt')) return 'hoodies';
     if (name.includes('tee') || name.includes('tshirt') || name.includes('shirt')) return 'tshirts';
@@ -188,7 +186,7 @@ function extractCategory(filename) {
     if (name.includes('jogger') || name.includes('pant') || name.includes('trouser')) return 'pants';
     if (name.includes('cap') || name.includes('hat') || name.includes('beanie')) return 'accessories';
     if (name.includes('shoe') || name.includes('sneaker') || name.includes('boot')) return 'footwear';
-    
+
     return 'clothing';
 }
 
@@ -202,7 +200,7 @@ function generatePrice(category) {
         'footwear': [79.99, 99.99, 119.99, 149.99],
         'clothing': [39.99, 49.99, 59.99, 69.99]
     };
-    
+
     const categoryPrices = prices[category] || prices['clothing'];
     return categoryPrices[Math.floor(Math.random() * categoryPrices.length)];
 }
@@ -227,19 +225,19 @@ function generateSizes(category) {
     if (TAXONOMY_SIZES[category]) {
         return TAXONOMY_SIZES[category];
     }
-    
+
     // Legacy footwear check
     if (category === 'footwear') {
         return TAXONOMY_SIZES['BN-SHOES'];
     }
-    
+
     // Default fallback
     return ['XS', 'S', 'M', 'L', 'XL'];
 }
 
 function formatProductName(filename) {
     if (!filename) return 'SBS Streetwear Item';
-    
+
     return filename
         .replace(/\.(jpg|jpeg|png|gif|webp)$/i, '')
         .replace(/[-_]/g, ' ')
@@ -257,6 +255,6 @@ function generateDescription(filename, category) {
         'footwear': 'Street-certified footwear from Dublin\'s finest',
         'clothing': 'Authentic SBS Unity streetwear piece'
     };
-    
+
     return categoryDescs[category] || categoryDescs['clothing'];
 }

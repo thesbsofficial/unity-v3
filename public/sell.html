@@ -591,26 +591,6 @@
             cursor: pointer;
         }
 
-        .price-range-display {
-            background: rgba(34, 197, 94, 0.1);
-            border: 2px solid #22c55e;
-            border-radius: 10px;
-            padding: 1rem;
-            margin-top: 1rem;
-            text-align: center;
-        }
-
-        .price-range-display h4 {
-            color: #22c55e;
-            margin-bottom: 0.5rem;
-            font-size: 1.3rem;
-        }
-
-        .price-range-display p {
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-        }
-
         .message-preview {
             background: var(--bg-card);
             border: 2px solid var(--primary-gold);
@@ -1022,8 +1002,7 @@
     <!-- STICKY REMINDER BAR -->
     <div class="sticky-reminder" id="sticky-reminder">
         <i data-lucide="camera" class="icon"></i> <strong>Photos</strong> •
-        <i data-lucide="dollar-sign" class="icon"></i> <strong>Your price</strong> •
-        <i data-lucide="map-pin" class="icon"></i> <strong>Your location</strong> — <em>messages without all three won't
+        <i data-lucide="map-pin" class="icon"></i> <strong>Your location</strong> — <em>messages without both won't
             be answered.</em>
     </div>
 
@@ -1166,7 +1145,7 @@
                 <div class="choice-cards">
                     <div class="choice-card" onclick="showQuickBuilder()">
                         <h3>⚡ Quick Builder</h3>
-                        <p>Guided form with dropdowns and instant price estimate. Fast and structured.</p>
+                        <p>Guided form with dropdowns. Fast and structured.</p>
                         <button class="btn btn-primary">
                             Use Quick Builder
                         </button>
@@ -1261,16 +1240,9 @@
                             </select>
                         </div>
 
-                        <!-- 5. Your Price -->
-                        <div class="form-group" id="qb-price-group" style="display:none;">
-                            <label class="form-label">5. Your Asking Price (€)</label>
-                            <input type="number" class="form-input" id="qb-price" placeholder="e.g. 80" min="0"
-                                inputmode="numeric" pattern="[0-9]*">
-                        </div>
-
-                        <!-- 6. Collection Address -->
+                        <!-- 5. Collection Address -->
                         <div class="form-group" id="qb-location-group" style="display:none;">
-                            <label class="form-label">6. Collection Address</label>
+                            <label class="form-label">5. Collection Address</label>
                             <span class="form-helper">Full address for same-day collection</span>
                             <input type="text" class="form-input" id="qb-address" placeholder="Street address"
                                 style="margin-bottom: 0.5rem;">
@@ -1279,17 +1251,17 @@
                             <input type="text" class="form-input" id="qb-eircode" placeholder="Eircode (optional)">
                         </div>
 
-                        <!-- 7. Defects/Issues (Optional) -->
+                        <!-- 6. Defects/Issues (Optional) -->
                         <div class="form-group" id="qb-defects-group" style="display:none;">
-                            <label class="form-label">7. Any Defects or Issues? (Optional)</label>
+                            <label class="form-label">6. Any Defects or Issues? (Optional)</label>
                             <span class="form-helper">Be honest - stains, tears, missing parts, etc.</span>
                             <textarea class="form-textarea" id="qb-defects"
                                 placeholder="e.g. Small stain on sleeve, or leave blank if none" rows="2"></textarea>
                         </div>
 
-                        <!-- 8. Photos -->
+                        <!-- 7. Photos -->
                         <div class="form-group" id="qb-photos-group" style="display:none;">
-                            <label class="form-label">8. Photos</label>
+                            <label class="form-label">7. Photos</label>
                             <div class="checkbox-group" style="margin-bottom: 1rem;">
                                 <input type="checkbox" id="qb-photos">
                                 <label for="qb-photos" style="cursor: pointer;">✓ I have clear photos ready</label>
@@ -1494,11 +1466,11 @@
                         <h3><i data-lucide="message-circle" class="icon icon-gold"></i> WhatsApp</h3>
                         <p><strong>Recommended</strong> — Prefilled message</p>
                         <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-                            <a href="https://wa.me/353899662211?text=%F0%9F%94%A5%20SELLING%20TO%20SBS%0A%0A%F0%9F%93%B8%20PICTURES%3A%20%5Battach%20clear%20photos%5D%0A%F0%9F%92%B0%20MY%20ASKING%20PRICE%3A%20%E2%82%AC%5Bamount%5D%0A%F0%9F%93%8D%20MY%20LOCATION%3A%20%5BDublin%20area%5D%0A%0A%F0%9F%A7%BE%20ITEM%20DETAILS%3A%0A%E2%80%A2%20Brand%3A%0A%E2%80%A2%20Size%3A%0A%E2%80%A2%20Condition%3A%0A%E2%80%A2%20Extras%20(box%2Ftags%2Freceipt)%3A"
+                            <a href="https://wa.me/353899662211?text=%F0%9F%94%A5%20SELLING%20TO%20SBS%0A%0A%F0%9F%93%B8%20PICTURES%3A%20%5Battach%20clear%20photos%5D%0A%F0%9F%93%8D%20MY%20LOCATION%3A%20%5BDublin%20area%5D%0A%0A%F0%9F%A7%BE%20ITEM%20DETAILS%3A%0A%E2%80%A2%20Brand%3A%0A%E2%80%A2%20Size%3A%0A%E2%80%A2%20Condition%3A%0A%E2%80%A2%20Extras%20(box%2Ftags%2Freceipt)%3A"
                                 class="btn btn-primary" rel="noopener noreferrer" target="_blank">
                                 💬 Single Item Template
                             </a>
-                            <a href="https://wa.me/353899662211?text=%F0%9F%94%A5%20SELLING%20MULTIPLE%20ITEMS%20TO%20SBS%0A%0A%F0%9F%93%B8%20PICTURES%3A%20%5Battach%20group%20%2B%20each%20item%5D%0A%F0%9F%93%8D%20MY%20LOCATION%3A%20%5BDublin%20area%5D%0A%0A%F0%9F%A7%BE%20ITEMS%20%26%20PRICES%3A%0A1)%20%5BBrand%2FModel%5D%20%E2%80%94%20Size%20%E2%80%94%20Condition%20%E2%80%94%20%E2%82%AC%5Bprice%5D%0A2)%20%5BBrand%2FModel%5D%20%E2%80%94%20Size%20%E2%80%94%20Condition%20%E2%80%94%20%E2%82%AC%5Bprice%5D%0A3)%20%5BBrand%2FModel%5D%20%E2%80%94%20Size%20%E2%80%94%20Condition%20%E2%80%94%20%E2%82%AC%5Bprice%5D%0A%0A%E2%9C%85%20Ready%20for%20same-day%20collection"
+                            <a href="https://wa.me/353899662211?text=%F0%9F%94%A5%20SELLING%20MULTIPLE%20ITEMS%20TO%20SBS%0A%0A%F0%9F%93%B8%20PICTURES%3A%20%5Battach%20group%20%2B%20each%20item%5D%0A%F0%9F%93%8D%20MY%20LOCATION%3A%20%5BDublin%20area%5D%0A%0A%F0%9F%A7%BE%20ITEMS%20DETAILS%3A%0A1)%20%5BBrand%2FModel%5D%20%E2%80%94%20Size%20%E2%80%94%20Condition%0A2)%20%5BBrand%2FModel%5D%20%E2%80%94%20Size%20%E2%80%94%20Condition%0A3)%20%5BBrand%2FModel%5D%20%E2%80%94%20Size%20%E2%80%94%20Condition%0A%0A%E2%9C%85%20Ready%20for%20same-day%20collection"
                                 class="btn btn-secondary" style="border-color: var(--primary-gold);"
                                 rel="noopener noreferrer" target="_blank">
                                 💬 Multiple Items Template
@@ -1522,7 +1494,7 @@
                         </a>
                     </div>
                 </div>
-                <p class="contact-subtext"><em>Include photos, your price, and your location for a fast reply.</em></p>
+                <p class="contact-subtext"><em>Include photos and your location for a fast reply.</em></p>
             </div>
         </section>
 
@@ -1618,7 +1590,7 @@
         // 🎯 IMPORT TAXONOMY FROM SINGLE SOURCE
         // =================================================================================
         import { SIZES } from '/js/taxonomy.js';
-        
+
         // =================================================================================
         // INITIALIZATION & CORE UI
         // =================================================================================
@@ -1719,7 +1691,6 @@
             const category = document.getElementById('qb-category');
             const brand = document.getElementById('qb-brand');
             const size = document.getElementById('qb-size');
-            const price = document.getElementById('qb-price');
             const address = document.getElementById('qb-address');
             const city = document.getElementById('qb-city');
             const eircode = document.getElementById('qb-eircode');
@@ -1793,7 +1764,7 @@
                         <div style="flex: 1;">
                             <strong style="color: var(--primary-gold);">${index + 1}. ${item.brand} ${item.category}</strong>
                             <div style="font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.25rem;">
-                                ${item.condition}${item.size ? ` • Size: ${item.size}` : ''} • €${item.price}
+                                ${item.condition}${item.size ? ` • Size: ${item.size}` : ''}
                                 ${item.photoCount > 0 ? ` • 📷 ${item.photoCount} photo${item.photoCount > 1 ? 's' : ''}` : ''}
                             </div>
                         </div>
@@ -1811,14 +1782,13 @@
                 brand.innerHTML = '<option value="">Select brand...</option>';
                 document.querySelectorAll('input[name="qb-condition"]').forEach(r => r.checked = false);
                 size.innerHTML = '<option value="">Select size...</option>';
-                price.value = '';
                 document.getElementById('qb-defects').value = '';
                 uploadedPhotos = [];
                 document.getElementById('qb-photo-previews').innerHTML = '';
                 document.getElementById('qb-upload-status').innerHTML = '';
                 photoInput.value = '';
 
-                ['qb-brand-group', 'qb-condition-group', 'qb-size-group', 'qb-price-group', 'qb-defects-group', 'qb-photos-group'].forEach(id => {
+                ['qb-brand-group', 'qb-condition-group', 'qb-size-group', 'qb-defects-group', 'qb-photos-group'].forEach(id => {
                     document.getElementById(id).style.display = 'none';
                 });
                 document.getElementById('qb-category').scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -1913,7 +1883,6 @@
                         });
                         document.getElementById('qb-size-group').style.display = 'block';
                     }
-                    document.getElementById('qb-price-group').style.display = 'block';
                     document.getElementById('qb-defects-group').style.display = 'block';
                     document.getElementById('qb-photos-group').style.display = 'block';
                     checkComplete();
@@ -1963,14 +1932,14 @@
 
                 // PHOTOS ARE OPTIONAL - removed photos.checked requirement
                 // Photos checkbox auto-checks when photos are uploaded
-                const complete = cat && brand.value && conditionRadio && sizeOK && price.value && addressComplete && phoneValid && socialValid && consent;
-                
+                const complete = cat && brand.value && conditionRadio && sizeOK && addressComplete && phoneValid && socialValid && consent;
+
                 // Validation feedback logic can be added here if desired
-                
+
                 generateBtn.disabled = !complete;
             }
 
-            const allInputs = [category, brand, size, price, address, city, eircode, document.getElementById('qb-consent'), phoneInput, igInput, snapInput];
+            const allInputs = [category, brand, size, address, city, eircode, document.getElementById('qb-consent'), phoneInput, igInput, snapInput];
             allInputs.forEach(el => {
                 el.addEventListener('input', checkComplete);
                 el.addEventListener('change', checkComplete);
@@ -1984,7 +1953,6 @@
                     brand: brand.value,
                     condition: document.querySelector('input[name="qb-condition"]:checked').value,
                     size: size.value || null,
-                    price: price.value,
                     defects: document.getElementById('qb-defects').value || null,
                     photoCount: uploadedPhotos.length,
                     photos: [...uploadedPhotos]
@@ -2003,7 +1971,7 @@
                 const eircodeText = eircode.value ? `, ${eircode.value}` : '';
 
                 let socialHandle = socialChannel.value === 'instagram' ? igInput.value : snapInput.value;
-                
+
                 if (saveProfile) {
                     localStorage.setItem('sbs-address', address.value);
                     localStorage.setItem('sbs-city', city.value);
@@ -2015,7 +1983,7 @@
                 }
 
                 const itemsText = items.map((item, index) => {
-                    let text = `${index + 1}) ${item.brand} ${item.category} — Size ${item.size || 'N/A'} — ${item.condition} — €${item.price}`;
+                    let text = `${index + 1}) ${item.brand} ${item.category} — Size ${item.size || 'N/A'} — ${item.condition}`;
                     if (item.defects) text += `\n   - Issues: ${item.defects}`;
                     return text;
                 }).join('\n');
@@ -2025,7 +1993,7 @@
 📸 PICTURES: [I have ${items.reduce((acc, item) => acc + item.photoCount, 0)} photos ready]
 📍 MY LOCATION: ${address.value}, ${city.value}${eircodeText}
 
-📋 ITEMS & PRICES:
+📋 ITEMS:
 ${itemsText}
 
 ✅ Ready for same-day collection.`;

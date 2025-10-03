@@ -35,9 +35,9 @@ export async function onRequest(context) {
                 !accountId && 'CLOUDFLARE_ACCOUNT_ID',
                 !apiToken && 'CLOUDFLARE_API_TOKEN or CLOUDFLARE_IMAGES_API_TOKEN'
             ].filter(Boolean).join(', ');
-            
+
             console.warn('⚠️ CF Images credentials not configured:', missing);
-            
+
             return new Response(JSON.stringify({
                 success: true,
                 products: [],
@@ -84,7 +84,6 @@ export async function onRequest(context) {
         // 📝 PARSE METADATA FROM CLOUDFLARE IMAGES
         // Each image can have metadata fields set in CF Images dashboard:
         // - name: Product name
-        // - price: Price in format "45.99" or "4599" (cents)
         // - category: BN-CLOTHES, BN-SHOES, PO-CLOTHES, PO-SHOES
         // - brand: Brand name
         // - size: Size (e.g., M, L, UK-9)
@@ -122,15 +121,6 @@ export async function onRequest(context) {
                         }
                     }
 
-                    // Parse price (support both formats: "45.99" or "4599")
-                    let price = parseFloat(meta.price || '0');
-                    if (price > 1000) {
-                        price = price / 100; // Convert cents to euros
-                    }
-                    if (price === 0) {
-                        price = Math.floor(Math.random() * 60) + 40; // Default 40-100€
-                    }
-
                     // Get condition
                     const condition = category.includes('BN') ? 'Brand New' : 'Pre-Owned';
 
@@ -143,9 +133,9 @@ export async function onRequest(context) {
 
                     // Build image URLs
                     const variants = image.variants || [];
-                    let imageUrl = variants.find(v => v.includes('/public')) || 
-                                  variants.find(v => v.includes('/standard')) ||
-                                  variants[0];
+                    let imageUrl = variants.find(v => v.includes('/public')) ||
+                        variants.find(v => v.includes('/standard')) ||
+                        variants[0];
                     let thumbUrl = variants.find(v => v.includes('/thumb')) || variants[0];
 
                     if (!imageUrl && deliveryHash) {
@@ -158,8 +148,6 @@ export async function onRequest(context) {
                     return {
                         id: image.id,
                         name: name,
-                        price: Math.round(price * 100) / 100, // Round to 2 decimals
-                        priceRaw: parseInt(meta.price || '0', 10), // Raw price for admin editing
                         category: category,
                         condition: condition,
                         brand: meta.brand || null,
@@ -176,10 +164,10 @@ export async function onRequest(context) {
                         featured: meta.featured === 'true' || meta.featured === '1',
                         uploaded: image.uploaded,
                         uploadedAt: image.uploaded,
-                        ...(debugMode && { 
+                        ...(debugMode && {
                             rawMeta: meta,
                             rawFilename: filename,
-                            variants 
+                            variants
                         })
                     };
                 } catch (err) {

@@ -2,7 +2,7 @@
  * POST /api/admin/upload-image
  * 
  * Uploads image to Cloudflare Images with smart metadata extraction
- * Automatically parses filename and stores: name, category, size, price, status
+ * Automatically parses filename and stores: name, category, size, status
  * Admin-only endpoint
  */
 
@@ -19,11 +19,11 @@ export async function onRequestPost({ request, env }) {
     // Check authentication
     const cookie = request.headers.get('Cookie') || '';
     const sessionId = cookie.split('sbs_session=')[1]?.split(';')[0];
-    
+
     if (!sessionId) {
-        return new Response(JSON.stringify({ 
-            success: false, 
-            error: 'Not authenticated' 
+        return new Response(JSON.stringify({
+            success: false,
+            error: 'Not authenticated'
         }), {
             status: 401,
             headers: { 'Content-Type': 'application/json' }
@@ -33,16 +33,16 @@ export async function onRequestPost({ request, env }) {
     try {
         // Hash the session token to match database format
         const sessionHash = await sha256b64(sessionId);
-        
+
         // Verify admin user - simplified query
         const sessionResult = await env.DB.prepare(
             'SELECT user_id, expires_at FROM sessions WHERE token = ? AND invalidated_at IS NULL'
         ).bind(sessionHash).first();
 
         if (!sessionResult) {
-            return new Response(JSON.stringify({ 
-                success: false, 
-                error: 'Session not found. Please log in again.' 
+            return new Response(JSON.stringify({
+                success: false,
+                error: 'Session not found. Please log in again.'
             }), {
                 status: 401,
                 headers: { 'Content-Type': 'application/json' }
@@ -52,9 +52,9 @@ export async function onRequestPost({ request, env }) {
         // Check if session expired
         const now = new Date().toISOString();
         if (sessionResult.expires_at < now) {
-            return new Response(JSON.stringify({ 
-                success: false, 
-                error: 'Session expired. Please log in again.' 
+            return new Response(JSON.stringify({
+                success: false,
+                error: 'Session expired. Please log in again.'
             }), {
                 status: 401,
                 headers: { 'Content-Type': 'application/json' }
@@ -67,9 +67,9 @@ export async function onRequestPost({ request, env }) {
         ).bind(sessionResult.user_id).first();
 
         if (!userResult) {
-            return new Response(JSON.stringify({ 
-                success: false, 
-                error: 'User not found.' 
+            return new Response(JSON.stringify({
+                success: false,
+                error: 'User not found.'
             }), {
                 status: 401,
                 headers: { 'Content-Type': 'application/json' }
@@ -78,9 +78,9 @@ export async function onRequestPost({ request, env }) {
 
         // Check if user is admin (role = 'admin')
         if (userResult.role !== 'admin') {
-            return new Response(JSON.stringify({ 
-                success: false, 
-                error: 'Admin access required. Your account role is: ' + (userResult.role || 'user') 
+            return new Response(JSON.stringify({
+                success: false,
+                error: 'Admin access required. Your account role is: ' + (userResult.role || 'user')
             }), {
                 status: 403,
                 headers: { 'Content-Type': 'application/json' }
@@ -94,9 +94,9 @@ export async function onRequestPost({ request, env }) {
         const metadataJson = formData.get('metadata');
 
         if (!file) {
-            return new Response(JSON.stringify({ 
-                success: false, 
-                error: 'No file provided' 
+            return new Response(JSON.stringify({
+                success: false,
+                error: 'No file provided'
             }), {
                 status: 400,
                 headers: { 'Content-Type': 'application/json' }
@@ -118,9 +118,9 @@ export async function onRequestPost({ request, env }) {
         const apiToken = env.CLOUDFLARE_IMAGES_API_TOKEN || env.CLOUDFLARE_API_TOKEN;
 
         if (!accountId || !apiToken) {
-            return new Response(JSON.stringify({ 
-                success: false, 
-                error: 'Missing Cloudflare credentials' 
+            return new Response(JSON.stringify({
+                success: false,
+                error: 'Missing Cloudflare credentials'
             }), {
                 status: 500,
                 headers: { 'Content-Type': 'application/json' }
@@ -130,7 +130,7 @@ export async function onRequestPost({ request, env }) {
         // 🎯 SMART METADATA EXTRACTION FROM FILENAME
         // Parse filename like: "CAT-BN-SHOES-SIZE-UK105-DATE-20251003-BATCH-B10030403-ITEM-001.jpeg"
         const cleanFilename = filename || file.name || 'untitled';
-        
+
         // Extract product name from filename
         let productName = cleanFilename
             .replace(/\.(jpg|jpeg|png|webp|gif)$/i, '') // Remove extension
@@ -142,7 +142,7 @@ export async function onRequestPost({ request, env }) {
             .replace(/ITEM-\d+/gi, '') // Remove item number
             .replace(/[-_]/g, ' ') // Convert separators to spaces
             .trim();
-        
+
         // If name is empty or too short, generate from category
         if (!productName || productName.length < 3) {
             const category = uploadMetadata.category || 'Unknown';
@@ -164,19 +164,16 @@ export async function onRequestPost({ request, env }) {
             category: uploadMetadata.category || '', // BN-CLOTHES, BN-SHOES, etc.
             size: uploadMetadata.size || '',
             brand: '', // Can be set later via edit
-            
-            // Pricing (default to 0 - admin must set)
-            price: '0', // Store as string "0" not number
-            
+
             // Inventory status
             status: 'active', // active, hidden, sold
             stock: '1', // String format for CF Images
-            
+
             // Additional Info
             description: uploadMetadata.description || productName,
             sku: '', // Auto-generated by products.js
             featured: 'false',
-            
+
             // Tracking (optional)
             batch: uploadMetadata.batch || '',
             item: uploadMetadata.item || '',
@@ -186,12 +183,12 @@ export async function onRequestPost({ request, env }) {
         // Upload to Cloudflare Images with metadata
         const uploadFormData = new FormData();
         uploadFormData.append('file', file);
-        
+
         // IMPORTANT: CF Images expects metadata as a JSON string, not individual fields
         uploadFormData.append('metadata', JSON.stringify(cfMetadata));
 
         const uploadUrl = `https://api.cloudflare.com/client/v4/accounts/${accountId}/images/v1`;
-        
+
         const uploadResponse = await fetch(uploadUrl, {
             method: 'POST',
             headers: {
@@ -204,9 +201,9 @@ export async function onRequestPost({ request, env }) {
 
         if (!uploadResponse.ok || !uploadResult.success) {
             console.error('CF Images upload failed:', uploadResult);
-            return new Response(JSON.stringify({ 
-                success: false, 
-                error: uploadResult.errors?.[0]?.message || 'Failed to upload image to Cloudflare' 
+            return new Response(JSON.stringify({
+                success: false,
+                error: uploadResult.errors?.[0]?.message || 'Failed to upload image to Cloudflare'
             }), {
                 status: uploadResponse.status,
                 headers: { 'Content-Type': 'application/json' }

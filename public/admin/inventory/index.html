@@ -273,7 +273,7 @@
                 max-height: 95vh;
                 border-radius: 12px;
             }
-            
+
             .modal-title {
                 font-size: 18px;
                 margin-bottom: 20px;
@@ -381,7 +381,8 @@
             align-items: center;
         }
 
-        .upload-zone:hover, .upload-zone:active {
+        .upload-zone:hover,
+        .upload-zone:active {
             border-color: #3b82f6;
             background: rgba(59, 130, 246, 0.05);
         }
@@ -397,7 +398,7 @@
                 padding: 30px 20px;
                 min-height: 100px;
             }
-            
+
             .upload-zone p {
                 font-size: 14px !important;
             }
@@ -491,19 +492,22 @@
             <div class="upload-zone" id="uploadZone">
                 <div style="font-size: 48px; margin-bottom: 16px;">📤</div>
                 <p style="color: #999; margin-bottom: 8px;">Drop images here or click to browse</p>
-                <p style="color: #666; font-size: 12px;">Supports: JPG, PNG, WebP (max 10MB each) | 📱 Mobile Camera Supported</p>
-                <input type="file" id="fileInput" multiple accept="image/*,image/jpeg,image/jpg,image/png,image/webp" capture="environment" style="display: none;">
+                <p style="color: #666; font-size: 12px;">Supports: JPG, PNG, WebP (max 10MB each) | 📱 Mobile Camera
+                    Supported</p>
+                <input type="file" id="fileInput" multiple accept="image/*,image/jpeg,image/jpg,image/png,image/webp"
+                    capture="environment" style="display: none;">
             </div>
 
             <!-- Smart Filename Generator -->
             <div
                 style="background: rgba(138, 43, 226, 0.1); border: 2px solid #8a2be2; border-radius: 12px; padding: 20px; margin: 20px 0;">
                 <h4 style="color: #8a2be2; margin: 0 0 15px 0;">🤖 Auto Smart Naming</h4>
-                
+
                 <!-- Batch Info -->
-                <div id="batchInfo" style="background: rgba(16, 185, 129, 0.1); border: 1px solid #10b981; border-radius: 6px; padding: 12px; margin-bottom: 15px;">
+                <div id="batchInfo"
+                    style="background: rgba(16, 185, 129, 0.1); border: 1px solid #10b981; border-radius: 6px; padding: 12px; margin-bottom: 15px;">
                     <div style="color: #10b981; font-size: 13px; font-weight: 600;">
-                        📦 <span id="currentBatchDisplay">Batch #1</span> • 
+                        📦 <span id="currentBatchDisplay">Batch #1</span> •
                         📄 <span id="nextItemDisplay">Next Item: #001</span>
                     </div>
                 </div>
@@ -635,7 +639,7 @@
         // Decodes data from encoded filenames (CAT-, SIZE-, DESC-, etc.)
         function decodeFilenameData(filename) {
             if (!filename) return { category: null, size: null, description: null, batch: null, item: null };
-            
+
             const data = {
                 category: null,
                 size: null,
@@ -645,50 +649,50 @@
                 date: null,
                 time: null
             };
-            
+
             try {
                 // Extract category (CAT-[value])
                 const catMatch = filename.match(/CAT-([^-]+)/);
                 if (catMatch) data.category = catMatch[1];
-                
+
                 // Extract size (SIZE-[value])
                 const sizeMatch = filename.match(/SIZE-([^-]+)/);
                 if (sizeMatch) data.size = sizeMatch[1].replace(/_/g, '-'); // Convert underscores back
-                
+
                 // Extract description (DESC-[value])
                 const descMatch = filename.match(/DESC-([^-]+)/);
                 if (descMatch) data.description = descMatch[1].replace(/_/g, ' ');
-                
+
                 // Extract batch (BATCH-B[number])
                 const batchMatch = filename.match(/BATCH-B(\d+)/);
                 if (batchMatch) data.batch = parseInt(batchMatch[1]);
-                
+
                 // Extract item (ITEM-(\d+))
                 const itemMatch = filename.match(/ITEM-(\d+)/);
                 if (itemMatch) data.item = parseInt(itemMatch[1]);
-                
+
                 // Extract date (DATE-[value])
                 const dateMatch = filename.match(/DATE-(\d{8})/);
                 if (dateMatch) data.date = dateMatch[1];
-                
+
                 // Extract time (TIME-[value])
                 const timeMatch = filename.match(/TIME-(\d{4})/);
                 if (timeMatch) data.time = timeMatch[1];
-                
+
             } catch (error) {
                 console.warn('Failed to decode filename:', filename, error);
             }
-            
+
             return data;
         }
-        
+
         // 🎯 UNIFIED SIZE FORMATTING FUNCTION (uses decoded data)
         function formatSizeForDisplay(sizeValue) {
             if (!sizeValue) return 'One Size';
-            
+
             // Try to find the size in taxonomy for proper formatting
             const categories = ['BN-CLOTHES', 'PO-CLOTHES', 'BN-SHOES', 'PO-SHOES'];
-            
+
             for (const category of categories) {
                 try {
                     const sizeLabels = getSizeLabelsForCategory(category);
@@ -700,13 +704,13 @@
                     // Continue if taxonomy function fails
                 }
             }
-            
+
             // Fallback formatting if not found in taxonomy
             // Handle UK shoe sizes - convert UK-6-5 to "UK 6.5"
             if (sizeValue.startsWith('UK-')) {
                 return sizeValue.replace('UK-', 'UK ').replace('-5', '.5');
             }
-            
+
             // Handle mixed clothing sizes - convert S-TOP-M-BOTTOM to "S Top / M Bottom"
             if (sizeValue.includes('-TOP-') && sizeValue.includes('-BOTTOM')) {
                 const parts = sizeValue.split('-');
@@ -716,17 +720,17 @@
                     return `${topSize} Top / ${bottomSize} Bottom`;
                 }
             }
-            
+
             // Standard sizes (XS, S, M, L, XL) - return as is
             return sizeValue;
         }
-        
+
         // 🎯 ENHANCED PRODUCT DATA EXTRACTOR
         // Uses both metadata AND filename decoding for complete data
         function getProductData(item) {
             const meta = item.metadata || {};
             const decoded = decodeFilenameData(item.filename || meta.name || '');
-            
+
             return {
                 // Use decoded data as primary, fallback to metadata
                 category: decoded.category || meta.category || 'Unknown',
@@ -736,10 +740,9 @@
                 item: decoded.item || null,
                 date: decoded.date || null,
                 time: decoded.time || null,
-                
+
                 // Metadata-only fields
                 name: meta.name || 'Untitled Product',
-                price: meta.price || 0,
                 brand: meta.brand || '',
                 condition: meta.condition || '',
                 status: meta.status || 'active',
@@ -819,46 +822,46 @@
         }
 
         // 🎯 SEQUENTIAL BATCH & ITEM TRACKING SYSTEM
-        
+
         // Get next sequential batch number (persistent across sessions)
         function getNextBatchNumber() {
             // Get last batch number from localStorage, default to 0
             const lastBatch = parseInt(localStorage.getItem('sbs-last-batch-number') || '0');
             const nextBatch = lastBatch + 1;
-            
+
             // Save the new batch number
             localStorage.setItem('sbs-last-batch-number', nextBatch.toString());
-            
+
             console.log(`📦 Generated new batch number: ${nextBatch} (previous: ${lastBatch})`);
             return nextBatch;
         }
-        
+
         // Initialize new upload batch with sequential tracking
         function startNewUploadBatch() {
             // Get next sequential batch number
             window.currentBatchNumber = getNextBatchNumber();
             window.currentItemNumber = 0; // Reset item counter for this batch (will start at 1)
-            
+
             console.log(`🎯 Started new upload batch: B${window.currentBatchNumber}`);
             console.log(`📝 Item counter reset, will start from item #1`);
         }
-        
+
         // Get next item number for current batch
         function getNextItemNumber() {
             window.currentItemNumber = (window.currentItemNumber || 0) + 1;
             console.log(`📄 Generated item number: ${window.currentItemNumber} for batch B${window.currentBatchNumber}`);
             return window.currentItemNumber;
         }
-        
+
         // Update batch info display in modal
         function updateBatchInfoDisplay() {
             const batchDisplay = document.getElementById('currentBatchDisplay');
             const itemDisplay = document.getElementById('nextItemDisplay');
-            
+
             if (batchDisplay && window.currentBatchNumber) {
                 batchDisplay.textContent = `Batch #${window.currentBatchNumber}`;
             }
-            
+
             if (itemDisplay) {
                 const nextItem = (window.currentItemNumber || 0) + 1;
                 const itemStr = String(nextItem).padStart(3, '0');
@@ -911,7 +914,6 @@
                     // Store ALL metadata fields for editing
                     metadata: {
                         name: product.name || 'Untitled',
-                        price: product.priceRaw || product.price || 0,
                         category: product.category || '',
                         brand: product.brand || '',
                         size: product.size || '',
@@ -1108,7 +1110,7 @@
 
             // 🎯 START NEW BATCH SESSION (increment batch number)
             startNewUploadBatch();
-            
+
             // Update batch info display
             updateBatchInfoDisplay();
 
@@ -1264,16 +1266,16 @@
             }
 
             const filename = generateSmartFilename(category, size, description, selectedFilenameFormat);
-            
+
             // Show next item number in preview (current + 1)
             const nextItemNumber = (window.currentItemNumber || 0) + 1;
             const itemNumberStr = String(nextItemNumber).padStart(3, '0'); // e.g., "001", "002", "010"
-            
+
             preview.textContent = '✅ ' + filename.replace('##ITEM##', itemNumberStr) + '.jpeg';
             preview.style.color = '#10b981';
             preview.style.fontWeight = 'bold';
             preview.style.borderColor = '#10b981';
-            
+
             // Update batch info display
             updateBatchInfoDisplay();
         }
@@ -1451,7 +1453,7 @@
 
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
-                
+
                 // 🎯 GET NEXT SEQUENTIAL ITEM NUMBER (persistent tracking)
                 const itemNumber = getNextItemNumber();
 
@@ -1657,10 +1659,6 @@
             const name = prompt('Product Name:', meta.name || '');
             if (name === null) return; // User cancelled
 
-            const priceInput = prompt('Price (in cents, e.g., 4599 for €45.99):', meta.price || '');
-            if (priceInput === null) return;
-            const price = parseInt(priceInput) || 0;
-
             const category = prompt('Category (BN-CLOTHES, BN-SHOES, PO-CLOTHES, PO-SHOES):', meta.category || '');
             if (category === null) return;
 
@@ -1691,7 +1689,6 @@
                         imageId: id,
                         metadata: {
                             name: name,
-                            price: price,
                             category: category,
                             brand: brand,
                             size: size,

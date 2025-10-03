@@ -723,11 +723,11 @@
     <script type="module">
         // 🎯 IMPORT TAXONOMY FROM SINGLE SOURCE
         import { SIZES, getSizesForCategory, getSizeLabelsForCategory } from '/js/taxonomy.js';
-        
+
         // 🎯 FILENAME DECODER SYSTEM - Single Source of Truth (shared with admin)
         function decodeFilenameData(filename) {
             if (!filename) return { category: null, size: null, description: null, batch: null, item: null };
-            
+
             const data = {
                 category: null,
                 size: null,
@@ -737,47 +737,47 @@
                 date: null,
                 time: null
             };
-            
+
             try {
                 // Extract category (CAT-[value])
                 const catMatch = filename.match(/CAT-([^-]+)/);
                 if (catMatch) data.category = catMatch[1];
-                
+
                 // Extract size (SIZE-[value])
                 const sizeMatch = filename.match(/SIZE-([^-]+)/);
                 if (sizeMatch) data.size = sizeMatch[1].replace(/_/g, '-'); // Convert underscores back
-                
+
                 // Extract description (DESC-[value])
                 const descMatch = filename.match(/DESC-([^-]+)/);
                 if (descMatch) data.description = descMatch[1].replace(/_/g, ' ');
-                
+
                 // Extract batch (BATCH-B[number])
                 const batchMatch = filename.match(/BATCH-B(\d+)/);
                 if (batchMatch) data.batch = parseInt(batchMatch[1]);
-                
+
                 // Extract item (ITEM-(\d+))
                 const itemMatch = filename.match(/ITEM-(\d+)/);
                 if (itemMatch) data.item = parseInt(itemMatch[1]);
-                
+
                 // Extract date (DATE-[value])
                 const dateMatch = filename.match(/DATE-(\d{8})/);
                 if (dateMatch) data.date = dateMatch[1];
-                
+
                 // Extract time (TIME-[value])
                 const timeMatch = filename.match(/TIME-(\d{4})/);
                 if (timeMatch) data.time = timeMatch[1];
-                
+
             } catch (error) {
                 console.warn('Failed to decode filename:', filename, error);
             }
-            
+
             return data;
         }
-        
+
         // 🎯 ENHANCED PRODUCT DATA EXTRACTOR (shop version)
         function getProductData(product) {
             const decoded = decodeFilenameData(product.name || product.filename || '');
-            
+
             return {
                 // Use decoded data as primary, fallback to product data
                 category: decoded.category || product.category || 'Unknown',
@@ -787,11 +787,10 @@
                 item: decoded.item || null,
                 date: decoded.date || null,
                 time: decoded.time || null,
-                
+
                 // Product-specific fields
                 id: product.id,
                 name: product.name || 'Untitled Product',
-                price: product.price || 0,
                 brand: product.brand || '',
                 condition: product.condition || '',
                 status: product.status || 'active',
@@ -799,7 +798,7 @@
                 featured: product.featured || false
             };
         }
-        
+
         // GLOBAL STATE
         let allProducts = [];
         let filteredProducts = [];
@@ -854,14 +853,14 @@
 
         // 🎯 UNIFIED SIZE RECOGNITION SYSTEM - 2-in-1 Admin & Shop
         // Copied from Admin Inventory System for Consistency
-        
+
         // 🎯 ADMIN SYSTEM INTEGRATION - updateSizesForCategory function (2-in-1)
         function updateSizesForCategory(categorySelectId = 'uploadCategory', sizeSelectId = 'uploadSize') {
             const categorySelect = document.getElementById(categorySelectId);
             const sizeSelect = document.getElementById(sizeSelectId);
-            
+
             if (!categorySelect || !sizeSelect) return;
-            
+
             const category = categorySelect.value;
 
             // Clear current options
@@ -906,11 +905,11 @@
         // 🎯 SIZE LABEL FORMATTER - Unified with Admin System using Taxonomy
         function formatSizeLabel(sizeValue) {
             if (!sizeValue) return 'One Size';
-            
+
             // Try to find the size in taxonomy for proper formatting
             // Check all categories to find the correct label
             const categories = ['BN-CLOTHES', 'PO-CLOTHES', 'BN-SHOES', 'PO-SHOES'];
-            
+
             for (const category of categories) {
                 try {
                     const sizeLabels = getSizeLabelsForCategory(category);
@@ -922,13 +921,13 @@
                     // Continue if taxonomy function fails
                 }
             }
-            
+
             // Fallback formatting if not found in taxonomy
             // Handle UK shoe sizes - convert UK-6-5 to "UK 6.5"
             if (sizeValue.startsWith('UK-')) {
                 return sizeValue.replace('UK-', 'UK ').replace('-5', '.5');
             }
-            
+
             // Handle mixed clothing sizes - convert S-TOP-M-BOTTOM to "S Top / M Bottom"
             if (sizeValue.includes('-TOP-') && sizeValue.includes('-BOTTOM')) {
                 const parts = sizeValue.split('-');
@@ -938,7 +937,7 @@
                     return `${topSize} Top / ${bottomSize} Bottom`;
                 }
             }
-            
+
             // Standard sizes (XS, S, M, L, XL) - return as is
             return sizeValue;
         }
@@ -947,11 +946,11 @@
         function createProductCard(product) {
             // 🎯 USE FILENAME DECODER SYSTEM - Single Source of Truth
             const productData = getProductData(product);
-            
+
             // Use optimized Cloudflare Images with 9:16 Instagram story aspect ratio
             const imageId = product.image ? product.image.split('/')[4] : product.id;
             const imageUrl = `https://imagedelivery.net/7B8CAeDtA5h1f1Dyh_X-hg/${imageId}/w=360,h=640,fit=cover,quality=85,format=auto`;
-            
+
             // Format the size using taxonomy system
             const formattedSize = formatSizeLabel(productData.size);
 
@@ -1000,7 +999,7 @@
                 if (categorySizes && categorySizes.length > 0) {
                     // Populate size dropdown using taxonomy
                     sizeFilter.innerHTML = '<option value="all">All Sizes</option>';
-                    
+
                     // Use size labels if available, otherwise raw sizes
                     if (sizeLabels && sizeLabels.length > 0) {
                         sizeLabels.forEach(sizeData => {
@@ -1011,7 +1010,7 @@
                             sizeFilter.innerHTML += `<option value="${size}">Size ${size}</option>`;
                         });
                     }
-                    
+
                     sizeContainer.style.display = 'block';
                 } else {
                     sizeContainer.style.display = 'none';
@@ -1032,7 +1031,7 @@
             filteredProducts = allProducts.filter(product => {
                 // 🎯 USE DECODED DATA FOR FILTERING
                 const productData = getProductData(product);
-                
+
                 const categoryMatch = currentFilter === 'all' ||
                     productData.category === currentFilter;
                 const sizeMatch = currentSize === 'all' ||

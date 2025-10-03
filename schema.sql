@@ -4,8 +4,9 @@
 -- Users table: Customer accounts
 CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    social_handle TEXT UNIQUE NOT NULL,
-    email TEXT UNIQUE,
+    email TEXT UNIQUE NOT NULL,
+    instagram_handle TEXT,
+    snapchat_handle TEXT,
     phone TEXT,
     password_hash TEXT NOT NULL,
     first_name TEXT,
@@ -13,7 +14,7 @@ CREATE TABLE IF NOT EXISTS users (
     address TEXT,
     city TEXT DEFAULT 'Dublin',
     eircode TEXT,
-    preferred_contact TEXT DEFAULT 'instagram',
+    preferred_contact TEXT DEFAULT 'email',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     last_login DATETIME,
@@ -26,7 +27,6 @@ CREATE TABLE IF NOT EXISTS orders (
     user_id INTEGER NOT NULL,
     order_number TEXT UNIQUE NOT NULL,
     status TEXT DEFAULT 'pending',
-    total_amount REAL NOT NULL,
     items_json TEXT NOT NULL,
     delivery_address TEXT,
     delivery_city TEXT,
@@ -50,8 +50,8 @@ CREATE TABLE IF NOT EXISTS sessions (
 );
 
 -- Indexes for fast lookups
-CREATE INDEX IF NOT EXISTS idx_users_social_handle ON users(social_handle);
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_users_instagram_handle ON users(instagram_handle);
 CREATE INDEX IF NOT EXISTS idx_orders_user_id ON orders(user_id);
 CREATE INDEX IF NOT EXISTS idx_orders_order_number ON orders(order_number);
 CREATE INDEX IF NOT EXISTS idx_sessions_token ON sessions(token);
