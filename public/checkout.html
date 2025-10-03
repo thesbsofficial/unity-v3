@@ -696,7 +696,8 @@
             }
 
             try {
-                const url = `https://api.opencagedata.com/geocode/v1/json?q=${encodeURIComponent(query + ' Ireland')}&key=${OPENCAGE_API_KEY}&limit=5&countrycode=ie&no_annotations=1`;
+                // Use cleaner OpenCage parameters for better Irish addresses
+                const url = `https://api.opencagedata.com/geocode/v1/json?q=${encodeURIComponent(query)}&key=${OPENCAGE_API_KEY}&limit=5&countrycode=ie&no_annotations=1&abbrv=0&address_only=1`;
                 
                 const response = await fetch(url);
                 const data = await response.json();
@@ -734,22 +735,23 @@
             if (!window.currentResults || !window.currentResults[index]) return;
 
             const result = window.currentResults[index];
-            const addr = result.components;
+            const c = result.components || {};
 
-            // Fill in the form
-            const road = addr.road || addr.street || '';
-            const house = addr.house_number || '';
-            const addressLine = `${house} ${road}`.trim();
+            // Build clean address lines (proper Irish format)
+            const line1 = [c.house_number, c.road].filter(Boolean).join(' ');
+            const locality = c.city || c.town || c.village || c.suburb || c.neighbourhood || '';
+            const eircode = c.postcode || '';
             
-            addressInput.value = addressLine || result.formatted;
-            eircodeInput.value = addr.postcode || '';
-            cityInput.value = addr.city || addr.town || addr.village || addr.county || '';
+            // Fill in the form
+            addressInput.value = line1 || locality || result.formatted;
+            eircodeInput.value = eircode;
+            cityInput.value = locality;
 
             // Hide suggestions
             suggestionsDiv.style.display = 'none';
 
-            // Focus on next field
-            if (!addr.postcode) {
+            // Focus on next field if eircode is missing
+            if (!eircode) {
                 eircodeInput.focus();
             }
         }

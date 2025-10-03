@@ -376,7 +376,8 @@
                 stats.apiCalls++;
                 updateStats();
 
-                const url = `https://api.opencagedata.com/geocode/v1/json?q=${encodeURIComponent(query + ' Ireland')}&key=${OPENCAGE_API_KEY}&limit=5&countrycode=ie&no_annotations=1`;
+                // Use cleaner OpenCage parameters for better Irish addresses
+                const url = `https://api.opencagedata.com/geocode/v1/json?q=${encodeURIComponent(query)}&key=${OPENCAGE_API_KEY}&limit=5&countrycode=ie&no_annotations=1&abbrv=0&address_only=1`;
                 
                 const response = await fetch(url);
                 const data = await response.json();
@@ -430,24 +431,24 @@
             updateStats();
 
             const result = window.currentResults[index];
-            const addr = result.components;
+            const c = result.components || {};
 
             console.log('✅ Selected address:', result);
 
-            // Build address line
-            const parts = [
-                addr.house_number,
-                addr.road || addr.street,
-                addr.suburb || addr.neighbourhood
-            ].filter(Boolean);
-            
-            const addressLine = parts.join(' ') || result.formatted;
+            // Build clean address lines (proper Irish format)
+            const line1 = [c.house_number, c.road].filter(Boolean).join(' ');
+            const locality = c.city || c.town || c.village || c.suburb || c.neighbourhood || '';
+            const county = (c.county || c.state_district || c.state || '').replace(/^County\s+/i, '');
+            const eircode = c.postcode || '';
+
+            // Build full address
+            const addressLine = line1 || locality || result.formatted;
 
             // Fill in the form
             addressInput.value = addressLine;
-            eircodeInput.value = addr.postcode || '';
-            cityInput.value = addr.city || addr.town || addr.village || '';
-            countyInput.value = addr.county || '';
+            eircodeInput.value = eircode;
+            cityInput.value = locality;
+            countyInput.value = county ? `Co. ${county}` : county;
 
             // Hide suggestions
             suggestionsDiv.style.display = 'none';
