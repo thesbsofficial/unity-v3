@@ -752,10 +752,15 @@
                 renderImages(allImages);
                 return;
             }
-            const filtered = allImages.filter(img => 
-                img.filename.toLowerCase().includes(searchTerm) ||
-                img.metadata?.tags?.toLowerCase().includes(searchTerm)
-            );
+            const filtered = allImages.filter(img => {
+                const meta = img.metadata || {};
+                return img.filename.toLowerCase().includes(searchTerm) ||
+                       (meta.name && meta.name.toLowerCase().includes(searchTerm)) ||
+                       (meta.category && meta.category.toLowerCase().includes(searchTerm)) ||
+                       (meta.brand && meta.brand.toLowerCase().includes(searchTerm)) ||
+                       (meta.size && meta.size.toLowerCase().includes(searchTerm)) ||
+                       (meta.sku && meta.sku.toLowerCase().includes(searchTerm));
+            });
             renderImages(filtered);
         }
 
@@ -838,26 +843,33 @@
 
         // Select/Deselect all
         function selectAll() {
-            const filtered = filterImages(true);
+            const searchTerm = document.getElementById('searchBox')?.value?.toLowerCase() || '';
+            let filtered = allImages;
+            if (searchTerm) {
+                filtered = allImages.filter(img => 
+                    img.filename.toLowerCase().includes(searchTerm) ||
+                    (img.metadata?.name && img.metadata.name.toLowerCase().includes(searchTerm)) ||
+                    (img.metadata?.category && img.metadata.category.toLowerCase().includes(searchTerm)) ||
+                    (img.metadata?.brand && img.metadata.brand.toLowerCase().includes(searchTerm))
+                );
+            }
             filtered.forEach(img => selectedImages.add(img.id));
             renderImages(filtered);
         }
 
         function deselectAll() {
             selectedImages.clear();
-            renderImages(filterImages(true));
-        }
-
-        // Filter images
-        function filterImages(returnOnly = false) {
-            const search = document.getElementById('searchBox').value.toLowerCase();
-            const filtered = allImages.filter(img => 
-                img.filename.toLowerCase().includes(search)
-            );
-            
-            if (returnOnly) return filtered;
+            const searchTerm = document.getElementById('searchBox')?.value?.toLowerCase() || '';
+            let filtered = allImages;
+            if (searchTerm) {
+                filtered = allImages.filter(img => 
+                    img.filename.toLowerCase().includes(searchTerm) ||
+                    (img.metadata?.name && img.metadata.name.toLowerCase().includes(searchTerm)) ||
+                    (img.metadata?.category && img.metadata.category.toLowerCase().includes(searchTerm)) ||
+                    (img.metadata?.brand && img.metadata.brand.toLowerCase().includes(searchTerm))
+                );
+            }
             renderImages(filtered);
-            return filtered;
         }
 
         // Update stats
