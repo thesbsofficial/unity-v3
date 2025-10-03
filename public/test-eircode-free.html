@@ -257,7 +257,7 @@
 
     <script>
         let sessionKey = null;
-        const BASE_URL = 'https://api-finder.eircode.ie/Latest';
+        const PROXY_URL = '/api/eircode-proxy';
         
         // Step 1: Get session key
         async function getApiKey() {
@@ -266,11 +266,7 @@
             resultDiv.innerHTML = '<div class="loading">⏳ Getting session key...</div>';
 
             try {
-                const response = await fetch(`${BASE_URL}/findergetidentity`, {
-                    headers: {
-                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-                    }
-                });
+                const response = await fetch(`${PROXY_URL}?action=identity`);
 
                 if (!response.ok) {
                     throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -330,13 +326,9 @@
                 // Remove spaces from eircode if it looks like one
                 const searchQuery = query.length <= 8 ? query.replace(/\s/g, '').toUpperCase() : query;
 
-                const url = `${BASE_URL}/finderfindaddress?key=${sessionKey}&address=${encodeURIComponent(searchQuery)}&language=en&geographicAddress=true&clientVersion=e98fe302`;
+                const url = `${PROXY_URL}?action=search&key=${sessionKey}&address=${encodeURIComponent(searchQuery)}&language=en&geographicAddress=true&clientVersion=e98fe302`;
                 
-                const response = await fetch(url, {
-                    headers: {
-                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-                    }
-                });
+                const response = await fetch(url);
 
                 const data = await response.json();
 
