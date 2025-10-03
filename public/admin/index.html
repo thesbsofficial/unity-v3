@@ -246,7 +246,10 @@
         <header class="admin-header">
             <div class="header-content">
                 <div style="display: flex; align-items: center; gap: 15px;">
-                    <a href="/" style="color: #999; text-decoration: none; font-size: 14px; padding: 6px 12px; border: 1px solid #333; border-radius: 6px; transition: all 0.2s;" onmouseover="this.style.color='#3b82f6'; this.style.borderColor='#3b82f6';" onmouseout="this.style.color='#999'; this.style.borderColor='#333';">
+                    <a href="/"
+                        style="color: #999; text-decoration: none; font-size: 14px; padding: 6px 12px; border: 1px solid #333; border-radius: 6px; transition: all 0.2s;"
+                        onmouseover="this.style.color='#3b82f6'; this.style.borderColor='#3b82f6';"
+                        onmouseout="this.style.color='#999'; this.style.borderColor='#333';">
                         ← Back to Shop
                     </a>
                     <div class="logo">🎛️ SBS Unity Admin</div>
@@ -280,11 +283,14 @@
 
                 <div class="nav-section">
                     <div class="nav-title">System</div>
+                    <a href="/admin/analytics.html" class="nav-link">
+                        <span>📊</span> Analytics
+                    </a>
                     <a href="/admin/data/" class="nav-link">
                         <span>💾</span> Data
                     </a>
                     <a href="/admin/logs/" class="nav-link">
-                        <span>📊</span> Logs & Analytics
+                        <span>�</span> Logs
                     </a>
                     <a href="/admin/security/" class="nav-link">
                         <span>🔒</span> Security
@@ -296,7 +302,8 @@
 
                 <div class="nav-section">
                     <div class="nav-title">Utilities</div>
-                    <a href="/debug.html" class="nav-link" style="background: rgba(59, 130, 246, 0.1); border-left: 3px solid #3b82f6;">
+                    <a href="/debug.html" class="nav-link"
+                        style="background: rgba(59, 130, 246, 0.1); border-left: 3px solid #3b82f6;">
                         <span>🔬</span> System Test
                     </a>
                     <a href="/admin/system-check.html" class="nav-link">
@@ -358,7 +365,8 @@
                             <div class="action-icon">👥</div>
                             <div class="action-label">Manage Customers</div>
                         </div>
-                        <div class="action-btn" onclick="window.location.href='/debug.html'" style="border: 2px solid #3b82f6;">
+                        <div class="action-btn" onclick="window.location.href='/debug.html'"
+                            style="border: 2px solid #3b82f6;">
                             <div class="action-icon">🔬</div>
                             <div class="action-label">System Test</div>
                         </div>
