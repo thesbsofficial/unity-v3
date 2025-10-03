@@ -3,10 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Checkout - SBS Unity</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Checkout - SBS Official</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    
+    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Analytics Tracker -->
     <script src="/js/analytics-tracker.js"></script>
+    
+    <!-- Helper System -->
+    <link rel="stylesheet" href="/css/helper.css">
+    <script src="/js/helper.js" defer></script>
+    
     <style>
         * {
             margin: 0;
@@ -14,46 +25,112 @@
             box-sizing: border-box;
         }
 
+        :root {
+            --primary-black: #000000;
+            --primary-gold: #ffd700;
+            --bg-dark: #0a0a0a;
+            --bg-card: #1a1a1a;
+            --text-primary: #ffffff;
+            --text-secondary: #cccccc;
+            --border-subtle: rgba(255, 255, 255, 0.1);
+            --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            line-height: 1.6;
             min-height: 100vh;
-            padding: 20px;
+            padding-top: 80px;
+        }
+
+        /* HEADER */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-subtle);
+            padding: 1rem 0;
+        }
+
+        .nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .nav-left {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-center {
+            display: flex;
+            justify-content: center;
+        }
+
+        .nav-right {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+            justify-content: flex-end;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            text-decoration: none;
+            letter-spacing: 0.05em;
+        }
+
+        .logo img {
+            height: 40px;
+            width: auto;
+        }
+
+        .nav-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+            white-space: nowrap;
+        }
+
+        .nav-link:hover {
+            color: var(--primary-gold);
+        }
+
+        .btn-gold {
+            background: var(--primary-gold);
+            color: var(--primary-black);
+            padding: 0.5rem 1.5rem;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .btn-gold:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
         }
 
         .container {
             max-width: 1200px;
             margin: 0 auto;
-        }
-
-        .header {
-            background: white;
-            padding: 20px 30px;
-            border-radius: 12px;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .header h1 {
-            color: #667eea;
-            font-size: 28px;
-        }
-
-        .back-link {
-            color: #667eea;
-            text-decoration: none;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: transform 0.2s;
-        }
-
-        .back-link:hover {
-            transform: translateX(-5px);
+            padding: 2rem;
         }
 
         .checkout-grid {
@@ -69,18 +146,20 @@
         }
 
         .section {
-            background: white;
+            background: var(--bg-card);
             padding: 30px;
             border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border: 1px solid var(--border-subtle);
+            box-shadow: var(--shadow-card);
         }
 
         .section h2 {
-            color: #333;
+            color: var(--primary-gold);
             margin-bottom: 20px;
             padding-bottom: 15px;
-            border-bottom: 2px solid #667eea;
+            border-bottom: 1px solid var(--border-subtle);
             font-size: 22px;
+            font-weight: 700;
         }
 
         .form-group {
@@ -89,7 +168,7 @@
 
         .form-group label {
             display: block;
-            color: #333;
+            color: var(--text-primary);
             font-weight: 600;
             margin-bottom: 8px;
             font-size: 14px;
@@ -99,16 +178,24 @@
         .form-group textarea {
             width: 100%;
             padding: 12px 15px;
-            border: 2px solid #e0e0e0;
+            background: var(--bg-dark);
+            border: 1px solid var(--border-subtle);
             border-radius: 8px;
+            color: var(--text-primary);
             font-size: 16px;
-            transition: border-color 0.3s;
+            transition: all 0.3s;
         }
 
         .form-group input:focus,
         .form-group textarea:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: var(--primary-gold);
+            box-shadow: 0 0 0 2px rgba(255, 215, 0, 0.1);
+        }
+
+        .form-group input::placeholder,
+        .form-group textarea::placeholder {
+            color: #666;
         }
 
         .form-group textarea {
@@ -132,10 +219,11 @@
             display: flex;
             gap: 15px;
             padding: 15px;
-            background: #f8f9fa;
+            background: var(--bg-dark);
             border-radius: 8px;
             margin-bottom: 10px;
-            border-left: 4px solid #667eea;
+            border-left: 3px solid var(--primary-gold);
+            border: 1px solid var(--border-subtle);
         }
 
         .order-item img {
@@ -150,25 +238,27 @@
         }
 
         .order-item-details h3 {
-            color: #333;
+            color: var(--text-primary);
             font-size: 16px;
             margin-bottom: 5px;
+            font-weight: 600;
         }
 
         .order-item-details p {
-            color: #666;
+            color: var(--text-secondary);
             font-size: 14px;
             margin: 3px 0;
         }
 
         .order-item-price {
-            color: #ffd700;
+            color: var(--primary-gold);
             font-weight: bold;
             font-size: 18px;
         }
 
         .order-summary {
-            background: #f8f9fa;
+            background: var(--bg-dark);
+            border: 1px solid var(--border-subtle);
             padding: 20px;
             border-radius: 8px;
             margin-top: 20px;
@@ -178,7 +268,8 @@
             display: flex;
             justify-content: space-between;
             padding: 10px 0;
-            border-bottom: 1px solid #e0e0e0;
+            color: var(--text-secondary);
+            border-bottom: 1px solid var(--border-subtle);
         }
 
         .summary-row:last-child {
@@ -186,7 +277,7 @@
             padding-top: 15px;
             font-size: 20px;
             font-weight: bold;
-            color: #667eea;
+            color: var(--primary-gold);
         }
 
         .empty-cart {
@@ -215,14 +306,17 @@
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: var(--primary-gold);
+            color: var(--primary-black);
             margin-top: 20px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
 
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4);
         }
 
         .btn-primary:disabled {
@@ -232,17 +326,22 @@
         }
 
         .info-box {
-            background: #e8f4fd;
-            border-left: 4px solid #2196F3;
+            background: rgba(255, 215, 0, 0.1);
+            border-left: 3px solid var(--primary-gold);
             padding: 15px;
             border-radius: 8px;
             margin-bottom: 20px;
+            border: 1px solid rgba(255, 215, 0, 0.2);
         }
 
         .info-box p {
-            color: #0d47a1;
+            color: var(--text-primary);
             font-size: 14px;
             line-height: 1.5;
+        }
+
+        .info-box strong {
+            color: var(--primary-gold);
         }
 
         .success-message {
@@ -258,7 +357,7 @@
         .success-icon {
             width: 80px;
             height: 80px;
-            background: #4caf50;
+            background: var(--primary-gold);
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -266,21 +365,57 @@
             margin: 0 auto 20px;
         }
 
+        .success-icon i {
+            color: var(--primary-black) !important;
+        }
+
         .required {
-            color: #f44336;
+            color: var(--primary-gold);
+        }
+
+        @media (max-width: 768px) {
+            .nav {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .nav-left, .nav-right {
+                justify-content: center;
+            }
+
+            .checkout-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
+    <!-- HEADER -->
+    <header class="header">
+        <nav class="nav">
+            <div class="nav-left">
+                <a href="/shop" class="nav-link">Shop</a>
+                <a href="/sell" class="nav-link">Sell</a>
+            </div>
+            <div class="nav-center">
+                <a href="/" class="logo">
+                    <img src="/SBS (Your Story).png" alt="SBS"
+                        onerror="this.style.display='none'; this.parentNode.innerHTML='SBS'">
+                </a>
+            </div>
+            <div class="nav-right">
+                <a href="/login" class="nav-link">Sign In</a>
+                <a href="/register" class="btn-gold">Sign Up</a>
+            </div>
+        </nav>
+    </header>
+
     <div class="container">
-        <!-- Header -->
-        <div class="header">
-            <h1>🛒 Checkout</h1>
-            <a href="/shop" class="back-link">
-                <i data-lucide="arrow-left" class="w-5 h-5"></i>
-                Back to Shop
-            </a>
-        </div>
 
         <!-- Checkout Grid -->
         <div class="checkout-grid" id="checkout-content">
@@ -378,14 +513,14 @@
         <!-- Success Message (Hidden by default) -->
         <div class="section success-message" id="success-message">
             <div class="success-icon">
-                <i data-lucide="check" style="width: 50px; height: 50px; color: white;"></i>
+                <i data-lucide="check" style="width: 50px; height: 50px;"></i>
             </div>
-            <h2 style="color: #4caf50; margin-bottom: 15px;">Order Placed Successfully!</h2>
-            <p style="color: #666; margin-bottom: 25px; font-size: 16px;">
+            <h2 style="color: var(--primary-gold); margin-bottom: 15px;">Order Placed Successfully!</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 25px; font-size: 16px;">
                 Thank you for your order! We'll contact you shortly to confirm delivery details.
             </p>
-            <p style="color: #999; margin-bottom: 25px;">
-                Order ID: <strong id="order-id"></strong>
+            <p style="color: var(--text-secondary); margin-bottom: 25px;">
+                Order ID: <strong style="color: var(--primary-gold);" id="order-id"></strong>
             </p>
             <a href="/shop" class="btn btn-primary" style="max-width: 300px; margin: 0 auto;">
                 <i data-lucide="arrow-left" class="w-5 h-5"></i>
@@ -395,9 +530,9 @@
 
         <!-- Empty Cart Message -->
         <div class="section empty-cart" id="empty-cart" style="display: none;">
-            <i data-lucide="shopping-cart" style="width: 80px; height: 80px; color: #ddd;"></i>
-            <h2 style="color: #999; margin: 20px 0;">Your cart is empty</h2>
-            <p style="margin-bottom: 25px;">Add some items to your cart before checking out</p>
+            <i data-lucide="shopping-cart" style="width: 80px; height: 80px; color: var(--border-subtle);"></i>
+            <h2 style="color: var(--text-secondary); margin: 20px 0;">Your cart is empty</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 25px;">Add some items to your cart before checking out</p>
             <a href="/shop" class="btn btn-primary" style="max-width: 300px; margin: 0 auto;">
                 <i data-lucide="shopping-bag" class="w-5 h-5"></i>
                 Start Shopping
