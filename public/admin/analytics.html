@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics - SBS Admin</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-dark: #0a0a0a;
+            --bg-card: #1a1a1a;
+            --bg-hover: #252525;
+            --primary-gold: #ffd700;
+            --text-primary: #ffffff;
+            --text-secondary: #999999;
+            --border: rgba(255, 255, 255, 0.1);
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        h1 {
+            font-size: 32px;
+            font-weight: 700;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            color: var(--text-primary);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background: var(--bg-hover);
+            border-color: var(--primary-gold);
+        }
+
+        .btn.active {
+            background: var(--primary-gold);
+            color: var(--bg-dark);
+            border-color: var(--primary-gold);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab:hover {
+            background: var(--bg-hover);
+        }
+
+        .tab.active {
+            background: var(--primary-gold);
+            color: var(--bg-dark);
+            border-color: var(--primary-gold);
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .metric-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            transition: all 0.2s;
+        }
+
+        .metric-card:hover {
+            border-color: var(--primary-gold);
+            transform: translateY(-2px);
+        }
+
+        .metric-icon {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .metric-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 5px;
+        }
+
+        .metric-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .metric-trend {
+            font-size: 12px;
+            margin-top: 8px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        .trend-up { background: rgba(34, 197, 94, 0.2); color: var(--success); }
+        .trend-down { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+        .trend-stable { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
+
+        .content-section {
+            display: none;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        .data-table {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .table-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+            font-weight: 600;
+        }
+
+        .table-row {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .table-row:last-child {
+            border-bottom: none;
+        }
+
+        .table-row:hover {
+            background: var(--bg-hover);
+        }
+
+        .badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .badge-success { background: rgba(34, 197, 94, 0.2); color: var(--success); }
+        .badge-warning { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
+        .badge-danger { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+
+        .insights-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .insight-item {
+            padding: 12px;
+            margin-bottom: 10px;
+            background: rgba(255, 215, 0, 0.1);
+            border-left: 3px solid var(--primary-gold);
+            border-radius: 4px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-secondary);
+        }
+
+        .spinner {
+            border: 3px solid var(--border);
+            border-top: 3px solid var(--primary-gold);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid var(--danger);
+            color: var(--danger);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-secondary);
+        }
+
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📊 Analytics Dashboard</h1>
+        <div class="controls">
+            <button class="btn active" data-period="week">Week</button>
+            <button class="btn" data-period="month">Month</button>
+            <button class="btn" data-period="day">Today</button>
+            <button class="btn" data-period="all">All Time</button>
+        </div>
+    </div>
+
+    <div class="tabs">
+        <div class="tab active" data-view="overview">📊 Overview</div>
+        <div class="tab" data-view="products">📦 Products</div>
+        <div class="tab" data-view="customers">👥 Customers</div>
+        <div class="tab" data-view="sellers">📤 Sellers</div>
+    </div>
+
+    <div id="loading" class="loading">
+        <div class="spinner"></div>
+        <div>Loading analytics...</div>
+    </div>
+
+    <div id="error" class="error" style="display: none;"></div>
+
+    <!-- OVERVIEW SECTION -->
+    <div id="overview-section" class="content-section">
+        <div class="metrics-grid" id="overview-metrics"></div>
+        <div class="insights-box" id="overview-insights"></div>
+    </div>
+
+    <!-- PRODUCTS SECTION -->
+    <div id="products-section" class="content-section">
+        <div class="metrics-grid" id="product-metrics"></div>
+        
+        <div class="data-table">
+            <div class="table-header">🔥 Hot Products</div>
+            <div id="hot-products"></div>
+        </div>
+
+        <div class="data-table">
+            <div class="table-header">⚡ Fast Movers</div>
+            <div id="fast-movers"></div>
+        </div>
+
+        <div class="data-table">
+            <div class="table-header">📊 Category Performance</div>
+            <div id="category-stats"></div>
+        </div>
+    </div>
+
+    <!-- CUSTOMERS SECTION -->
+    <div id="customers-section" class="content-section">
+        <div class="metrics-grid" id="customer-metrics"></div>
+        
+        <div class="data-table">
+            <div class="table-header">👑 Top Customers</div>
+            <div id="top-customers"></div>
+        </div>
+
+        <div class="data-table">
+            <div class="table-header">📍 Locations</div>
+            <div id="customer-locations"></div>
+        </div>
+    </div>
+
+    <!-- SELLERS SECTION -->
+    <div id="sellers-section" class="content-section">
+        <div class="empty-state">
+            <div class="empty-state-icon">📦</div>
+            <h2>Seller Analytics Coming Soon</h2>
+            <p>Track seller submissions, conversion rates, and source quality</p>
+        </div>
+    </div>
+
+    <script>
+        let currentView = 'overview';
+        let currentPeriod = 'week';
+
+        // TAB SWITCHING
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                currentView = tab.dataset.view;
+                loadAnalytics();
+            });
+        });
+
+        // PERIOD SWITCHING
+        document.querySelectorAll('.btn[data-period]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.btn[data-period]').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentPeriod = btn.dataset.period;
+                loadAnalytics();
+            });
+        });
+
+        // LOAD ANALYTICS
+        async function loadAnalytics() {
+            const loading = document.getElementById('loading');
+            const error = document.getElementById('error');
+            
+            // Show loading
+            loading.style.display = 'block';
+            error.style.display = 'none';
+            document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+
+            try {
+                const response = await fetch(`/api/analytics-v2?view=${currentView}&period=${currentPeriod}`);
+                const data = await response.json();
+
+                if (!data.success) {
+                    throw new Error(data.error || 'Failed to load analytics');
+                }
+
+                loading.style.display = 'none';
+                
+                // Show correct section
+                document.getElementById(`${currentView}-section`).classList.add('active');
+
+                // Render data
+                if (currentView === 'overview') {
+                    renderOverview(data);
+                } else if (currentView === 'products') {
+                    renderProducts(data);
+                } else if (currentView === 'customers') {
+                    renderCustomers(data);
+                }
+
+            } catch (err) {
+                loading.style.display = 'none';
+                error.style.display = 'block';
+                error.textContent = `Error: ${err.message}`;
+            }
+        }
+
+        // RENDER OVERVIEW
+        function renderOverview(data) {
+            const metricsHtml = data.quick_insights.map(insight => `
+                <div class="metric-card">
+                    <div class="metric-icon">${insight.icon}</div>
+                    <div class="metric-label">${insight.metric}</div>
+                    <div class="metric-value">${insight.value}</div>
+                    <span class="metric-trend trend-${insight.trend}">${insight.trend}</span>
+                </div>
+            `).join('');
+            document.getElementById('overview-metrics').innerHTML = metricsHtml;
+
+            if (data.upgrade_available) {
+                const upgradeHtml = Object.entries(data.upgrade_available).map(([key, desc]) => `
+                    <div class="insight-item">💡 <strong>${key}</strong>: ${desc}</div>
+                `).join('');
+                document.getElementById('overview-insights').innerHTML = `
+                    <h3 style="margin-bottom: 15px;">Available Analytics</h3>
+                    ${upgradeHtml}
+                `;
+            }
+        }
+
+        // RENDER PRODUCTS
+        function renderProducts(data) {
+            // Summary metrics
+            const metricsHtml = `
+                <div class="metric-card">
+                    <div class="metric-icon">📦</div>
+                    <div class="metric-label">Total Products</div>
+                    <div class="metric-value">${data.summary.total_products}</div>
+                </div>
+                ${data.summary.by_status.map(s => `
+                    <div class="metric-card">
+                        <div class="metric-icon">${s.status === 'active' ? '✅' : s.status === 'sold' ? '💰' : '👁️'}</div>
+                        <div class="metric-label">${s.status.toUpperCase()}</div>
+                        <div class="metric-value">${s.count}</div>
+                    </div>
+                `).join('')}
+            `;
+            document.getElementById('product-metrics').innerHTML = metricsHtml;
+
+            // Hot products
+            const hotHtml = data.hot_products.length > 0 ? data.hot_products.map(p => `
+                <div class="table-row">
+                    <div>${p.image_id.substring(0, 16)}...</div>
+                    <div><span class="badge badge-success">${p.category}</span></div>
+                    <div>${p.size || 'N/A'}</div>
+                    <div>👁️ ${p.views_count} views</div>
+                </div>
+            `).join('') : '<div class="empty-state"><p>No hot products yet</p></div>';
+            document.getElementById('hot-products').innerHTML = hotHtml;
+
+            // Fast movers
+            const fastHtml = data.fast_movers.length > 0 ? data.fast_movers.map(p => `
+                <div class="table-row">
+                    <div>${p.image_id.substring(0, 16)}...</div>
+                    <div><span class="badge badge-warning">${p.category}</span></div>
+                    <div>${p.size || 'N/A'}</div>
+                    <div>⚡ ${p.days_to_sell} days</div>
+                </div>
+            `).join('') : '<div class="empty-state"><p>No sales yet</p></div>';
+            document.getElementById('fast-movers').innerHTML = fastHtml;
+
+            // Category stats
+            const categoryHtml = data.category_performance.length > 0 ? data.category_performance.map(c => `
+                <div class="table-row">
+                    <div><strong>${c.category}</strong></div>
+                    <div>${c.active} active</div>
+                    <div>${c.sold} sold</div>
+                    <div>👁️ ${c.total_views} views</div>
+                </div>
+            `).join('') : '<div class="empty-state"><p>No data yet</p></div>';
+            document.getElementById('category-stats').innerHTML = categoryHtml;
+        }
+
+        // RENDER CUSTOMERS
+        function renderCustomers(data) {
+            // Summary metrics
+            const metricsHtml = `
+                <div class="metric-card">
+                    <div class="metric-icon">👥</div>
+                    <div class="metric-label">Active Customers</div>
+                    <div class="metric-value">${data.summary.total_active}</div>
+                </div>
+                ${data.customer_types.map(t => `
+                    <div class="metric-card">
+                        <div class="metric-icon">${t.type === 'new' ? '🆕' : '🔄'}</div>
+                        <div class="metric-label">${t.type.toUpperCase()}</div>
+                        <div class="metric-value">${t.count}</div>
+                    </div>
+                `).join('')}
+            `;
+            document.getElementById('customer-metrics').innerHTML = metricsHtml;
+
+            // Top customers
+            const topHtml = data.summary.top_customers.length > 0 ? data.summary.top_customers.map(c => `
+                <div class="table-row">
+                    <div><strong>${c.email}</strong></div>
+                    <div>${c.city || 'Unknown'}</div>
+                    <div><span class="badge badge-success">${c.order_count} orders</span></div>
+                    <div>${c.preferred_contact}</div>
+                </div>
+            `).join('') : '<div class="empty-state"><p>No customers yet</p></div>';
+            document.getElementById('top-customers').innerHTML = topHtml;
+
+            // Locations
+            const locationHtml = data.locations.length > 0 ? data.locations.map(l => `
+                <div class="table-row">
+                    <div><strong>📍 ${l.city}</strong></div>
+                    <div colspan="3">${l.customer_count} customers</div>
+                </div>
+            `).join('') : '<div class="empty-state"><p>No location data yet</p></div>';
+            document.getElementById('customer-locations').innerHTML = locationHtml;
+        }
+
+        // INIT
+        loadAnalytics();
+    </script>
+</body>
+</html>
