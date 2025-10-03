@@ -1,0 +1,74 @@
+================================================================
+CLOUDFLARE DNS RECORDS TO ADD
+================================================================
+
+Go to: https://dash.cloudflare.com
+Select: thesbsofficial.com
+Click: DNS > Records > Add record
+
+
+RECORD 1 - SPF (Required for Email Sending)
+================================================================
+Type:    TXT
+Name:    @
+Content: v=spf1 include:_spf.mx.cloudflare.net include:relay.mailchannels.net ~all
+TTL:     Auto
+Proxy:   DNS only (grey cloud)
+
+
+RECORD 2 - MailChannels Lockdown (Security)
+================================================================
+Type:    TXT
+Name:    _mailchannels
+Content: v=mc1 cfid=thesbsofficial.com
+TTL:     Auto
+Proxy:   DNS only (grey cloud)
+
+
+AFTER ADDING BOTH RECORDS:
+================================================================
+1. Wait 5 minutes for DNS propagation
+2. Test email with this command:
+
+Invoke-WebRequest -Uri "https://thesbsofficial.com/api/test-email" -Method POST -Headers @{"Content-Type"="application/json"} -Body '{"email":"fredbademosi1@icloud.com"}'
+
+
+WHAT THESE RECORDS DO:
+================================================================
+✅ Keep Email Routing working (admin@thesbsofficial.com forwards)
+✅ Enable MailChannels for sending emails
+✅ Secure your domain from unauthorized email sending
+✅ No conflicts between Email Routing and MailChannels
+
+
+COPY-PASTE VALUES:
+================================================================
+
+SPF Content (copy this):
+v=spf1 include:_spf.mx.cloudflare.net include:relay.mailchannels.net ~all
+
+Lockdown Content (copy this):
+v=mc1 cfid=thesbsofficial.com
+
+
+VERIFICATION:
+================================================================
+After 5 minutes, check if records are live:
+
+Resolve-DnsName -Name thesbsofficial.com -Type TXT
+Resolve-DnsName -Name _mailchannels.thesbsofficial.com -Type TXT
+
+You should see both TXT records listed.
+
+
+TROUBLESHOOTING:
+================================================================
+If email still doesn't work after 5 minutes:
+1. Verify both DNS records are added correctly
+2. Check for typos in the content
+3. Make sure TTL is set to Auto
+4. Wait another 5 minutes (DNS can be slow)
+5. Run the test email command again
+
+
+================================================================

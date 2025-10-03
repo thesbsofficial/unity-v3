@@ -1,0 +1,2218 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>📦 SBS Media Hub</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f0f23, #1a1a3e, #2d1b69);
+            color: #e8e8ff;
+            min-height: 100vh;
+            padding: 10px;
+            /* iPhone-friendly scrolling */
+            -webkit-overflow-scrolling: touch;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 20px 15px;
+            background: rgba(45, 27, 105, 0.8);
+            border: 2px solid #8b5cf6;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(139, 92, 246, 0.3);
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            color: #a78bfa;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 10px rgba(167, 139, 250, 0.5);
+        }
+
+        /* iPhone-optimized subtitle */
+        .header .subtitle {
+            font-size: 1rem;
+            color: #e8e8ff;
+            font-weight: 300;
+        }
+
+        .controls {
+            background: rgba(45, 27, 105, 0.8);
+            border: 2px solid #8b5cf6;
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(139, 92, 246, 0.2);
+        }
+
+        .button {
+            padding: 16px 20px;
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            font-weight: 600;
+            font-size: 16px;
+            margin: 8px 4px;
+            min-height: 44px; /* Apple's minimum touch target */
+            min-width: 44px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            touch-action: manipulation; /* Prevents zoom on tap */
+            -webkit-appearance: none;
+            appearance: none;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+        }
+
+        .button:hover, .button:focus {
+            background: linear-gradient(135deg, #06d6a0, #118ab2);
+            transform: scale(1.02);
+            box-shadow: 0 6px 20px rgba(6, 214, 160, 0.4);
+        }
+
+        .button:active {
+            transform: scale(0.98);
+        }
+
+        .button.active {
+            background: linear-gradient(135deg, #06d6a0, #118ab2);
+            box-shadow: 0 6px 20px rgba(6, 214, 160, 0.4);
+        }
+
+        /* Mobile-first grid - single column on small screens */
+        .inventory-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-top: 20px;
+            padding: 10px;
+        }
+
+        /* Tablet and larger screens */
+        @media (min-width: 768px) {
+            .inventory-grid {
+                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+                gap: 25px;
+                padding: 20px;
+            }
+        }
+
+        .item-card {
+            background: rgba(45, 27, 105, 0.6);
+            border: 2px solid #8b5cf6;
+            border-radius: 15px;
+            padding: 15px;
+            position: relative;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.2);
+            overflow: hidden;
+        }
+
+        .item-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #06d6a0, transparent);
+            transition: left 0.5s ease;
+        }
+
+        .item-card:hover::before {
+            left: 100%;
+        }
+
+        .item-card:hover {
+            transform: translateY(-5px);
+            border-color: #06d6a0;
+            box-shadow: 0 10px 30px rgba(6, 214, 160, 0.3);
+        }
+
+        .item-image {
+            width: 100%;
+            height: 320px; /* 9:16 aspect ratio - if width is ~180px, height should be 320px */
+            object-fit: contain; /* Shows full image without cropping */
+            border-radius: 12px;
+            margin-bottom: 15px;
+            border: 2px solid rgba(139, 92, 246, 0.4);
+            transition: all 0.3s ease;
+            background: linear-gradient(45deg, rgba(6, 214, 160, 0.1), rgba(139, 92, 246, 0.1));
+            /* Center the image in the container */
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .item-image:hover {
+            border-color: #06d6a0;
+            transform: scale(1.02);
+            box-shadow: 0 8px 25px rgba(6, 214, 160, 0.4);
+        }
+
+        .item-name {
+            color: #a78bfa;
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 16px;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+            line-height: 1.3;
+        }
+
+        .item-price {
+            color: #06d6a0;
+            font-weight: bold;
+            font-size: 22px;
+            margin-bottom: 12px;
+            text-shadow: 0 0 10px rgba(6, 214, 160, 0.5);
+        }
+
+        .item-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+
+        .tag {
+            background: linear-gradient(45deg, rgba(139, 92, 246, 0.4), rgba(139, 92, 246, 0.2));
+            color: #a78bfa;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 11px;
+            font-weight: bold;
+            border: 1px solid rgba(139, 92, 246, 0.6);
+            text-transform: uppercase;
+        }
+
+        /* Specific tag styles for sections */
+        .tag-featured { 
+            background: linear-gradient(45deg, #ff4444, #ff6666); 
+            color: white; 
+            border-color: #ff4444;
+        }
+        
+        .tag-sale { 
+            background: linear-gradient(45deg, #ff8800, #ffaa33); 
+            color: white; 
+            border-color: #ff8800;
+        }
+        
+        .tag-new { 
+            background: linear-gradient(45deg, #00ff44, #66ff88); 
+            color: black; 
+            border-color: #00ff44;
+        }
+        
+        .tag-live { 
+            background: linear-gradient(45deg, #00ff00, #44ff44); 
+            color: black; 
+            border-color: #00ff00;
+        }
+        
+        .tag-test {
+            background: linear-gradient(45deg, #9944ff, #bb66ff);
+            color: white;
+            border-color: #9944ff;
+        }
+        
+        .tag-trending {
+            background: linear-gradient(45deg, #4488ff, #66aaff);
+            color: white;
+            border-color: #4488ff;
+        }
+        
+        .tag-staff-picks {
+            background: linear-gradient(45deg, #ff44ff, #ff66ff);
+            color: white;
+            border-color: #ff44ff;
+        }
+        
+        .tag-limited {
+            background: linear-gradient(45deg, #ffaa00, #ffcc44);
+            color: black;
+            border-color: #ffaa00;
+        }
+        
+        .tag-bestseller {
+            background: linear-gradient(45deg, #ffd700, #fff44f);
+            color: black;
+            border-color: #ffd700;
+        }
+        
+        .tag-premium {
+            background: linear-gradient(45deg, #8a2be2, #9370db);
+            color: white;
+            border-color: #8a2be2;
+        }
+        
+        .tag-clearance {
+            background: linear-gradient(45deg, #dc143c, #ff6347);
+            color: white;
+            border-color: #dc143c;
+        }
+        
+        .tag-category, .tag-size {
+            background: rgba(0, 255, 65, 0.2);
+            color: #00ff41;
+            border-color: rgba(0, 255, 65, 0.5);
+        }
+
+        .item-details {
+            font-size: 12px;
+            color: #aaa;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 8px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .status-icon {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 20px;
+            z-index: 10;
+            background: rgba(6, 214, 160, 0.3);
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #06d6a0;
+        }
+
+        .loading {
+            text-align: center;
+            color: #a78bfa;
+            font-size: 18px;
+            padding: 50px;
+            background: rgba(45, 27, 105, 0.3);
+            border-radius: 15px;
+            border: 2px solid #8b5cf6;
+            margin: 20px;
+        }
+
+        /* Gallery View */
+        .gallery-view .inventory-grid {
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        }
+
+        .gallery-view .item-card {
+            padding: 20px;
+        }
+
+        .gallery-view .item-image {
+            width: 90px;
+            height: 160px; /* 9:16 aspect ratio for thumbnails (90x160) */
+            object-fit: contain; /* Shows full image */
+            float: left;
+            margin-right: 20px;
+            margin-bottom: 10px;
+        }
+
+        /* Customer View */
+        .customer-view .inventory-grid {
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        }
+
+        .customer-view .item-card {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .customer-view .item-image {
+            height: 280px; /* 9:16 aspect ratio for customer view (~157x280) */
+            object-fit: contain; /* Shows full image without cropping */
+        }
+
+        /* Enhanced Search Animations */
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Filter Button Enhancements */
+        .filter-btn:hover {
+            opacity: 1 !important;
+            transform: scale(1.05) !important;
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3) !important;
+        }
+
+        .filter-btn:active {
+            transform: scale(0.95) !important;
+        }
+
+        /* Notification Styles */
+        .notification {
+            animation: slideIn 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🎯 SBS Media Hub</h1>
+            <p class="subtitle">Simple Photo Browser</p>
+            <button class="button" onclick="showHelp()" style="position: absolute; top: 20px; right: 20px; padding: 8px 12px; font-size: 14px;">❓ Help</button>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls">
+            <!-- Upload Button -->
+            <button class="button" onclick="showUpload()" style="margin-bottom: 20px;">📤 Upload Photos</button>
+            
+            <!-- Main Browse Button -->
+            <div style="margin-bottom: 15px;">
+                <button class="button active" id="allBtn" onclick="loadImagesAndShowSection('all')" style="font-size: 18px; width: 100%; background: linear-gradient(135deg, #06d6a0, #118ab2); box-shadow: 0 4px 15px rgba(6, 214, 160, 0.3);">
+                    🎯 Browse Photos
+                    <div style="font-size: 14px; opacity: 0.9; margin-top: 2px;">Click to start</div>
+                </button>
+            </div>
+
+            <!-- Filter Categories -->
+            <div style="background: rgba(45, 27, 105, 0.4); border: 2px solid #8b5cf6; border-radius: 12px; padding: 15px;">
+                <h5 style="color: #a78bfa; margin: 0 0 12px 0; font-size: 14px;">📂 Sort Photos</h5>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px;">
+                        <button onclick="quickFilter('new')" class="filter-btn" data-filter="new" style="
+                            padding: 14px 18px; 
+                            background: linear-gradient(135deg, #22c55e, #16a34a); 
+                            border: none; 
+                            color: white; 
+                            border-radius: 15px; 
+                            font-size: 15px; 
+                            cursor: pointer; 
+                            transition: all 0.3s ease;
+                            box-shadow: 0 4px 15px rgba(34, 197, 94, 0.4);
+                            font-weight: 600;
+                        ">
+                            🌟 New Photos
+                            <div style="font-size: 11px; opacity: 0.95; margin-top: 3px;">Recent</div>
+                        </button>
+                        
+                        <button onclick="quickFilter('sale')" class="filter-btn" data-filter="sale" style="
+                            padding: 14px 18px; 
+                            background: linear-gradient(135deg, #ff6b35, #f7931e); 
+                            border: none; 
+                            color: white; 
+                            border-radius: 15px; 
+                            font-size: 15px; 
+                            cursor: pointer; 
+                            transition: all 0.3s ease;
+                            box-shadow: 0 4px 15px rgba(255, 107, 53, 0.4);
+                            font-weight: 600;
+                        ">
+                            🔥 Sale Items
+                            <div style="font-size: 11px; opacity: 0.95; margin-top: 3px;">On Sale</div>
+                        </button>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                        <button onclick="quickFilter('general')" class="filter-btn" data-filter="general" style="
+                            padding: 14px 18px; 
+                            background: linear-gradient(135deg, #8b5cf6, #7c3aed); 
+                            border: none; 
+                            color: white; 
+                            border-radius: 15px; 
+                            font-size: 15px; 
+                            cursor: pointer; 
+                            transition: all 0.3s ease;
+                            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+                            font-weight: 600;
+                        ">
+                            📂 All Photos
+                            <div style="font-size: 11px; opacity: 0.95; margin-top: 3px;">Everything</div>
+                        </button>
+                        
+                        <button onclick="clearAllFilters()" style="
+                            padding: 14px 18px; 
+                            background: linear-gradient(135deg, #64748b, #475569); 
+                            border: none; 
+                            color: white; 
+                            border-radius: 15px; 
+                            font-size: 15px; 
+                            cursor: pointer; 
+                            transition: all 0.3s ease;
+                            box-shadow: 0 4px 15px rgba(100, 116, 139, 0.4);
+                            font-weight: 600;
+                        ">
+                            🔄 Reset
+                            <div style="font-size: 11px; opacity: 0.95; margin-top: 3px;">Start Over</div>
+                        </button>
+                    </div>
+
+
+
+
+                <p style="color: #94a3b8; font-size: 12px; margin-top: 10px; text-align: center;">💡 Click any button to sort your photos</p>
+            </div>
+
+            <div id="status" style="margin-top: 15px; color: #00ff41; font-weight: bold;"></div>
+            
+            <!-- COMPARISON SUMMARY REMOVED - keeping it simple -->
+        </div>
+
+        <!-- Inventory Display -->
+        <div id="inventoryContainer">
+            <div class="loading">
+                📦 Click "🎯 Browse Photos" button above to see your photos
+            </div>
+        </div>
+
+        <!-- Simplified Upload Section for iPhone -->
+        <div id="uploadSection" style="display: none; background: rgba(15, 15, 35, 0.9); border: 2px solid #D4AF37; border-radius: 15px; padding: 20px; margin-top: 20px;">
+            <h2 style="color: #D4AF37; text-align: center; margin-bottom: 20px; font-size: 20px;">📸 Upload Photos</h2>
+            
+            <!-- Simplified Drop Zone -->
+            <div id="dropZone" style="border: 3px dashed #D4AF37; border-radius: 15px; padding: 30px; text-align: center; margin-bottom: 20px; cursor: pointer; touch-action: manipulation;" onclick="document.getElementById('fileInput').click()">
+                <div style="font-size: 48px; margin-bottom: 10px;">📸</div>
+                <div class="drop-zone-text" style="color: #D4AF37; font-size: 18px; margin-bottom: 10px; font-weight: 600;">Tap to Select Photos</div>
+                <div style="color: #00ff41; font-size: 14px;">JPEG files only</div>
+            </div>
+            
+            <input type="file" id="fileInput" multiple accept=".jpg,.jpeg,image/jpeg" style="display: none;">
+            
+            <!-- Mobile-optimized form -->
+            <div style="margin-bottom: 20px;">
+                <label style="color: #D4AF37; display: block; margin-bottom: 8px; font-size: 16px; font-weight: 600;">Category & Condition:</label>
+                <select id="category" style="width: 100%; padding: 15px; background: rgba(26, 26, 46, 0.9); border: 2px solid #D4AF37; border-radius: 12px; color: #00ff41; font-size: 16px; min-height: 44px;">
+                    <option value="">Choose category...</option>
+                    <option value="BN-CLOTHES">🆕 New Clothes</option>
+                    <option value="BN-SHOES">🆕 New Shoes</option>
+                    <option value="PO-CLOTHES">♻️ Pre-owned Clothes</option>
+                    <option value="PO-SHOES">♻️ Pre-owned Shoes</option>
+                </select>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <label style="color: #D4AF37; display: block; margin-bottom: 8px; font-size: 16px; font-weight: 600;">Size:</label>
+                <select id="size" style="width: 100%; padding: 15px; background: rgba(26, 26, 46, 0.9); border: 2px solid #D4AF37; border-radius: 12px; color: #00ff41; font-size: 16px; min-height: 44px;">
+                    <option value="">Select category first</option>
+                </select>
+            </div>
+
+            <!-- Smart Filename Generator -->
+            <div style="background: rgba(138, 43, 226, 0.1); border: 2px solid #8a2be2; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                <h3 style="color: #8a2be2; margin: 0 0 15px 0; display: flex; align-items: center; gap: 8px;">
+                    ⚡ Auto Smart Naming
+                    <span style="font-size: 12px; color: #00ff41; background: rgba(0, 255, 65, 0.1); padding: 3px 8px; border-radius: 12px;">Automatic Timestamp + Tags</span>
+                </h3>
+                
+                <div style="margin-bottom: 15px;">
+                    <label style="color: #8a2be2; display: block; margin-bottom: 5px;">Optional Description (leave blank for auto-naming):</label>
+                    <input type="text" id="itemDescription" placeholder="Optional: Nike Air Max, Adidas Hoodie... (leave blank for timestamp only)" style="width: 100%; padding: 10px; background: rgba(26, 26, 46, 0.9); border: 2px solid #8a2be2; border-radius: 8px; color: #00ff41;">
+                </div>
+
+                <div style="margin-bottom: 15px;">
+                    <label style="color: #8a2be2; display: block; margin-bottom: 5px;">Filename Format:</label>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <button class="button" onclick="setFilenameFormat('auto-timestamp')" id="btnAutoTimestamp" style="font-size: 11px; background: #8a2be2;">⚡ Auto (Timestamp)</button>
+                        <button class="button" onclick="setFilenameFormat('category-first')" id="btnCategoryFirst" style="font-size: 11px; background: rgba(138, 43, 226, 0.5);">🏷️ Category First</button>
+                        <button class="button" onclick="setFilenameFormat('clean')" id="btnClean" style="font-size: 11px; background: rgba(138, 43, 226, 0.5);">✨ Clean Format</button>
+                        <button class="button" onclick="setFilenameFormat('simple')" id="btnSimple" style="font-size: 11px; background: rgba(138, 43, 226, 0.5);">📝 Simple</button>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 15px;">
+                    <label style="color: #8a2be2; display: block; margin-bottom: 5px;">Preview Generated Name:</label>
+                    <div id="filenamePreview" style="background: rgba(0, 0, 0, 0.3); border: 1px solid #8a2be2; padding: 12px; border-radius: 8px; color: #8a2be2; font-family: monospace; font-weight: bold; min-height: 20px;">Select category and size to see preview</div>
+                    
+                    <div id="filenameBreakdown" style="background: rgba(0, 0, 0, 0.2); border: 1px solid #666; border-radius: 8px; padding: 10px; margin-top: 8px; font-size: 11px; display: none;">
+                        <div style="color: #aaa; margin-bottom: 5px;">🔍 Component Breakdown:</div>
+                        <div id="breakdownContent" style="line-height: 1.6;"></div>
+                    </div>
+                </div>
+
+                <div style="background: rgba(255, 255, 0, 0.1); border: 1px solid #ffff00; border-radius: 8px; padding: 12px;">
+                    <h4 style="color: #ffff00; margin: 0 0 10px 0;">💡 Self-Explaining Filename Examples:</h4>
+                    <ul style="margin: 5px 0; padding-left: 20px; font-size: 12px;">
+                        <li><strong>Auto (Default):</strong> CAT-BN-SHOES-SIZE-UK-9-DATE-20250925-TIME-1430-BATCH-B09251430-ITEM-001.jpeg</li>
+                        <li><strong>With Description:</strong> DESC-Nike-Air-Max-CAT-BN-SHOES-SIZE-UK-9-DATE-20250925-BATCH-B09251430-ITEM-001.jpeg</li>
+                        <li><strong>Category First:</strong> CAT-BN-SHOES-SIZE-UK-9-DATE-20250925-TIME-1430-BATCH-B09251430-ITEM-002.jpeg</li>
+                        <li><strong>Simple:</strong> SBS-BATCH-B09251430-ITEM-003-DATE-20250925-TIME-1430.jpeg</li>
+                    </ul>
+                    
+                    <div style="background: rgba(0, 0, 0, 0.3); border-radius: 8px; padding: 15px; margin-top: 15px;">
+                        <h5 style="color: #ffff00; margin: 0 0 10px 0;">🔍 Self-Explaining Component Guide:</h5>
+                        <div style="font-family: monospace; font-size: 13px; line-height: 1.8;">
+                            <div style="color: #8a2be2;">DESC-Nike-Air-Max-CAT-BN-SHOES-SIZE-UK-9-DATE-20250925-BATCH-B09251430-ITEM-001.jpeg</div>
+                            <div style="margin-top: 8px; font-size: 11px;">
+                                <span style="color: #ff6b6b;">📝 DESC-Nike-Air-Max</span> = Custom Description (Optional)<br>
+                                <span style="color: #4ecdc4;">🏷️ CAT-BN-SHOES</span> = Category & Condition<br>
+                                <span style="color: #45b7d1;">📏 SIZE-UK-9</span> = Size Information<br>
+                                <span style="color: #96ceb4;">📅 DATE-20250925</span> = Date (YYYYMMDD)<br>
+                                <span style="color: #feca57;">📦 BATCH-B09251430</span> = Batch ID (MMDDHHMM)<br>
+                                <span style="color: #ff9ff3;">🔢 ITEM-001</span> = Sequential Item Number<br>
+                                <span style="color: #a8a8a8;">📄 .jpeg</span> = File Extension
+                            </div>
+                        </div>
+                        
+                        <div style="background: rgba(255, 255, 0, 0.1); border-radius: 6px; padding: 10px; margin-top: 10px;">
+                            <p style="color: #ffff00; margin: 0; font-size: 11px;"><strong>💡 Key Benefits:</strong> Each filename is completely self-explaining! You can instantly identify DESC (description), CAT (category), SIZE, DATE, BATCH, and ITEM just by looking at the filename.</p>
+                        </div>
+                    </div>
+                    
+                    <p style="color: #ffff00; margin: 8px 0 0 0; font-size: 11px;"><strong>📦 Marker System:</strong> Every component has a clear prefix so you know exactly what each part means!</p>
+                </div>
+            </div>
+
+            <!-- Admin Test Controls -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                <div>
+                    <label style="color: #D4AF37; display: block; margin-bottom: 5px;">Site Section Tag:</label>
+                    <select id="siteSection" style="width: 100%; padding: 10px; background: rgba(26, 26, 46, 0.9); border: 2px solid #D4AF37; border-radius: 8px; color: #00ff41;">
+                        <option value="featured">🔥 Featured Section</option>
+                        <option value="sale">💰 Sale Section</option>
+                        <option value="new">✨ New Arrivals</option>
+                        <option value="trending">📈 Trending</option>
+                        <option value="staff-picks">⭐ Staff Picks</option>
+                    </select>
+                </div>
+                
+            <!-- Additional Settings (simplified) -->
+            <div style="margin-bottom: 20px;">
+                <label style="color: #D4AF37; display: block; margin-bottom: 8px; font-size: 16px; font-weight: 600;">Section:</label>
+                <select id="siteSection" style="width: 100%; padding: 15px; background: rgba(26, 26, 46, 0.9); border: 2px solid #D4AF37; border-radius: 12px; color: #00ff41; font-size: 16px; min-height: 44px;">
+                    <option value="LIVE">📺 Live</option>
+                    <option value="FEATURED">⭐ Featured</option>
+                    <option value="SALE">💰 Sale</option>
+                </select>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <label style="color: #D4AF37; display: block; margin-bottom: 8px; font-size: 16px; font-weight: 600;">Description (Optional):</label>
+                <input type="text" id="itemDescription" placeholder="e.g., Nike Air Max, Red Dress..." style="width: 100%; padding: 15px; background: rgba(26, 26, 46, 0.9); border: 2px solid #D4AF37; border-radius: 12px; color: #00ff41; font-size: 16px; min-height: 44px;">
+            </div>
+
+            <div style="display: none;">
+                <select id="additionalTag" style="width: 100%; padding: 10px; background: rgba(26, 26, 46, 0.9); border: 2px solid #D4AF37; border-radius: 8px; color: #00ff41;">
+                    <option value="">None</option>
+                    <option value="limited">⚡ Limited Stock</option>
+                    <option value="bestseller">🏆 Bestseller</option>
+                    <option value="premium">💎 Premium</option>
+                    <option value="clearance">🏷️ Clearance</option>
+                </select>
+            </div>
+            
+            <!-- Simplified upload buttons for iPhone -->
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="button" onclick="processUpload()" style="background: #00ff41; color: #000; font-size: 18px; padding: 18px 30px; margin-bottom: 15px; width: 100%; border-radius: 12px;">
+                    🚀 Upload Photos
+                </button>
+                <button class="button" onclick="hideUpload()" style="background: #666; font-size: 16px; padding: 12px 20px; border-radius: 12px;">
+                    ❌ Cancel
+                </button>
+            </div>
+            <div id="uploadProgress" style="margin-top: 20px; display: none;">
+                <div style="background: rgba(26, 26, 46, 0.9); border-radius: 8px; padding: 15px;">
+                    <div id="progressBar" style="width: 0%; height: 20px; background: linear-gradient(90deg, #D4AF37, #00ff41); border-radius: 10px; transition: width 0.3s ease;"></div>
+                    <div id="progressText" style="color: #00ff41; text-align: center; margin-top: 10px;">Preparing upload...</div>
+                </div>
+            </div>
+            
+            <!-- Log Viewer -->
+            <div id="logViewer" style="display: none; margin-top: 20px; background: rgba(0, 0, 0, 0.8); border-radius: 8px; padding: 15px;">
+                <div style="color: #D4AF37; font-weight: bold; margin-bottom: 10px; display: flex; justify-content: space-between;">
+                    <span>📋 Upload Logs</span>
+                    <button onclick="clearLogs()" style="background: #ff4444; color: white; border: none; padding: 5px 10px; border-radius: 5px; font-size: 12px;">Clear Logs</button>
+                </div>
+                <div id="logContent" style="max-height: 300px; overflow-y: auto; font-family: monospace; font-size: 12px; line-height: 1.4; color: #00ff41; white-space: pre-wrap;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div id="helpModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); z-index: 1000;">
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(15, 15, 35, 0.95); border: 2px solid #D4AF37; border-radius: 20px; padding: 30px; max-width: 600px; max-height: 80%; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="color: #D4AF37; margin: 0;">❓ How to Use SBS Media Hub</h2>
+                <button onclick="hideHelp()" style="background: #ff4444; color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 16px;">✕</button>
+            </div>
+            
+            <div style="color: #00ff41; line-height: 1.6; font-size: 14px;">
+                <h3 style="color: #D4AF37; margin: 20px 0 10px 0;">🔐 Security & Setup</h3>
+                <p><strong>Important:</strong> This system now uses a secure API proxy for enhanced security.</p>
+                <p><strong>Before using:</strong> Run <span style="background: rgba(212, 175, 55, 0.2); padding: 2px 6px; border-radius: 4px;">"START-API-PROXY.bat"</span> to start the proxy server on port 3001.</p>
+                <p>All API tokens are now stored server-side for security - no sensitive data in the browser!</p>
+
+                <h3 style="color: #D4AF37; margin: 20px 0 10px 0;">🔄 Loading Your Images</h3>
+                <p><strong>Step 1:</strong> Click the <span style="background: rgba(139, 92, 246, 0.2); padding: 2px 6px; border-radius: 4px;">"� Quick Browse"</span> button to browse all your images from Cloudflare.</p>
+                <p>This will load your inventory and display it in the grid view automatically.</p>
+
+                <h3 style="color: #D4AF37; margin: 20px 0 10px 0;">🔲 View Controls</h3>
+                <p><strong>Grid View:</strong> Click <span style="background: rgba(212, 175, 55, 0.2); padding: 2px 6px; border-radius: 4px;">"🔲 Grid View"</span> to switch to the grid layout (default view).</p>
+
+                <h3 style="color: #D4AF37; margin: 20px 0 10px 0;">🏷️ Filtering by Tags</h3>
+                <p><strong>Tag Dropdown:</strong> Use the dropdown menu to filter items by specific tags:</p>
+                <ul style="margin: 10px 0; padding-left: 20px;">
+                    <li>🔥 Featured - Highlighted items</li>
+                    <li>💰 Sale - Items on sale</li>
+                    <li>✨ New Arrivals - Recently added items</li>
+                    <li>📈 Trending - Popular items</li>
+                    <li>⭐ Staff Picks - Recommended by staff</li>
+                    <li>⚡ Limited Stock - Low inventory items</li>
+                    <li>🏆 Bestseller - Top selling items</li>
+                    <li>💎 Premium - High-end items</li>
+                    <li>🏷️ Clearance - Discounted items</li>
+                </ul>
+
+                <h3 style="color: #D4AF37; margin: 20px 0 10px 0;">📤 Uploading New Images</h3>
+                <p><strong>Upload Images:</strong> Click <span style="background: rgba(212, 175, 55, 0.2); padding: 2px 6px; border-radius: 4px;">"📤 Upload Images"</span> to add new images to your Cloudflare account.</p>
+                <p>Select category, size, and tags before uploading JPEG files.</p>
+
+                <h3 style="color: #D4AF37; margin: 20px 0 10px 0;">💡 Quick Start Guide</h3>
+                <ol style="margin: 10px 0; padding-left: 20px;">
+                    <li>Click "� Quick Browse" to browse your inventory</li>
+                    <li>Use the tag dropdown to filter specific items</li>
+                    <li>Switch views using the "🔲 Grid View" button</li>
+                    <li>Upload new items with "📤 Upload Images"</li>
+                </ol>
+
+                <div style="background: rgba(255, 255, 0, 0.1); border: 1px solid #ffff00; border-radius: 8px; padding: 15px; margin-top: 20px;">
+                    <p style="color: #ffff00; margin: 0;"><strong>💡 Tip:</strong> Always load your items first before using filters or view controls!</p>
+                </div>
+
+                <h3 style="color: #D4AF37; margin: 20px 0 10px 0;">📋 Recent Changes & Progress Tracker</h3>
+                <div style="background: rgba(26, 26, 46, 0.9); border: 1px solid #D4AF37; border-radius: 8px; padding: 15px; margin: 10px 0;">
+                    <h4 style="color: #00ff41; margin: 0 0 10px 0;">✅ Step 1 - Clean Page (COMPLETED)</h4>
+                    <ul style="margin: 5px 0; padding-left: 20px; font-size: 13px;">
+                        <li><span style="color: #00ff41;">✓</span> Modernized upload controls (removed "test" terminology)</li>
+                        <li><span style="color: #00ff41;">✓</span> Added system font theme and iPhone-first design</li>
+                        <li><span style="color: #00ff41;">✓</span> Implemented in-app help system with progress tracking</li>
+                        <li><span style="color: #00ff41;">✓</span> Cleaned up legacy test controls while keeping functionality</li>
+                    </ul>
+                </div>
+                
+                <div style="background: rgba(26, 26, 46, 0.9); border: 1px solid #D4AF37; border-radius: 8px; padding: 15px; margin: 10px 0;">
+                    <h4 style="color: #00ff41; margin: 0 0 10px 0;">✅ Step 2 - API Proxy Security (COMPLETED)</h4>
+                    <ul style="margin: 5px 0; padding-left: 20px; font-size: 13px;">
+                        <li><span style="color: #00ff41;">✓</span> Created PowerShell API proxy server (api-proxy-server.ps1)</li>
+                        <li><span style="color: #00ff41;">✓</span> Added START-API-PROXY.bat for easy server startup</li>
+                        <li><span style="color: #00ff41;">✓</span> Removed all API tokens from client-side code</li>
+                        <li><span style="color: #00ff41;">✓</span> Updated all API calls to use secure proxy</li>
+                        <li><span style="color: #00ff41;">✓</span> Enhanced security with server-side token storage</li>
+                    </ul>
+                </div>
+
+                <div style="background: rgba(26, 26, 46, 0.9); border: 1px solid #D4AF37; border-radius: 8px; padding: 15px; margin: 10px 0;">
+                    <h4 style="color: #00ff41; margin: 0 0 10px 0;">✅ Step 3 - Tag Filtering System (COMPLETED)</h4>
+                    <ul style="margin: 5px 0; padding-left: 20px; font-size: 13px;">
+                        <li><span style="color: #00ff41;">✓</span> Replaced individual filter buttons with dropdown</li>
+                        <li><span style="color: #00ff41;">✓</span> Added comprehensive tag options (Featured, Sale, New, etc.)</li>
+                        <li><span style="color: #00ff41;">✓</span> Implemented filterByTag() function for dropdown filtering</li>
+                        <li><span style="color: #00ff41;">✓</span> Created loadImagesAndShowSection() for combined operations</li>
+                    </ul>
+                </div>
+
+                <div style="background: rgba(26, 26, 46, 0.9); border: 1px solid #D4AF37; border-radius: 8px; padding: 15px; margin: 10px 0;">
+                    <h4 style="color: #00ff41; margin: 0 0 10px 0;">✅ Step 4 - Help System Implementation (COMPLETED)</h4>
+                    <ul style="margin: 5px 0; padding-left: 20px; font-size: 13px;">
+                        <li><span style="color: #00ff41;">✓</span> Added "❓ Help" button in header</li>
+                        <li><span style="color: #00ff41;">✓</span> Created comprehensive help modal with step-by-step guides</li>
+                        <li><span style="color: #00ff41;">✓</span> Documented all features and new functionality</li>
+                        <li><span style="color: #00ff41;">✓</span> Added progress tracker for transparency</li>
+                    </ul>
+                </div>
+
+                <div style="background: rgba(46, 26, 26, 0.9); border: 1px solid #ff8800; border-radius: 8px; padding: 15px; margin: 10px 0;">
+                    <h4 style="color: #ff8800; margin: 0 0 10px 0;">⏳ Next Planned Steps (From Build Plan)</h4>
+                    <ul style="margin: 5px 0; padding-left: 20px; font-size: 13px;">
+                        <li><span style="color: #ff8800;">⏳</span> Step 5 - Items API (JSON store + CRUD + audit)</li>
+                        <li><span style="color: #ff8800;">⏳</span> Step 6 - Grid with View More 9 (virtualization)</li>
+                        <li><span style="color: #ff8800;">⏳</span> Step 7 - Constants Wired (preset validation)</li>
+                        <li><span style="color: #ff8800;">⏳</span> Step 8 - Bulk Selection Model (select all filtered)</li>
+                        <li><span style="color: #ff8800;">⏳</span> Step 9 - Bulk Actions System (add/remove tags, set status)</li>
+                    </ul>
+                </div>
+
+                <div style="background: rgba(35, 35, 15, 0.9); border: 1px solid #D4AF37; border-radius: 8px; padding: 10px; margin: 15px 0 5px 0; text-align: center;">
+                    <p style="color: #D4AF37; margin: 0; font-size: 12px;"><strong>📝 Feedback Welcome:</strong> Each step will be documented here for review and iteration</p>
+                </div>
+
+                <!-- LOCAL STORAGE & SYSTEM INSPECTOR -->
+                <h3 style="color: #D4AF37; margin: 20px 0 10px 0;">🔍 System Inspector & Local Storage</h3>
+                
+                <div style="background: rgba(20, 20, 40, 0.8); border: 1px solid #00ff41; border-radius: 8px; padding: 15px; margin: 10px 0;">
+                    <h4 style="color: #00ff41; margin: 0 0 10px 0;">📊 Current System Status</h4>
+                    <div id="systemStatusInspector" style="font-family: monospace; font-size: 12px; color: #00ff41;">
+                        <div>Loading system status...</div>
+                    </div>
+                </div>
+
+                <div style="background: rgba(20, 20, 40, 0.8); border: 1px solid #ff8800; border-radius: 8px; padding: 15px; margin: 10px 0;">
+                    <h4 style="color: #ff8800; margin: 0 0 10px 0;">💾 Local Storage Contents</h4>
+                    <div style="margin-bottom: 10px;">
+                        <button onclick="refreshLocalStorage()" style="background: #00ff41; color: #000; border: none; padding: 5px 10px; border-radius: 5px; font-size: 12px; margin-right: 10px;">🔄 Refresh</button>
+                        <button onclick="clearAllLocalStorage()" style="background: #ff4444; color: white; border: none; padding: 5px 10px; border-radius: 5px; font-size: 12px;">🗑️ Clear All</button>
+                    </div>
+                    <div id="localStorageInspector" style="font-family: monospace; font-size: 11px; color: #ff8800; max-height: 200px; overflow-y: auto; border: 1px solid #333; padding: 10px; background: rgba(0,0,0,0.3);">
+                        <div>Click "Refresh" to view local storage contents...</div>
+                    </div>
+                </div>
+
+                <div style="background: rgba(20, 20, 40, 0.8); border: 1px solid #8a2be2; border-radius: 8px; padding: 15px; margin: 10px 0;">
+                    <h4 style="color: #8a2be2; margin: 0 0 10px 0;">📝 Live Activity Log</h4>
+                    <div style="margin-bottom: 10px;">
+                        <button onclick="refreshActivityLog()" style="background: #8a2be2; color: white; border: none; padding: 5px 10px; border-radius: 5px; font-size: 12px; margin-right: 10px;">🔄 Refresh</button>
+                        <button onclick="downloadLogs()" style="background: #D4AF37; color: #000; border: none; padding: 5px 10px; border-radius: 5px; font-size: 12px;">📥 Download Logs</button>
+                    </div>
+                    <div id="activityLogInspector" style="font-family: monospace; font-size: 11px; color: #8a2be2; max-height: 200px; overflow-y: auto; border: 1px solid #333; padding: 10px; background: rgba(0,0,0,0.3);">
+                        <div>Activity log will appear here...</div>
+                    </div>
+                </div>
+
+                <div style="background: rgba(20, 20, 40, 0.8); border: 1px solid #D4AF37; border-radius: 8px; padding: 15px; margin: 10px 0;">
+                    <h4 style="color: #D4AF37; margin: 0 0 10px 0;">🔧 Database Connection Test</h4>
+                    <div style="margin-bottom: 10px;">
+                        <button onclick="testDatabaseConnection()" style="background: #D4AF37; color: #000; border: none; padding: 5px 10px; border-radius: 5px; font-size: 12px; margin-right: 10px;">🧪 Test Connection</button>
+                        <button onclick="viewDatabaseStats()" style="background: #00ff41; color: #000; border: none; padding: 5px 10px; border-radius: 5px; font-size: 12px;">📊 View Stats</button>
+                    </div>
+                    <div id="databaseTestResult" style="font-family: monospace; font-size: 11px; color: #D4AF37; border: 1px solid #333; padding: 10px; background: rgba(0,0,0,0.3);">
+                        <div>Click "Test Connection" to check database status...</div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API Configuration - Updated with working credentials
+        const API_CONFIG = {
+            proxyUrl: 'http://localhost:9600/api', // Updated to working port
+            accountHash: '7B8CAeDtA5h1f1Dyh_X-hg' // Still needed for public image URLs
+        };
+
+        // Legacy config for compatibility (tokens removed for security)
+        const CLOUDFLARE_CONFIG = {
+            accountHash: '7B8CAeDtA5h1f1Dyh_X-hg'
+        };
+
+        // Configuration Constants (replacing magic numbers)
+        const CONFIG = {
+            DEBUG_MODE: false,
+            MAX_LOG_ENTRIES: 20,
+            LOG_DOWNLOAD_DELAY: 5000,
+            DOM_REFRESH_DELAY: 100
+        };
+
+        // DOM Element Cache for Performance Optimization
+        const DOM_CACHE = {
+            container: null,
+            statusDiv: null,
+            tagFilter: null,
+            uploadSection: null,
+            fileInput: null,
+            helpModal: null,
+            init() {
+                this.container = document.getElementById('inventoryContainer');
+                this.statusDiv = document.getElementById('status');
+                this.tagFilter = document.getElementById('tagFilter');
+                this.uploadSection = document.getElementById('uploadSection');
+                this.fileInput = document.getElementById('fileInput');
+                this.helpModal = document.getElementById('helpModal');
+            },
+            get(elementId) {
+                return document.getElementById(elementId);
+            }
+        };
+
+        // Global State
+        let currentView = 'grid';
+        let inventory = [];
+        // DELETED DETECTION REMOVED - keeping it simple
+
+        // Pagination State for "View More (9)" functionality
+        let itemsPerPage = 9;
+        let currentPage = 1;
+        let displayedItems = 0;
+
+        // Load Items from Cloudflare Images API
+        async function loadItems() {
+            const statusDiv = DOM_CACHE.statusDiv || document.getElementById('status');
+            statusDiv.textContent = '🔄 Loading items from Cloudflare Images...';
+            logMessage('Fetching items from /api/images...');
+
+            try {
+                const response = await fetch(`${API_CONFIG.proxyUrl}/images`);
+
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch items: ${response.status} ${response.statusText}`);
+                }
+
+                const result = await response.json();
+
+                if (result.success && Array.isArray(result.images)) {
+                    // ENHANCED LOADING - Proper tag and metadata parsing
+                    inventory = result.images.map(item => {
+                        // Parse ALL metadata from Cloudflare (not just tags)
+                        const meta = item.meta || {};
+                        const tagString = meta.tags || '';
+                        const tags = tagString ? tagString.split(',').map(t => t.trim()).filter(t => t) : [];
+                        
+                        // Extract comprehensive data from tags and metadata (with fallbacks)
+                        let category = null;
+                        let size = null;
+                        let batchNumber = null;
+                        let itemNumber = null;
+                        let siteSection = null;
+                        let description = null;
+                        
+                        // Try structured metadata first, then fall back to tag parsing
+                        category = meta.category || tags.find(tag => tag.includes('-CLOTHES') || tag.includes('-SHOES'));
+                        size = meta.size || tags.find(tag => 
+                            tag.startsWith('UK-') || 
+                            ['XS', 'S', 'M', 'L', 'XL'].includes(tag) ||
+                            tag.includes('-TOP-') || tag.includes('-BOTTOM-')
+                        );
+                        siteSection = meta.siteSection || tags.find(tag => ['LIVE', 'FEATURED', 'SALE'].includes(tag));
+                        description = meta.description || '';
+                        
+                        // Extract batch number (from structured data or tags)
+                        batchNumber = meta.batchNumber || (() => {
+                            const batchTag = tags.find(tag => tag.startsWith('BATCH-'));
+                            return batchTag ? batchTag.replace('BATCH-', '') : null;
+                        })();
+                        
+                        // Extract item number (from structured data, filename, or tags)
+                        itemNumber = meta.itemNumber || (() => {
+                            const filename = item.filename || '';
+                            const itemMatch = filename.match(/ITEM-(\d+)/);
+                            if (itemMatch) return itemMatch[1];
+                            
+                            const itemTag = tags.find(tag => tag.startsWith('ITEM-'));
+                            return itemTag ? itemTag.replace('ITEM-', '') : null;
+                        })();
+                        
+                        // Extract description from alt text if not in structured data
+                        if (!description) {
+                            const altText = meta.alt || '';
+                            if (altText.includes(' - ')) {
+                                const parts = altText.split(' - ');
+                                if (parts.length > 1 && !parts[1].includes('Batch')) {
+                                    description = parts[1];
+                                }
+                            }
+                        }
+                        
+                        return {
+                            id: item.id,
+                            name: item.filename || item.id,
+                            filename: item.filename || 'Unknown',
+                            cloudflareId: item.id,
+                            uploaded: item.uploaded,
+                            variants: item.variants || [],
+                            meta: meta,
+                            tags: tags,
+                            category: category, // Properly extracted
+                            size: size, // Properly extracted
+                            batchNumber: batchNumber, // NOW STORED!
+                            itemNumber: itemNumber, // NOW STORED!
+                            siteSection: siteSection, // NOW STORED!
+                            description: description, // NOW STORED!
+                            status: 'available',
+                            image: `https://imagedelivery.net/${API_CONFIG.accountHash}/${item.id}/w=1080,h=1920`
+                        };
+                    });
+                    
+                    // Sort by upload date, newest first
+                    inventory.sort((a, b) => new Date(b.uploaded) - new Date(a.uploaded));
+
+                    statusDiv.innerHTML = `
+                        <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+                            <span>✅ Loaded: <strong>${inventory.length}</strong> items from Cloudflare</span>
+                            <span style="color: #4CAF50;">📦 Ready to display</span>
+                        </div>
+                    `;
+                    
+                    logMessage(`Successfully loaded ${inventory.length} items from Cloudflare Images`);
+                    displayInventory();
+                } else {
+                    statusDiv.textContent = '❌ Failed to load items: Invalid response format';
+                    logMessage('Error: Invalid response format from items API');
+                }
+            } catch (error) {
+                statusDiv.textContent = `❌ Failed to load items: ${error.message}`;
+                logMessage(`Error loading items: ${error.message}`);
+                console.error('Load items error:', error);
+            }
+        }
+        // Help system functions
+        function showHelp() {
+            const helpModal = DOM_CACHE.helpModal || document.getElementById('helpModal');
+            helpModal.style.display = 'block';
+            // Auto-refresh inspector data when help is opened
+            setTimeout(() => {
+                refreshSystemStatus();
+                refreshLocalStorage();
+                refreshActivityLog();
+            }, CONFIG.DOM_REFRESH_DELAY);
+        }
+
+        function hideHelp() {
+            const helpModal = DOM_CACHE.helpModal || document.getElementById('helpModal');
+            helpModal.style.display = 'none';
+        }
+
+        // Set View Mode (optimized with DOM cache)
+        function setView(mode) {
+            currentView = mode;
+            
+            // Removed console.log for better performance
+            // console.log(`Switching to ${mode} view`);
+            
+            // Update button states
+            document.querySelectorAll('.button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById(mode + 'Btn').classList.add('active');
+            
+            // Update container class for styling (with DOM cache)
+            const container = DOM_CACHE.container || document.getElementById('inventoryContainer');
+            container.className = mode + '-view';
+            
+            // Redisplay inventory in new view
+            displayInventory();
+        }
+
+        // Display Inventory with "View More (9)" pagination
+        function displayInventory(append = false) {
+            const container = DOM_CACHE.container || document.getElementById('inventoryContainer');
+            const filteredInventory = getFilteredInventory();
+            
+            if (inventory.length === 0) {
+                container.innerHTML = '<div class="loading">📦 No images loaded yet. Start API proxy and click "� Quick Browse" to browse your inventory.</div>';
+                return;
+            }
+
+            if (filteredInventory.length === 0) {
+                container.innerHTML = `<div class="loading">🔍 No items in ${currentSection.toUpperCase()} section yet.</div>`;
+                return;
+            }
+
+            // Reset pagination if not appending
+            if (!append) {
+                currentPage = 1;
+                displayedItems = 0;
+            }
+
+            // Calculate items to show
+            const startIndex = append ? displayedItems : 0;
+            const endIndex = Math.min(startIndex + itemsPerPage, filteredInventory.length);
+            const itemsToShow = filteredInventory.slice(startIndex, endIndex);
+            
+            // Update displayed count
+            displayedItems = endIndex;
+
+            let html = '';
+            
+            // If not appending, create new grid structure
+            if (!append) {
+                html = '<div class="inventory-grid">';
+            }
+
+            itemsToShow.forEach(item => {
+                // Create tag HTML with better styling - ensure tags is an array
+                const tags = item.tags || [];
+                const tagHtml = tags.map(tag => {
+                    let tagClass = 'tag';
+                    let tagIcon = '';
+                    
+                    // Site section tags
+                    if (tag === 'FEATURED') {
+                        tagClass += ' tag-featured';
+                        tagIcon = '🔥 ';
+                    } else if (tag === 'SALE') {
+                        tagClass += ' tag-sale';
+                        tagIcon = '💰 ';
+                    } else if (tag === 'NEW') {
+                        tagClass += ' tag-new';
+                        tagIcon = '✨ ';
+                    } else if (tag === 'TRENDING') {
+                        tagClass += ' tag-trending';
+                        tagIcon = '📈 ';
+                    } else if (tag === 'STAFF-PICKS') {
+                        tagClass += ' tag-staff-picks';
+                        tagIcon = '⭐ ';
+                    }
+                    // Additional tags
+                    else if (tag === 'LIMITED') {
+                        tagClass += ' tag-limited';
+                        tagIcon = '⚡ ';
+                    } else if (tag === 'BESTSELLER') {
+                        tagClass += ' tag-bestseller';
+                        tagIcon = '🏆 ';
+                    } else if (tag === 'PREMIUM') {
+                        tagClass += ' tag-premium';
+                        tagIcon = '💎 ';
+                    } else if (tag === 'CLEARANCE') {
+                        tagClass += ' tag-clearance';
+                        tagIcon = '🏷️ ';
+                    }
+                    // Status tags
+                    else if (tag === 'NEW UPLOAD') {
+                        tagClass += ' tag-new';
+                        tagIcon = '✨ ';
+                    } else if (tag === 'TEST UPLOAD') {
+                        tagClass += ' tag-test';
+                        tagIcon = '🧪 ';
+                    } else if (tag === 'LIVE') {
+                        tagClass += ' tag-live';
+                        tagIcon = '🟢 ';
+                    } else if (tag === 'DELETED') {
+                        tagClass += ' tag-deleted';
+                        tagIcon = '❌ ';
+                    }
+                    
+                    return `<span class="${tagClass}">${tagIcon}${(tag || '').replace('-', ' ')}</span>`;
+                }).join('');
+
+                // Clean item display - no deletion checking
+                const itemCardClass = 'item-card';
+                const statusIcon = '✅';
+                
+                // Optimized image display (removed console.log for performance)
+                const imageDisplay = `<img src="${item.image}" 
+                         alt="${item.name}" 
+                         class="item-image" 
+                         data-item-id="${item.id}"
+                         onerror="this.style.background='linear-gradient(45deg, #D4AF37, #00ff41)'; this.style.color='#000'; this.style.display='flex'; this.style.alignItems='center'; this.style.justifyContent='center'; this.innerHTML='📸';">`;
+
+                html += `
+                    <div class="${itemCardClass}">
+                        <div class="status-icon">${statusIcon}</div>
+                        ${imageDisplay}
+                        <div class="item-tags">
+                            ${tagHtml}
+                            <span class="tag tag-category">${item.category ? item.category.replace('-', ' ') : 'CATEGORY'}</span>
+                            <span class="tag tag-size">${item.size || 'SIZE'}</span>
+                            ${item.batchNumber ? `<span class="tag tag-batch" style="background: rgba(138, 43, 226, 0.3); color: #8a2be2;">[B${item.batchNumber}]</span>` : ''}
+                            ${item.itemNumber ? `<span class="tag tag-item" style="background: rgba(255, 136, 0, 0.3); color: #ff8800;">#${item.itemNumber}</span>` : ''}
+                        </div>
+                        <div class="item-details" style="font-size: 10px; opacity: 0.6;">
+                            ${item.description ? `${item.description} | ` : ''}${item.name || 'Unnamed Item'}${item.siteSection ? ` | ${item.siteSection}` : ''} | ID: ${item.id ? item.id.substring(0, 8) + '...' : 'No ID'}
+                        </div>
+                    </div>
+                `;
+            });
+
+            // Close grid div if not appending
+            if (!append) {
+                html += '</div>';
+                
+                // Add pagination controls
+                const remainingItems = filteredInventory.length - displayedItems;
+                if (remainingItems > 0) {
+                    html += `
+                        <div id="paginationControls" style="margin: 20px 0; text-align: center;">
+                            <button onclick="showMore()" style="
+                                background: linear-gradient(135deg, #4CAF50, #45a049);
+                                color: white;
+                                border: none;
+                                padding: 15px 30px;
+                                font-size: 16px;
+                                border-radius: 25px;
+                                cursor: pointer;
+                                box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+                                transition: all 0.3s ease;
+                                font-weight: 600;
+                                min-height: 44px;
+                                width: 100%;
+                                max-width: 300px;
+                            " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(76, 175, 80, 0.4)';" onmouseout="this.style.transform='translateY(0px)'; this.style.boxShadow='0 4px 15px rgba(76, 175, 80, 0.3)';">
+                                📋 View More (${Math.min(itemsPerPage, remainingItems)})
+                                <div style="font-size: 12px; opacity: 0.9; margin-top: 3px;">
+                                    Showing ${displayedItems} of ${filteredInventory.length} items
+                                </div>
+                            </button>
+                        </div>
+                    `;
+                }
+
+                container.innerHTML = html;
+            } else {
+                // Appending items - add to existing grid
+                const grid = container.querySelector('.inventory-grid');
+                if (grid) {
+                    grid.innerHTML += html;
+                    
+                    // Update or remove pagination controls
+                    const paginationControls = document.getElementById('paginationControls');
+                    const remainingItems = filteredInventory.length - displayedItems;
+                    
+                    if (remainingItems > 0) {
+                        paginationControls.innerHTML = `
+                            <button onclick="showMore()" style="
+                                background: linear-gradient(135deg, #4CAF50, #45a049);
+                                color: white;
+                                border: none;
+                                padding: 15px 30px;
+                                font-size: 16px;
+                                border-radius: 25px;
+                                cursor: pointer;
+                                box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+                                transition: all 0.3s ease;
+                                font-weight: 600;
+                                min-height: 44px;
+                                width: 100%;
+                                max-width: 300px;
+                            " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(76, 175, 80, 0.4)';" onmouseout="this.style.transform='translateY(0px)'; this.style.boxShadow='0 4px 15px rgba(76, 175, 80, 0.3)';">
+                                📋 View More (${Math.min(itemsPerPage, remainingItems)})
+                                <div style="font-size: 12px; opacity: 0.9; margin-top: 3px;">
+                                    Showing ${displayedItems} of ${filteredInventory.length} items
+                                </div>
+                            </button>
+                        `;
+                    } else {
+                        paginationControls.style.display = 'none';
+                    }
+                }
+            }
+        }
+
+        // Show More function for pagination
+        function showMore() {
+            currentPage++;
+            displayInventory(true); // append = true
+        }
+
+        function updateStatusDisplay() {
+            const availableCount = inventory.filter(item => item.status !== 'sold' && item.status !== 'reserved' && item.status !== 'archived').length;
+            const reservedCount = inventory.filter(item => item.status === 'reserved').length;
+            const soldCount = inventory.filter(item => item.status === 'sold').length;
+            const archivedCount = inventory.filter(item => item.status === 'archived').length;
+            
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = `
+                <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+                    <span style="color: #a78bfa;">✅ Database: <strong>${inventory.length}</strong> items</span>
+                    <span style="color: #06d6a0;">🟢 Available: <strong>${availableCount}</strong></span>
+                    <span style="color: #f59e0b;">⏳ Reserved: <strong>${reservedCount}</strong></span>
+                    <span style="color: #8b5cf6;">💜 Sold: <strong>${soldCount}</strong></span>
+                    <span style="color: #94a3b8;">📦 Archived: <strong>${archivedCount}</strong></span>
+                </div>
+            `;
+        }
+
+        // Initialize - Simple startup
+        let selectedFiles = [];
+        let storedImages = JSON.parse(localStorage.getItem('sbsStoredImages') || '[]');
+        let uploadLogs = [];
+
+        // Optimized logging functions (reduced console output)
+        function logMessage(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${type.toUpperCase()}: ${message}`;
+            uploadLogs.push(logEntry);
+            
+            // Only console.log when debug mode is enabled
+            if (DEBUG_MODE) {
+                console.log(logEntry);
+            }
+            updateLogDisplay();
+        }
+
+        function logError(message, error) {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ERROR: ${message}\n    Details: ${error.message || error}\n    Stack: ${error.stack || 'No stack trace'}`;
+            uploadLogs.push(logEntry);
+            
+            // Always show errors in console (even in production)
+            console.error(logEntry);
+            updateLogDisplay();
+        }
+
+        function updateLogDisplay() {
+            const logContent = document.getElementById('logContent');
+            if (logContent) {
+                logContent.textContent = uploadLogs.slice(-50).join('\n'); // Show last 50 logs
+                logContent.scrollTop = logContent.scrollHeight;
+            }
+        }
+
+        function toggleLogs() {
+            const logViewer = document.getElementById('logViewer');
+            if (logViewer.style.display === 'none') {
+                logViewer.style.display = 'block';
+                updateLogDisplay();
+            } else {
+                logViewer.style.display = 'none';
+            }
+        }
+
+        function clearLogs() {
+            uploadLogs = [];
+            updateLogDisplay();
+            logMessage('Logs cleared by user');
+        }
+
+        // INSPECTOR FUNCTIONS FOR HELP MODAL
+        function refreshSystemStatus() {
+            const inspector = document.getElementById('systemStatusInspector');
+            if (!inspector) return;
+
+            const status = {
+                timestamp: new Date().toLocaleString(),
+                inventoryCount: inventory.length,
+                availableImages: inventory.filter(item => item.status === 'available').length,
+                reservedImages: inventory.filter(item => item.status === 'reserved').length,
+                soldImages: inventory.filter(item => item.status === 'sold').length,
+                archivedImages: inventory.filter(item => item.status === 'archived').length,
+                selectedFiles: selectedFiles.length,
+                currentView: currentView,
+                currentSection: currentSection,
+                batchNumber: window.currentBatchNumber || 'None',
+                itemNumber: window.currentItemNumber || 0,
+                apiConnected: API_CONFIG ? 'Yes' : 'No',
+                localStorageSize: JSON.stringify(localStorage).length + ' characters'
+            };
+
+            inspector.innerHTML = `
+                <div style="color: #00ff41;">📊 System Status at ${status.timestamp}</div>
+                <div style="margin: 5px 0; padding: 5px; border-left: 3px solid #00ff41;">
+                    Inventory: ${status.inventoryCount} total | Available: ${status.availableImages} | Reserved: ${status.reservedImages} | Sold: ${status.soldImages} | Archived: ${status.archivedImages}<br>
+                    View: ${status.currentView} | Section: ${status.currentSection}<br>
+                    Upload Session: Batch ${status.batchNumber} | Item #${status.itemNumber}<br>
+                    Selected Files: ${status.selectedFiles} | API Connected: ${status.apiConnected}<br>
+                    Local Storage Size: ${status.localStorageSize}
+                </div>
+            `;
+        }
+
+        function refreshLocalStorage() {
+            const inspector = document.getElementById('localStorageInspector');
+            if (!inspector) return;
+
+            let storageHTML = `<div style="color: #ff8800;">💾 Local Storage Contents (${new Date().toLocaleTimeString()})</div><br>`;
+            
+            if (localStorage.length === 0) {
+                storageHTML += '<div style="color: #666;">No items in local storage</div>';
+            } else {
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    const value = localStorage.getItem(key);
+                    let displayValue = value;
+                    
+                    // Truncate long values and try to parse JSON
+                    try {
+                        const parsed = JSON.parse(value);
+                        if (Array.isArray(parsed)) {
+                            displayValue = `[Array with ${parsed.length} items]`;
+                        } else if (typeof parsed === 'object') {
+                            displayValue = `{Object with ${Object.keys(parsed).length} keys}`;
+                        }
+                    } catch (e) {
+                        if (value.length > 100) {
+                            displayValue = value.substring(0, 100) + '...';
+                        }
+                    }
+                    
+                    storageHTML += `
+                        <div style="margin: 8px 0; padding: 5px; border-left: 2px solid #ff8800; background: rgba(255, 136, 0, 0.1);">
+                            <strong>${key}:</strong><br>
+                            <span style="color: #ccc; word-break: break-all;">${displayValue}</span>
+                        </div>
+                    `;
+                }
+            }
+            
+            inspector.innerHTML = storageHTML;
+        }
+
+        function clearAllLocalStorage() {
+            if (confirm('Are you sure you want to clear ALL local storage? This will remove all stored data.')) {
+                localStorage.clear();
+                refreshLocalStorage();
+                logMessage('All local storage cleared by user');
+                alert('Local storage cleared!');
+            }
+        }
+
+        function refreshActivityLog() {
+            const inspector = document.getElementById('activityLogInspector');
+            if (!inspector) return;
+
+            const recentLogs = uploadLogs.slice(-CONFIG.MAX_LOG_ENTRIES); // Last N log entries
+            
+            if (recentLogs.length === 0) {
+                inspector.innerHTML = '<div style="color: #666;">No activity logged yet</div>';
+                return;
+            }
+
+            let logHTML = `<div style="color: #8a2be2;">📝 Recent Activity (Last ${recentLogs.length} entries)</div><br>`;
+            
+            recentLogs.forEach(log => {
+                const isError = log.includes('ERROR');
+                const isWarning = log.includes('⚠️');
+                const color = isError ? '#ff4444' : isWarning ? '#ff8800' : '#8a2be2';
+                
+                logHTML += `
+                    <div style="margin: 3px 0; padding: 3px; border-left: 2px solid ${color}; color: ${color};">
+                        ${log}
+                    </div>
+                `;
+            });
+            
+            inspector.innerHTML = logHTML;
+            inspector.scrollTop = inspector.scrollHeight;
+        }
+
+        function downloadLogs() {
+            const blob = new Blob([uploadLogs.join('\n')], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `sbs-media-hub-logs-${new Date().toISOString().split('T')[0]}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            logMessage('Logs downloaded by user');
+        }
+
+        async function testDatabaseConnection() {
+            const resultDiv = document.getElementById('databaseTestResult');
+            if (!resultDiv) return;
+
+            resultDiv.innerHTML = '<div style="color: #D4AF37;">🧪 Testing database connection...</div>';
+            
+            try {
+                const startTime = Date.now();
+                const response = await fetch(`${API_CONFIG.proxyUrl}/test`, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const endTime = Date.now();
+                const responseTime = endTime - startTime;
+
+                if (response.ok) {
+                    const data = await response.json();
+                    resultDiv.innerHTML = `
+                        <div style="color: #00ff41;">✅ Database Connection Successful</div>
+                        <div style="margin: 5px 0; color: #D4AF37;">
+                            Response Time: ${responseTime}ms<br>
+                            Status: ${response.status} ${response.statusText}<br>
+                            Server: ${data.server || 'Unknown'}<br>
+                            Timestamp: ${new Date().toLocaleString()}
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div style="color: #ff4444;">❌ Database Connection Failed</div>
+                        <div style="margin: 5px 0; color: #ff8800;">
+                            Status: ${response.status} ${response.statusText}<br>
+                            Response Time: ${responseTime}ms<br>
+                            Error: Connection failed
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div style="color: #ff4444;">❌ Database Connection Error</div>
+                    <div style="margin: 5px 0; color: #ff8800;">
+                        Error: ${error.message}<br>
+                        Details: Cannot reach API server<br>
+                        Check if START-API-PROXY.bat is running
+                    </div>
+                `;
+            }
+        }
+
+        async function viewDatabaseStats() {
+            const resultDiv = document.getElementById('databaseTestResult');
+            if (!resultDiv) return;
+
+            resultDiv.innerHTML = '<div style="color: #D4AF37;">📊 Loading database statistics...</div>';
+            
+            try {
+                const response = await fetch(`${API_CONFIG.proxyUrl}/items/stats`);
+                
+                if (response.ok) {
+                    const stats = await response.json();
+                    resultDiv.innerHTML = `
+                        <div style="color: #00ff41;">📊 Database Statistics</div>
+                        <div style="margin: 5px 0; color: #D4AF37;">
+                            Total Items: ${stats.total || inventory.length}<br>
+                            Available: ${stats.available || inventory.filter(i => i.imageStatus === 'available').length}<br>
+                            Deleted: ${stats.deleted || inventory.filter(i => i.tags?.includes('DELETED')).length}<br>
+                            Categories: ${stats.categories || 'Unknown'}<br>
+                            Last Updated: ${stats.lastUpdated || 'Unknown'}
+                        </div>
+                    `;
+                } else {
+                    // Fallback to local stats
+                    const localStats = {
+                        total: inventory.length,
+                        available: inventory.filter(item => item.imageStatus === 'available').length,
+                        deleted: inventory.filter(item => item.tags && item.tags.includes('DELETED')).length,
+                        categories: [...new Set(inventory.map(item => item.category))].length
+                    };
+                    
+                    resultDiv.innerHTML = `
+                        <div style="color: #ff8800;">📊 Local Statistics (Database Unavailable)</div>
+                        <div style="margin: 5px 0; color: #D4AF37;">
+                            Local Inventory: ${localStats.total} items<br>
+                            Available: ${localStats.available}<br>
+                            Deleted: ${localStats.deleted}<br>
+                            Categories: ${localStats.categories}<br>
+                            Note: Using local data only
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div style="color: #ff4444;">❌ Cannot Load Statistics</div>
+                    <div style="margin: 5px 0; color: #ff8800;">
+                        Error: ${error.message}<br>
+                        Check API server connection
+                    </div>
+                `;
+            }
+        }
+
+        // End of inspector functions
+
+        // Global state for sections
+        let currentSection = 'all';
+
+        // Section filtering functions
+        // Combined function to load images and show section
+        async function loadImagesAndShowSection(section) {
+            // Load items from our local DB now
+            await loadItems();
+            
+            // Then show the specified section
+            showSection(section);
+        }
+
+        function showSection(section) {
+            currentSection = section;
+            
+            // Reset pagination when changing sections
+            currentPage = 1;
+            displayedItems = 0;
+            
+            // Update button states
+            document.querySelectorAll('[id$="Btn"]').forEach(btn => {
+                if (btn.id.includes('all') || btn.id.includes('featured') || btn.id.includes('sale')) {
+                    btn.classList.remove('active');
+                }
+            });
+            document.getElementById(section + 'Btn').classList.add('active');
+            
+            // Filter and display inventory (will show first 9 items)
+            displayInventory();
+            
+            logMessage(`Switched to section: ${section.toUpperCase()}`);
+        }
+
+        // Optimized Filter inventory based on current section (single pass)
+        function getFilteredInventory() {
+            let filtered = inventory;
+            
+            // Apply section filter first
+            if (currentSection !== 'all') {
+                filtered = filtered.filter(item => {
+                    if (!item.tags) return false;
+                    
+                    switch(currentSection) {
+                        case 'featured':
+                            return item.tags.includes('FEATURED');
+                        case 'sale':
+                            return item.tags.includes('SALE');
+                        case 'new':
+                            return item.tags.includes('NEW');
+                        case 'trending':
+                            return item.tags.includes('TRENDING');
+                        case 'premium':
+                            return item.tags.includes('PREMIUM');
+                        case 'clearance':
+                            return item.tags.includes('CLEARANCE');
+                        case 'deleted':
+                            return item.tags.includes('DELETED');
+                        default:
+                            return true;
+                    }
+                });
+            }
+            
+            return filtered;
+        }
+
+        // Enhanced Search Functions
+        function quickFilter(filterType) {
+            // Reset pagination
+            currentPage = 1;
+            displayedItems = 0;
+            
+            // Update visual states of filter buttons
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.style.opacity = '0.6';
+                btn.style.transform = 'scale(1)';
+            });
+            
+            const activeBtn = document.querySelector(`[data-filter="${filterType}"]`);
+            if (activeBtn) {
+                activeBtn.style.opacity = '1';
+                activeBtn.style.transform = 'scale(1.05)';
+            }
+            
+            // Apply filter
+            currentSection = filterType;
+            displayInventory();
+            
+            logMessage(`Quick filter applied: ${filterType.toUpperCase()}`);
+        }
+
+        function clearAllFilters() {
+            // Reset all states
+            currentSection = 'all';
+            currentPage = 1;
+            displayedItems = 0;
+            
+            // Reset filter button states
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.style.opacity = '0.6';
+                btn.style.transform = 'scale(1)';
+            });
+            
+            // Show All items
+            displayInventory();
+            
+            logMessage('All filters cleared - showing all items');
+        }
+
+        // Show/Hide Upload Functions (with DOM cache)
+        function showUpload() {
+            const uploadSection = DOM_CACHE.uploadSection || document.getElementById('uploadSection');
+            uploadSection.style.display = 'block';
+            uploadSection.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function hideUpload() {
+            const uploadSection = DOM_CACHE.uploadSection || document.getElementById('uploadSection');
+            const fileInput = DOM_CACHE.fileInput || document.getElementById('fileInput');
+            uploadSection.style.display = 'none';
+            fileInput.value = '';
+            selectedFiles = [];
+            // Reset drop zone text
+            const dropZoneText = document.querySelector('.drop-zone-text');
+            if (dropZoneText) {
+                dropZoneText.textContent = '📸 Tap to Select Photos';
+            }
+        }
+
+        // File Selection Handler (with DOM cache initialization)
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize DOM cache for better performance
+            DOM_CACHE.init();
+            
+            const fileInput = DOM_CACHE.fileInput;
+            if (fileInput) {
+                fileInput.addEventListener('change', function(e) {
+                    const allFiles = Array.from(e.target.files);
+                    
+                    // Filter to only JPEG files
+                    const jpegFiles = allFiles.filter(file => {
+                        const isJpeg = file.type === 'image/jpeg' || 
+                                      file.name.toLowerCase().endsWith('.jpg') || 
+                                      file.name.toLowerCase().endsWith('.jpeg');
+                        return isJpeg;
+                    });
+                    
+                    const rejectedCount = allFiles.length - jpegFiles.length;
+                    selectedFiles = jpegFiles;
+                    
+                    if (selectedFiles.length > 0) {
+                        let message = `📸 ${selectedFiles.length} JPEG file(s) selected`;
+                        if (rejectedCount > 0) {
+                            message += ` (${rejectedCount} non-JPEG files rejected)`;
+                        }
+                        document.querySelector('.drop-zone-text').textContent = message;
+                        logMessage(`Selected ${selectedFiles.length} JPEG files for upload${rejectedCount > 0 ? `, rejected ${rejectedCount} non-JPEG files` : ''}`);
+                    } else if (allFiles.length > 0) {
+                        document.querySelector('.drop-zone-text').textContent = '❌ Only JPEG files allowed';
+                        logError('No JPEG files selected', new Error(`${allFiles.length} non-JPEG files were selected`));
+                    }
+                });
+            }
+
+            // Category change handler to update size options
+            const categorySelect = document.getElementById('category');
+            const sizeSelect = document.getElementById('size');
+            
+            if (categorySelect && sizeSelect) {
+                categorySelect.addEventListener('change', function() {
+                    const category = this.value;
+                    updateSizeOptions(category);
+                });
+            }
+        });
+
+        // Update size options based on category
+        function updateSizeOptions(category) {
+            const sizeSelect = document.getElementById('size');
+            sizeSelect.innerHTML = '';
+
+            if (!category) {
+                sizeSelect.innerHTML = '<option value="">Select Category First</option>';
+                return;
+            }
+
+            sizeSelect.innerHTML = '<option value="">Select Size</option>';
+
+            if (category === 'BN-CLOTHES') {
+                // Brand New Clothing sizes
+                const clothingSizes = [
+                    { value: 'XS', text: 'XS' },
+                    { value: 'S', text: 'S' },
+                    { value: 'M', text: 'M' },
+                    { value: 'L', text: 'L' },
+                    { value: 'XL', text: 'XL' }
+                ];
+
+                clothingSizes.forEach(size => {
+                    const option = document.createElement('option');
+                    option.value = size.value;
+                    option.textContent = size.text;
+                    sizeSelect.appendChild(option);
+                });
+
+            } else if (category === 'PO-CLOTHES') {
+                // Pre-Owned Clothing sizes (includes adjacent mixed top/bottom combinations)
+                const poClothingSizes = [
+                    { value: 'XS', text: 'XS' },
+                    { value: 'S', text: 'S' },
+                    { value: 'M', text: 'M' },
+                    { value: 'L', text: 'L' },
+                    { value: 'XL', text: 'XL' },
+                    // Mixed size combinations - Only one size up/down
+                    { value: 'XS-TOP-S-BOTTOM', text: 'XS Top S Bottom' },
+                    { value: 'S-TOP-XS-BOTTOM', text: 'S Top XS Bottom' },
+                    { value: 'S-TOP-M-BOTTOM', text: 'S Top M Bottom' },
+                    { value: 'M-TOP-S-BOTTOM', text: 'M Top S Bottom' },
+                    { value: 'M-TOP-L-BOTTOM', text: 'M Top L Bottom' },
+                    { value: 'L-TOP-M-BOTTOM', text: 'L Top M Bottom' },
+                    { value: 'L-TOP-XL-BOTTOM', text: 'L Top XL Bottom' },
+                    { value: 'XL-TOP-L-BOTTOM', text: 'XL Top L Bottom' }
+                ];
+
+                poClothingSizes.forEach(size => {
+                    const option = document.createElement('option');
+                    option.value = size.value;
+                    option.textContent = size.text;
+                    sizeSelect.appendChild(option);
+                });
+
+            } else if (category === 'BN-SHOES' || category === 'PO-SHOES') {
+                // Shoe sizes (including half sizes for both Brand New and Pre-Owned)
+                const shoeSizes = [
+                    { value: 'UK-6', text: 'UK 6' },
+                    { value: 'UK-6-5', text: 'UK 6.5' },
+                    { value: 'UK-7', text: 'UK 7' },
+                    { value: 'UK-7-5', text: 'UK 7.5' },
+                    { value: 'UK-8', text: 'UK 8' },
+                    { value: 'UK-8-5', text: 'UK 8.5' },
+                    { value: 'UK-9', text: 'UK 9' },
+                    { value: 'UK-9-5', text: 'UK 9.5' },
+                    { value: 'UK-10', text: 'UK 10' },
+                    { value: 'UK-10-5', text: 'UK 10.5' },
+                    { value: 'UK-11', text: 'UK 11' },
+                    { value: 'UK-11-5', text: 'UK 11.5' },
+                    { value: 'UK-12', text: 'UK 12' }
+                ];
+
+                shoeSizes.forEach(size => {
+                    const option = document.createElement('option');
+                    option.value = size.value;
+                    option.textContent = size.text;
+                    sizeSelect.appendChild(option);
+                });
+            }
+        }
+
+        // Smart Filename Generation System
+        let selectedFilenameFormat = 'auto-timestamp';
+
+        function setFilenameFormat(format) {
+            selectedFilenameFormat = format;
+            
+            // Update button styles
+            const buttons = ['btnAutoTimestamp', 'btnCategoryFirst', 'btnClean', 'btnSimple'];
+            buttons.forEach(btnId => {
+                const btn = document.getElementById(btnId);
+                if (btn) btn.style.background = 'rgba(138, 43, 226, 0.5)';
+            });
+            
+            // Highlight selected button
+            const buttonMap = {
+                'auto-timestamp': 'btnAutoTimestamp',
+                'category-first': 'btnCategoryFirst', 
+                'clean': 'btnClean',
+                'simple': 'btnSimple'
+            };
+            
+            const selectedBtn = document.getElementById(buttonMap[format]);
+            if (selectedBtn) selectedBtn.style.background = '#8a2be2';
+            
+            // Update preview
+            updateFilenamePreview();
+        }
+
+        function updateFilenamePreview() {
+            const category = document.getElementById('category').value;
+            const size = document.getElementById('size').value;
+            const description = document.getElementById('itemDescription').value.trim();
+            const preview = document.getElementById('filenamePreview');
+            const breakdown = document.getElementById('filenameBreakdown');
+            const breakdownContent = document.getElementById('breakdownContent');
+            
+            if (!category || !size) {
+                preview.textContent = 'Select category and size to see preview';
+                breakdown.style.display = 'none';
+                return;
+            }
+            
+            const generatedName = generateSmartFilename(category, size, description, selectedFilenameFormat);
+            const sampleFilename = generatedName.replace('##ITEM##', '001'); // Show with sample item number
+            preview.textContent = sampleFilename;
+            
+            // Generate breakdown
+            const now = new Date();
+            const dateStr = now.getFullYear() + 
+                           String(now.getMonth() + 1).padStart(2, '0') + 
+                           String(now.getDate()).padStart(2, '0');
+            const timeStr = String(now.getHours()).padStart(2, '0') + 
+                           String(now.getMinutes()).padStart(2, '0');
+            const batchSample = `${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}${timeStr}`;
+            
+            let breakdownHTML = '';
+            
+            if (description) {
+                const cleanDesc = description.replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, '-').toUpperCase();
+                breakdownHTML += `<span style="color: #ff6b6b;">📝 DESC-${cleanDesc}</span> = Custom Description<br>`;
+            }
+            breakdownHTML += `<span style="color: #4ecdc4;">🏷️ CAT-${category}</span> = Category & Condition<br>`;
+            breakdownHTML += `<span style="color: #45b7d1;">📏 SIZE-${size}</span> = Size Information<br>`;
+            breakdownHTML += `<span style="color: #96ceb4;">📅 DATE-${dateStr}</span> = Date (Today)<br>`;
+            if (selectedFilenameFormat === 'auto-timestamp' && !description) {
+                breakdownHTML += `<span style="color: #a8e6cf;">⏰ TIME-${timeStr}</span> = Time (Current)<br>`;
+            }
+            breakdownHTML += `<span style="color: #feca57;">📦 BATCH-B${batchSample}</span> = Batch ID (Auto-Generated)<br>`;
+            breakdownHTML += `<span style="color: #ff9ff3;">🔢 ITEM-001</span> = Sequential Item Number<br>`;
+            breakdownHTML += `<span style="color: #a8a8a8;">📄 .jpeg</span> = File Extension`;
+            
+            breakdownContent.innerHTML = breakdownHTML;
+            breakdown.style.display = 'block';
+        }
+
+        function generateSmartFilename(category, size, description, format) {
+            const now = new Date();
+            const dateStr = now.getFullYear() + 
+                           String(now.getMonth() + 1).padStart(2, '0') + 
+                           String(now.getDate()).padStart(2, '0');
+            const timeStr = String(now.getHours()).padStart(2, '0') + 
+                           String(now.getMinutes()).padStart(2, '0');
+            
+            // Safety checks and cleaning
+            category = category || 'unknown';
+            size = size || 'N/A';
+            const cleanDescription = description ? description.replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, '-').toUpperCase() : '';
+            const cleanSize = size.replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, '-');
+            
+            // Get batch number from global state or generate new one
+            const batchNum = window.currentBatchNumber || generateBatchNumber();
+            
+            let filename = '';
+            
+            switch (format) {
+                case 'auto-timestamp':
+                    // Default with key markers: DESC-CAT-SIZE-DATE-TIME-BATCH-ITEM
+                    if (cleanDescription) {
+                        filename = `DESC-${cleanDescription}-CAT-${category}-SIZE-${cleanSize}-DATE-${dateStr}-BATCH-B${batchNum}-ITEM-##ITEM##.jpeg`;
+                    } else {
+                        filename = `CAT-${category}-SIZE-${cleanSize}-DATE-${dateStr}-TIME-${timeStr}-BATCH-B${batchNum}-ITEM-##ITEM##.jpeg`;
+                    }
+                    break;
+                    
+                case 'category-first':
+                    // Category first with markers: CAT-SIZE-DESC-DATE-BATCH-ITEM
+                    if (cleanDescription) {
+                        filename = `CAT-${category}-SIZE-${cleanSize}-DESC-${cleanDescription}-DATE-${dateStr}-BATCH-B${batchNum}-ITEM-##ITEM##.jpeg`;
+                    } else {
+                        filename = `CAT-${category}-SIZE-${cleanSize}-DATE-${dateStr}-TIME-${timeStr}-BATCH-B${batchNum}-ITEM-##ITEM##.jpeg`;
+                    }
+                    break;
+                    
+                case 'clean':
+                    // Clean underscores format with markers
+                    if (cleanDescription) {
+                        filename = `SBS_DESC_${cleanDescription.replace('-', '_')}_CAT_${category.replace('-', '_')}_SIZE_${cleanSize.replace('-', '_')}_DATE_${dateStr}_BATCH_B${batchNum}_ITEM_##ITEM##.jpeg`;
+                    } else {
+                        filename = `SBS_CAT_${category.replace('-', '_')}_SIZE_${cleanSize.replace('-', '_')}_DATE_${dateStr}_TIME_${timeStr}_BATCH_B${batchNum}_ITEM_##ITEM##.jpeg`;
+                    }
+                    break;
+                    
+                case 'simple':
+                    // Simple format with basic markers
+                    filename = `SBS-BATCH-B${batchNum}-ITEM-##ITEM##-DATE-${dateStr}-TIME-${timeStr}.jpeg`;
+                    break;
+                    
+                default:
+                    filename = `CAT-${category}-SIZE-${cleanSize}-DATE-${dateStr}-TIME-${timeStr}-BATCH-B${batchNum}-ITEM-##ITEM##.jpeg`;
+            }
+            
+            return filename;
+        }
+
+        // Generate unique batch number based on timestamp
+        function generateBatchNumber() {
+            const now = new Date();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hour = String(now.getHours()).padStart(2, '0');
+            const minute = String(now.getMinutes()).padStart(2, '0');
+            
+            // Format: MMDDHHMM (e.g., 09251430 for Sept 25, 2:30 PM)
+            const batchNumber = `${month}${day}${hour}${minute}`;
+            
+            // Store globally for this upload session
+            window.currentBatchNumber = batchNumber;
+            
+            return batchNumber;
+        }
+
+        // Reset batch number for new upload session
+        function startNewUploadBatch() {
+            window.currentBatchNumber = generateBatchNumber();
+            window.currentItemNumber = 0; // Reset item counter
+            logMessage(`🎯 Started new upload batch: B${window.currentBatchNumber}`);
+        }
+
+        // Add event listeners to update preview when inputs change
+        function setupFilenamePreviewListeners() {
+            const inputs = ['category', 'size', 'itemDescription'];
+            inputs.forEach(inputId => {
+                const element = document.getElementById(inputId);
+                if (element) {
+                    element.addEventListener('change', updateFilenamePreview);
+                    element.addEventListener('input', updateFilenamePreview);
+                }
+            });
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            setupFilenamePreviewListeners();
+            setFilenameFormat('auto-timestamp'); // Set default format
+        });
+
+        // Complete Upload Process
+        async function processUpload() {
+            const category = document.getElementById('category').value;
+            const size = document.getElementById('size').value;
+            const siteSection = document.getElementById('siteSection').value;
+            const additionalTag = document.getElementById('additionalTag').value;
+
+            if (selectedFiles.length === 0) {
+                logError('No files selected', new Error('Please select files first'));
+                alert('❌ Please select files first');
+                return;
+            }
+
+            if (!category || !size) {
+                logError('Missing category or size', new Error(`Category: ${category}, Size: ${size}`));
+                alert('❌ Please select Category & Size');
+                return;
+            }
+
+            logMessage(`=== STARTING UPLOAD BATCH ===`);
+            
+            // Start new batch with unique batch number
+            startNewUploadBatch();
+            
+            logMessage(`📦 Batch Number: B${window.currentBatchNumber}`);
+            logMessage(`📁 Files to upload: ${selectedFiles.length}`);
+            logMessage(`🏷️ Category: ${category}, Size: ${size}`);
+            logMessage(`🎯 Site Section: ${siteSection}${additionalTag ? `, Additional Tag: ${additionalTag}` : ''}`);
+
+            const progressDiv = document.getElementById('uploadProgress');
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+            
+            progressDiv.style.display = 'block';
+            progressText.textContent = `Starting batch B${window.currentBatchNumber} - ${selectedFiles.length} files...`;
+
+            let successCount = 0;
+            let failCount = 0;
+
+            for (let i = 0; i < selectedFiles.length; i++) {
+                const file = selectedFiles[i];
+                const progress = ((i + 1) / selectedFiles.length) * 100;
+                const itemNum = String(i + 1).padStart(3, '0');
+                
+                progressBar.style.width = progress + '%';
+                progressText.textContent = `Batch B${window.currentBatchNumber} - Item ${itemNum}: ${file.name}`;
+
+                logMessage(`--- Batch B${window.currentBatchNumber} - Processing Item ${itemNum}/${selectedFiles.length}: ${file.name} ---`);
+
+                try {
+                    // Step 1: Upload image to Cloudflare via our proxy
+                    const uploadResult = await uploadToCloudflare(file, category, size, siteSection, additionalTag);
+                    
+                    if (uploadResult.success) {
+                        logMessage(`✅ Cloudflare upload successful. Image ID: ${uploadResult.id}`, 'success');
+
+                        // Step 2: Create comprehensive item object from Cloudflare response
+                        const batchNum = window.currentBatchNumber || 'NOBATCH';
+                        const itemNum = String(window.currentItemNumber).padStart(3, '0');
+                        
+                        const newItem = {
+                            id: uploadResult.id,
+                            name: uploadResult.filename,
+                            filename: uploadResult.filename,
+                            cloudflareId: uploadResult.id,
+                            uploaded: new Date().toISOString(),
+                            variants: uploadResult.variants || [],
+                            meta: uploadResult.meta || {},
+                            tags: [category, size, siteSection, additionalTag, 'BATCH-' + batchNum, 'ITEM-' + itemNum].filter(Boolean),
+                            // Add all the metadata we're now tracking
+                            category: category,
+                            size: size,
+                            batchNumber: batchNum,
+                            itemNumber: itemNum,
+                            siteSection: siteSection,
+                            description: description || '',
+                            status: 'available',
+                            image: `https://imagedelivery.net/${API_CONFIG.accountHash}/${uploadResult.id}/w=1080,h=1920`
+                        };
+                        
+                        logMessage(`✅ Item created from Cloudflare data. Image ready for display.`, 'success');
+                        inventory.unshift(newItem); // Add to the top of the local array
+                        successCount++;
+                        
+                    } else {
+                        throw new Error(uploadResult.error || 'Cloudflare upload failed but did not throw an error.');
+                    }
+
+                } catch (error) {
+                    failCount++;
+                    logError(`❌ Upload process failed for ${file.name}`, error);
+                    progressText.textContent = `❌ Error: ${error.message}`;
+                    // Wait a moment before continuing
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                }
+            }
+
+            logMessage(`=== BATCH B${window.currentBatchNumber} COMPLETED ===`);
+            logMessage(`📦 Batch: B${window.currentBatchNumber}`);
+            logMessage(`📊 Total files: ${selectedFiles.length}, Successful: ${successCount}, Failed: ${failCount}`);
+            logMessage(`🎯 All items in this batch have sequential numbering 001-${String(selectedFiles.length).padStart(3, '0')}`);
+
+            progressText.textContent = `✅ Batch B${window.currentBatchNumber} Complete! ${successCount} successful, ${failCount} failed`;
+            displayInventory(); // Refresh the display with the new item
+
+            // Keep upload section open - just hide progress after delay
+            setTimeout(() => {
+                progressDiv.style.display = 'none';
+                progressBar.style.width = '0%';
+            }, CONFIG.LOG_DOWNLOAD_DELAY);
+        }
+
+        // Function to update item tags in the database
+        async function updateItemTags(itemId, newTags) {
+            const response = await fetch(`${API_CONFIG.proxyUrl}/items/${itemId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ tags: newTags })
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Failed to update item tags: ${errorText}`);
+            }
+
+            const result = await response.json();
+            if (!result.success) {
+                throw new Error(`API Error on tag update: ${result.error}`);
+            }
+            
+            return result.item;
+        }
+
+        // New function to create item record in our database
+        async function createItemInDB(uploadResult, category, size, siteSection, additionalTag) {
+            logMessage(`Creating database entry for ${uploadResult.filename}...`);
+
+            const tags = ['LIVE', siteSection.toUpperCase()];
+            if (additionalTag) {
+                tags.push(additionalTag.toUpperCase());
+            }
+
+            const itemPayload = {
+                cloudflareId: uploadResult.id,
+                filename: uploadResult.filename,
+                name: uploadResult.filename, // Use filename as name for now
+                category: category,
+                size: size,
+                tags: tags,
+                status: 'available', // Default status
+                notes: ''
+            };
+
+            const response = await fetch(`${API_CONFIG.proxyUrl}/items`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(itemPayload)
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Failed to create item in DB: ${errorText}`);
+            }
+
+            const result = await response.json();
+            if (!result.success) {
+                throw new Error(`API Error on item creation: ${result.error}`);
+            }
+            
+            // Return the complete item object from the server (includes id, createdAt, etc.)
+            return {
+                ...result.item,
+                image: `https://imagedelivery.net/${API_CONFIG.accountHash}/${result.item.cloudflareId}/w=1080,h=1920`
+            };
+        }
+
+
+        // Upload to Cloudflare Function (now only handles the upload itself)
+        async function uploadToCloudflare(file, category, size, siteSection, additionalTag) {
+            logMessage(`Starting Cloudflare upload for: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`);
+            
+            // Safety checks for undefined parameters
+            category = category || 'unknown';
+            size = size || 'N/A';
+            
+            // Get optional description
+            const description = document.getElementById('itemDescription').value.trim();
+            
+            // Increment item number for this upload session
+            window.currentItemNumber = (window.currentItemNumber || 0) + 1;
+            const itemNum = String(window.currentItemNumber).padStart(3, '0');
+            
+            // Generate smart filename template
+            let filenameTemplate = generateSmartFilename(category, size, description, selectedFilenameFormat);
+            
+            // Replace placeholder with actual item number
+            const filename = filenameTemplate.replace('##ITEM##', itemNum);
+            
+            const batchNum = window.currentBatchNumber || 'NOBATCH';
+            
+            logMessage(`📦 Batch: B${batchNum}, Item: ${itemNum}/${selectedFiles.length}`);
+            logMessage(`🏷️ Generated smart filename: ${filename}`);
+            if (description) {
+                logMessage(`📝 Custom description: "${description}"`);
+            }
+            
+            // Create new file object with custom filename
+            const customFile = new File([file], filename, {
+                type: file.type,
+                lastModified: file.lastModified
+            });
+            
+            const formData = new FormData();
+            formData.append('file', customFile, filename); // Explicitly set filename
+            
+            const metadata = {
+                filename: filename,
+                alt: `SBS ${category.replace('-', ' ')} Size ${size}${description ? ` - ${description}` : ''} (Batch ${batchNum} Item ${itemNum})`,
+                caption: `${category.replace('-', ' ')} Size ${size}${description ? ` - ${description}` : ''} - Batch ${batchNum} Item ${itemNum} - Auto-uploaded via SBS Media Hub`,
+                tags: [category, size, siteSection, additionalTag, 'BATCH-' + batchNum, 'ITEM-' + itemNum].filter(Boolean).join(','),
+                // Additional structured metadata
+                category: category,
+                size: size,
+                batchNumber: batchNum,
+                itemNumber: itemNum,
+                siteSection: siteSection,
+                description: description || '',
+                uploadDate: new Date().toISOString().split('T')[0],
+                uploadTime: new Date().toTimeString().split(' ')[0]
+            };
+            formData.append('metadata', JSON.stringify(metadata));
+            logMessage(`📊 Enhanced metadata with smart naming: ${JSON.stringify(metadata)}`);
+
+            const apiUrl = `${API_CONFIG.proxyUrl}/images`;
+            logMessage(`🔄 Proxying upload with custom filename to: ${apiUrl}`);
+
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                body: formData
+            });
+
+            logMessage(`📡 Proxy response status: ${response.status} ${response.statusText}`);
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                logError(`API Error Response (${response.status})`, new Error(errorText));
+                throw new Error(`Upload failed: ${response.status} - ${errorText}`);
+            }
+
+            const result = await response.json();
+            logMessage(`Cloudflare API Success Response: ${JSON.stringify(result, null, 2)}`);
+            
+            if (!result.success) {
+                const errorMsg = result.errors?.[0]?.message || JSON.stringify(result.errors) || 'Unknown error';
+                logError('Cloudflare API returned success=false', new Error(errorMsg));
+                throw new Error(`Cloudflare API error: ${errorMsg}`);
+            }
+
+            return {
+                id: result.result.id,
+                filename: filename,
+                success: true,
+                variants: result.result.variants,
+                meta: result.result.meta,
+                uploaded: result.result.uploaded
+            };
+        }
+
+        // Remove loadStoredImages and related logic, as we now fetch from the DB
+        document.addEventListener('DOMContentLoaded', function() {
+            // The old loadStoredImages() call is no longer needed.
+            // We will call loadImagesAndShowSection() via the button click.
+            logMessage("Frontend initialized. Ready to connect to API server.");
+        });
+    </script>
+</body>
+</html>
+
+

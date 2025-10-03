@@ -207,10 +207,34 @@ function generatePrice(category) {
     return categoryPrices[Math.floor(Math.random() * categoryPrices.length)];
 }
 
+// 🎯 TAXONOMY SIZES - SINGLE SOURCE OF TRUTH
+// Note: Workers can't import ES modules, so we keep inline but reference taxonomy.js as source
+const TAXONOMY_SIZES = {
+    'BN-CLOTHES': ['XS', 'S', 'M', 'L', 'XL'],
+    'PO-CLOTHES': [
+        'XS', 'S', 'M', 'L', 'XL',
+        'XS-TOP-S-BOTTOM', 'S-TOP-XS-BOTTOM',
+        'S-TOP-M-BOTTOM', 'M-TOP-S-BOTTOM',
+        'M-TOP-L-BOTTOM', 'L-TOP-M-BOTTOM',
+        'L-TOP-XL-BOTTOM', 'XL-TOP-L-BOTTOM'
+    ],
+    'BN-SHOES': ['UK-6', 'UK-6-5', 'UK-7', 'UK-7-5', 'UK-8', 'UK-8-5', 'UK-9', 'UK-9-5', 'UK-10', 'UK-10-5', 'UK-11', 'UK-11-5', 'UK-12'],
+    'PO-SHOES': ['UK-6', 'UK-6-5', 'UK-7', 'UK-7-5', 'UK-8', 'UK-8-5', 'UK-9', 'UK-9-5', 'UK-10', 'UK-10-5', 'UK-11', 'UK-11-5', 'UK-12']
+};
+
 function generateSizes(category) {
-    if (category === 'accessories') return ['One Size'];
-    if (category === 'footwear') return ['UK 6', 'UK 7', 'UK 8', 'UK 9', 'UK 10', 'UK 11'];
-    return ['S', 'M', 'L', 'XL'];
+    // Check taxonomy first
+    if (TAXONOMY_SIZES[category]) {
+        return TAXONOMY_SIZES[category];
+    }
+    
+    // Legacy footwear check
+    if (category === 'footwear') {
+        return TAXONOMY_SIZES['BN-SHOES'];
+    }
+    
+    // Default fallback
+    return ['XS', 'S', 'M', 'L', 'XL'];
 }
 
 function formatProductName(filename) {

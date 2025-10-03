@@ -247,6 +247,52 @@
       min-width: 20px;
     }
 
+    /* AUTH BUTTONS */
+    .btn-gold {
+      background: var(--primary-gold);
+      color: var(--primary-black);
+      border: 2px solid var(--primary-gold);
+      padding: 0.5rem 1.5rem;
+      border-radius: 25px;
+      cursor: pointer;
+      font-weight: 700;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      display: inline-block;
+      text-transform: uppercase;
+      font-size: 0.85rem;
+      letter-spacing: 1px;
+      font-family: inherit;
+    }
+
+    .btn-gold:hover {
+      background: var(--primary-black);
+      color: var(--primary-gold);
+      border-color: var(--primary-gold);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--primary-gold);
+      border: 2px solid var(--primary-gold);
+      padding: 0.5rem 1.5rem;
+      border-radius: 25px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      font-size: 0.85rem;
+      letter-spacing: 1px;
+    }
+
+    .btn-outline:hover {
+      background: var(--primary-gold);
+      color: var(--primary-black);
+      transform: translateY(-2px);
+    }
+
     .logo {
       display: flex;
       align-items: center;
@@ -318,8 +364,20 @@
     /* Hero Section */
     .hero {
       text-align: center;
-      padding: 6rem 2rem 4rem;
+      padding: 4rem 0 3rem;
       border-bottom: 1px solid var(--border-subtle);
+      margin: 0 -2rem;
+      background: var(--primary-black);
+    }
+
+    .hero img {
+      max-width: 900px;
+      width: 100%;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+      border-radius: 0;
+      box-shadow: 0 20px 60px rgba(255, 215, 0, 0.2);
     }
 
     .hero h1 {
@@ -915,6 +973,20 @@
       .logo img {
         height: 32px;
       }
+
+      /* Hero image responsive on mobile */
+      .hero {
+        padding: 2rem 0;
+        margin: 0;
+      }
+
+      .hero img {
+        width: 100%;
+        max-width: 100%;
+        height: auto;
+        border-radius: 0;
+        box-shadow: none;
+      }
     }
 
     @media (max-width: 480px) {
@@ -960,7 +1032,9 @@
         </a>
       </div>
       <div class="nav-right">
-        <a href="/login" class="nav-link">Login</a>
+        <!-- Auth state dynamically updates this section -->
+        <a href="/login" class="nav-link">Sign In</a>
+        <a href="/register" class="btn-gold">Sign Up</a>
         <button class="cart-toggle" onclick="toggleCart()">
           Basket
           <span class="cart-count" id="cart-count">0</span>
@@ -973,8 +1047,10 @@
     <div class="container">
       <!-- HERO SECTION -->
       <section class="hero">
-        <h1>SBS</h1>
-        <p>Your story marketplace. Discover authentic stories or share your own journey with the world.</p>
+        <img src="/assets_task_01k6km15zzeqmsn5ykt7svvmfc_1759447755_img_0.webp" 
+             alt="👑 KING OF PRE-OWNED - SBS SWORDSBUYSALE" 
+             class="hero-image"
+             onerror="this.style.display='none'; this.parentNode.innerHTML='<h1>👑 KING OF PRE-OWNED</h1><p>SBS - SWORDSBUYSALE</p>'">
       </section>
 
       <!-- SHOP & SELL SECTIONS -->
@@ -1733,6 +1809,9 @@
       tryNextCdn();
     })();
   </script>
+
+  <!-- Auth State Management -->
+  <script src="/js/auth-state.js"></script>
 </body>
 
 </html>

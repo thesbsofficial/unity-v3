@@ -56,15 +56,15 @@ catch {
 
 # Create the ruleset with all our rules
 $ruleset = @{
-    name = "SBS Navigation Rules"
+    name        = "SBS Navigation Rules"
     description = "Clean URL handling for SBS Unity website"
-    kind = "zone"
-    phase = "http_request_transform"
-    rules = @(
+    kind        = "zone"
+    phase       = "http_request_transform"
+    rules       = @(
         @{
-            description = "SBS Clean URL Rewriting - Add .html to clean URLs"
-            expression = '(http.request.uri.path matches "^/[a-zA-Z0-9_-]+$") and (not starts_with(http.request.uri.path, "/api")) and (not contains(http.request.uri.path, "."))'
-            action = "rewrite"
+            description       = "SBS Clean URL Rewriting - Add .html to clean URLs"
+            expression        = '(http.request.uri.path matches "^/[a-zA-Z0-9_-]+$") and (not starts_with(http.request.uri.path, "/api")) and (not contains(http.request.uri.path, "."))'
+            action            = "rewrite"
             action_parameters = @{
                 uri = @{
                     path = @{
@@ -72,12 +72,12 @@ $ruleset = @{
                     }
                 }
             }
-            enabled = $true
+            enabled           = $true
         },
         @{
-            description = "SBS Remove Trailing Slashes"
-            expression = '(http.request.uri.path matches "^/.+/$") and (not starts_with(http.request.uri.path, "/api"))'
-            action = "rewrite"
+            description       = "SBS Remove Trailing Slashes"
+            expression        = '(http.request.uri.path matches "^/.+/$") and (not starts_with(http.request.uri.path, "/api"))'
+            action            = "rewrite"
             action_parameters = @{
                 uri = @{
                     path = @{
@@ -85,7 +85,7 @@ $ruleset = @{
                     }
                 }
             }
-            enabled = $true
+            enabled           = $true
         }
     )
 }
@@ -108,7 +108,8 @@ try {
         foreach ($rule in $response.result.rules) {
             Write-Host "   ✅ $($rule.description)" -ForegroundColor Green
         }
-    } else {
+    }
+    else {
         Write-Host "❌ Failed to create ruleset" -ForegroundColor Red
         Write-Host "Errors:" -ForegroundColor Red
         $response.errors | ForEach-Object { 

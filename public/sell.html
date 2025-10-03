@@ -66,15 +66,19 @@
             gap: 2rem;
         }
 
-        .nav-left,
-        .nav-right {
+        .nav-left {
             display: flex;
             gap: 1.5rem;
             align-items: center;
         }
 
         .nav-right {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
             justify-content: flex-end;
+            flex-wrap: nowrap;
+            white-space: nowrap;
         }
 
         .logo {
@@ -140,6 +144,52 @@
             justify-content: center;
             font-size: 11px;
             font-weight: bold;
+        }
+
+        /* AUTH BUTTONS */
+        .btn-gold {
+            background: var(--primary-gold);
+            color: var(--primary-black);
+            border: 2px solid var(--primary-gold);
+            padding: 0.5rem 1.5rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+            font-family: inherit;
+        }
+
+        .btn-gold:hover {
+            background: transparent;
+            color: var(--primary-gold);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(255, 215, 0, 0.3);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--text-primary);
+            border: 2px solid var(--border-subtle);
+            padding: 0.5rem 1.5rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 0.85rem;
+            font-family: inherit;
+        }
+
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--text-primary);
+            transform: translateY(-2px);
         }
 
         /* STICKY REMINDER BAR */
@@ -948,8 +998,8 @@
     <header class="header">
         <nav class="nav">
             <div class="nav-left">
-                <a href="/" class="nav-link">Home</a>
                 <a href="/shop" class="nav-link">Shop</a>
+                <a href="/sell" class="nav-link">Sell</a>
             </div>
             <div class="nav-center">
                 <a href="/" class="logo">
@@ -958,9 +1008,10 @@
                 </a>
             </div>
             <div class="nav-right">
-                <a href="/login" class="nav-link">Login</a>
-                <a href="/register" class="nav-link">Register</a>
-                <button class="cart-toggle" onclick="window.location.href='/shop#cart'">
+                <!-- Auth state dynamically updates this section -->
+                <a href="/login" class="nav-link">Sign In</a>
+                <a href="/register" class="btn-gold">Sign Up</a>
+                <button class="cart-toggle" onclick="toggleCart()">
                     Basket
                     <span class="cart-count" id="cart-count">0</span>
                 </button>
@@ -1562,80 +1613,64 @@
 
     <!-- SCRIPTS -->
     <script src="/scripts/nav-lite.js" defer></script>
-    <script>
-        // Initialize Lucide icons
-        document.addEventListener('DOMContentLoaded', function () {
+    <script type="module">
+        // =================================================================================
+        // 🎯 IMPORT TAXONOMY FROM SINGLE SOURCE
+        // =================================================================================
+        import { SIZES } from '/js/taxonomy.js';
+        
+        // =================================================================================
+        // INITIALIZATION & CORE UI
+        // =================================================================================
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize Lucide icons
             if (typeof lucide !== 'undefined') {
                 lucide.createIcons();
             }
+
+            // Sticky reminder bar
+            window.addEventListener('scroll', function () {
+                const reminder = document.getElementById('sticky-reminder');
+                if (window.scrollY > 250) {
+                    reminder.classList.add('visible');
+                } else {
+                    reminder.classList.remove('visible');
+                }
+            });
+
+            // Initialize Quick Builder
+            initializeQuickBuilder();
         });
 
-        // Sticky reminder bar
-        window.addEventListener('scroll', function () {
-            const reminder = document.getElementById('sticky-reminder');
-            if (window.scrollY > 250) {
-                reminder.classList.add('visible');
-            } else {
-                reminder.classList.remove('visible');
-            }
-        });
 
-        // ELIGIBILITY GATE FUNCTIONS
+        // =================================================================================
+        // NAVIGATION & UI VISIBILITY
+        // =================================================================================
+
         function revealContact() {
             const choiceScreen = document.getElementById('choice-screen');
-
-            // Show choice screen
             choiceScreen.classList.add('visible');
-
-            // Smooth scroll to choice screen
-            setTimeout(() => {
-                choiceScreen.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }, 100);
-
-            // Track eligibility_yes event
+            setTimeout(() => choiceScreen.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
             console.log('Eligibility: YES - Choice screen revealed');
-            // Future: gtag('event', 'eligibility_yes', { page: 'sell' });
-
-            // Reinitialize Lucide icons
-            if (typeof lucide !== 'undefined') {
-                lucide.createIcons();
-            }
+            if (typeof lucide !== 'undefined') lucide.createIcons();
         }
 
-        // TWO-PATH CHOICE FUNCTIONS
         function showQuickBuilder() {
             const builderSection = document.getElementById('quick-builder-section');
             builderSection.classList.add('visible');
-
-            setTimeout(() => {
-                builderSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }, 100);
-
+            setTimeout(() => builderSection.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
             console.log('Path: Quick Builder selected');
-            // Future: gtag('event', 'builder_selected', { page: 'sell' });
-
-            if (typeof lucide !== 'undefined') {
-                lucide.createIcons();
-            }
+            if (typeof lucide !== 'undefined') lucide.createIcons();
         }
 
         function showManualContact() {
             const contactSection = document.getElementById('contact-section');
             const photoTipsSection = document.getElementById('photo-tips-section');
-
             contactSection.classList.add('visible');
             photoTipsSection.classList.add('visible');
-
-            setTimeout(() => {
-                contactSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }, 100);
-
+            setTimeout(() => contactSection.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
             console.log('Path: Manual Contact selected');
-            // Future: gtag('event', 'manual_contact_selected', { page: 'sell' });
-
-            if (typeof lucide !== 'undefined') {
-                lucide.createIcons();
-            }
+            if (typeof lucide !== 'undefined') lucide.createIcons();
         }
 
         function backToChoice() {
@@ -1648,34 +1683,23 @@
             contactSection.classList.remove('visible');
             photoTipsSection.classList.remove('visible');
 
-            setTimeout(() => {
-                choiceScreen.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }, 100);
+            setTimeout(() => choiceScreen.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
         }
 
         function showCommunity() {
             const communitySection = document.getElementById('community-section');
-
-            // Show community section
             communitySection.classList.add('visible');
-
-            // Smooth scroll to community
-            setTimeout(() => {
-                communitySection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }, 100);
-
-            // Track eligibility_no event
+            setTimeout(() => communitySection.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
             console.log('Eligibility: NO - Community revealed');
-            // Future: gtag('event', 'eligibility_no', { page: 'sell' });
-
-            // Reinitialize Lucide icons
-            if (typeof lucide !== 'undefined') {
-                lucide.createIcons();
-            }
+            if (typeof lucide !== 'undefined') lucide.createIcons();
         }
 
-        // SIMPLE QUICK BUILDER - Data
-        const QB = {
+        // =================================================================================
+        // QUICK BUILDER LOGIC
+        // =================================================================================
+
+        // 🎯 QUICK BUILDER DATA - Uses Single Source taxonomy
+        const QB_DATA = {
             brands: {
                 'Streetwear': ['The North Face', 'Monterrain', 'Yelir', 'Montirex', 'Berghaus', 'Trailberg', 'OnCloud', 'Columbia', 'Hugo Boss'],
                 'Shoes': ['Nike', 'New Balance', 'Asics'],
@@ -1683,15 +1707,15 @@
                 'Jewellery': ['Gold Jewellery', 'Silver Jewellery', 'Luxury Watch (Rolex etc.)']
             },
             sizes: {
-                'Streetwear': ['XS', 'S', 'M', 'L', 'XL', 'XS-TOP-S-BOTTOM', 'S-TOP-XS-BOTTOM', 'S-TOP-M-BOTTOM', 'M-TOP-S-BOTTOM', 'M-TOP-L-BOTTOM', 'L-TOP-M-BOTTOM', 'L-TOP-XL-BOTTOM', 'XL-TOP-L-BOTTOM'],
-                'Shoes': ['UK-6', 'UK-6-5', 'UK-7', 'UK-7-5', 'UK-8', 'UK-8-5', 'UK-9', 'UK-9-5', 'UK-10', 'UK-10-5', 'UK-11', 'UK-11-5', 'UK-12'],
+                // 🎯 SIZES FROM SINGLE SOURCE (taxonomy.js)
+                'Streetwear': SIZES['PO-CLOTHES'], // Includes standard + mixed sizes
+                'Shoes': SIZES['BN-SHOES'],         // UK-6 to UK-12 with half sizes
                 'Tech': [],
                 'Jewellery': []
             }
         };
 
-        // Initialize Quick Builder
-        document.addEventListener('DOMContentLoaded', () => {
+        function initializeQuickBuilder() {
             const category = document.getElementById('qb-category');
             const brand = document.getElementById('qb-brand');
             const size = document.getElementById('qb-size');
@@ -1701,42 +1725,30 @@
             const eircode = document.getElementById('qb-eircode');
             const photos = document.getElementById('qb-photos');
             const generateBtn = document.getElementById('qb-generate-btn');
+            const phoneInput = document.getElementById('qb-phone');
+            const igInput = document.getElementById('qb-ig-handle');
+            const snapInput = document.getElementById('qb-snap-handle');
 
-            // Load saved data from localStorage (prefill)
-            const savedAddress = localStorage.getItem('sbs-address');
-            const savedCity = localStorage.getItem('sbs-city');
-            const savedEircode = localStorage.getItem('sbs-eircode');
-            const savedPhone = localStorage.getItem('sbs-phone');
+            // Load saved data from localStorage
+            address.value = localStorage.getItem('sbs-address') || '';
+            city.value = localStorage.getItem('sbs-city') || '';
+            eircode.value = localStorage.getItem('sbs-eircode') || '';
+            phoneInput.value = localStorage.getItem('sbs-phone') || '';
+            document.getElementById('qb-email').value = localStorage.getItem('sbs-email') || '';
+
             const savedSocialChannel = localStorage.getItem('sbs-social-channel');
             const savedSocialHandle = localStorage.getItem('sbs-social-handle');
-            const savedEmail = localStorage.getItem('sbs-email');
-
-            if (savedAddress) address.value = savedAddress;
-            if (savedCity) city.value = savedCity;
-            if (savedEircode) eircode.value = savedEircode;
-
-            if (savedPhone) {
-                phoneInput.value = savedPhone;
-                console.log('Loaded saved phone:', savedPhone);
-            }
-
             if (savedSocialChannel && savedSocialHandle) {
                 const radioBtn = document.getElementById(`qb-${savedSocialChannel}`);
                 if (radioBtn) {
                     radioBtn.checked = true;
                     radioBtn.dispatchEvent(new Event('change'));
-
                     if (savedSocialChannel === 'instagram') {
                         igInput.value = savedSocialHandle;
                     } else {
                         snapInput.value = savedSocialHandle;
                     }
-                    console.log('Loaded saved social:', savedSocialChannel, savedSocialHandle);
                 }
-            }
-
-            if (savedEmail) {
-                document.getElementById('qb-email').value = savedEmail;
             }
 
             // Show Web Share button if supported
@@ -1744,19 +1756,22 @@
                 document.getElementById('qb-share-btn').style.display = 'inline-flex';
             }
 
-            // Multiple items handling
+            // Multiple items state
             let items = [];
-            let currentItemIndex = 0;
+            let uploadedPhotos = [];
+
             const addItemBtn = document.getElementById('add-item-btn');
             const finishBtn = document.getElementById('qb-finish-btn');
-            const itemCounter = document.getElementById('item-counter');
-            const itemCount = document.getElementById('item-count');
-            const itemsList = document.getElementById('items-list');
-            const itemsContainer = document.getElementById('items-container');
-            const generateBtnText = document.getElementById('generate-btn-text');
-            const finishBtnText = document.getElementById('finish-btn-text');
+            const photoInput = document.getElementById('qb-photo-upload');
 
             function updateItemsUI() {
+                const itemCounter = document.getElementById('item-counter');
+                const itemCount = document.getElementById('item-count');
+                const itemsList = document.getElementById('items-list');
+                const itemsContainer = document.getElementById('items-container');
+                const generateBtnText = document.getElementById('generate-btn-text');
+                const finishBtnText = document.getElementById('finish-btn-text');
+
                 if (items.length > 0) {
                     addItemBtn.style.display = 'inline-flex';
                     finishBtn.style.display = 'inline-block';
@@ -1764,16 +1779,15 @@
                     itemsList.style.display = 'block';
                     itemCount.textContent = items.length;
                     finishBtnText.textContent = `Generate Message (${items.length} item${items.length > 1 ? 's' : ''})`;
-                    generateBtnText.textContent = 'Add to List';
+                    generateBtnText.textContent = 'Add Another Item';
                 } else {
                     addItemBtn.style.display = 'none';
                     finishBtn.style.display = 'none';
                     itemCounter.style.display = 'none';
                     itemsList.style.display = 'none';
-                    generateBtnText.textContent = 'Generate My Message';
+                    generateBtnText.textContent = 'Add Item to List';
                 }
 
-                // Render items list
                 itemsContainer.innerHTML = items.map((item, index) => `
                     <div style="background: rgba(255, 215, 0, 0.05); border: 1px solid rgba(255, 215, 0, 0.2); border-radius: 8px; padding: 1rem; display: flex; justify-content: space-between; align-items: center;">
                         <div style="flex: 1;">
@@ -1783,80 +1797,69 @@
                                 ${item.photoCount > 0 ? ` • 📷 ${item.photoCount} photo${item.photoCount > 1 ? 's' : ''}` : ''}
                             </div>
                         </div>
-                        <button onclick="removeItem(${index})" class="btn btn-secondary" style="padding: 0.5rem; min-width: auto;">
-                            <i data-lucide="x" class="icon"></i>
+                        <button onclick="window.sbsSell.removeItem(${index})" class="btn btn-secondary" style="padding: 0.5rem; min-width: auto; min-height: auto; line-height: 1;">
+                            <i data-lucide="x" class="icon" style="margin-right: 0;"></i>
                         </button>
                     </div>
                 `).join('');
 
-                // Re-init Lucide icons
-                if (typeof lucide !== 'undefined') {
-                    lucide.createIcons();
-                }
+                if (typeof lucide !== 'undefined') lucide.createIcons();
             }
 
-            window.removeItem = function (index) {
-                items.splice(index, 1);
-                updateItemsUI();
-            };
-
-            addItemBtn.addEventListener('click', function () {
-                // Reset form for next item but keep contact details
+            function resetItemForm() {
                 category.value = '';
-                brand.value = '';
+                brand.innerHTML = '<option value="">Select brand...</option>';
                 document.querySelectorAll('input[name="qb-condition"]').forEach(r => r.checked = false);
-                size.value = '';
+                size.innerHTML = '<option value="">Select size...</option>';
                 price.value = '';
                 document.getElementById('qb-defects').value = '';
                 uploadedPhotos = [];
-                photoPreviewsContainer.innerHTML = '';
-                uploadStatus.innerHTML = '';
+                document.getElementById('qb-photo-previews').innerHTML = '';
+                document.getElementById('qb-upload-status').innerHTML = '';
                 photoInput.value = '';
 
-                // Hide groups
-                document.getElementById('qb-brand-group').style.display = 'none';
-                document.getElementById('qb-condition-group').style.display = 'none';
-                document.getElementById('qb-size-group').style.display = 'none';
-                document.getElementById('qb-price-group').style.display = 'none';
-                document.getElementById('qb-location-group').style.display = 'none';
-                document.getElementById('qb-defects-group').style.display = 'none';
-                document.getElementById('qb-photos-group').style.display = 'none';
-
-                // Scroll to top of form
+                ['qb-brand-group', 'qb-condition-group', 'qb-size-group', 'qb-price-group', 'qb-defects-group', 'qb-photos-group'].forEach(id => {
+                    document.getElementById(id).style.display = 'none';
+                });
                 document.getElementById('qb-category').scrollIntoView({ behavior: 'smooth', block: 'center' });
-            });
+            }
+
+            // Expose removeItem to global scope under a namespace
+            window.sbsSell = {
+                removeItem: (index) => {
+                    items.splice(index, 1);
+                    updateItemsUI();
+                }
+            };
+
+            addItemBtn.addEventListener('click', resetItemForm);
 
             // Photo upload handling
-            let uploadedPhotos = [];
-            const photoInput = document.getElementById('qb-photo-upload');
-            const photoPreviewsContainer = document.getElementById('qb-photo-previews');
-            const uploadStatus = document.getElementById('qb-upload-status');
-
             photoInput.addEventListener('change', function (e) {
-                const files = Array.from(e.target.files).slice(0, 5); // Max 5 photos
+                const files = Array.from(e.target.files).slice(0, 5);
+                const photoPreviewsContainer = document.getElementById('qb-photo-previews');
+                const uploadStatus = document.getElementById('qb-upload-status');
+                const photosCheckbox = document.getElementById('qb-photos');
 
-                // Validate file sizes
                 for (const file of files) {
-                    if (file.size > 10 * 1024 * 1024) { // 10MB limit
-                        uploadStatus.innerHTML = '<span style="color: #ef4444;">⚠️ Each photo must be under 10MB</span>';
+                    if (file.size > 10 * 1024 * 1024) { // 10MB
+                        uploadStatus.innerHTML = '<span style="color: #ef4444;">⚠️ Photo must be under 10MB</span>';
                         photoInput.value = '';
                         return;
                     }
                 }
 
-                // Clear previous previews
                 photoPreviewsContainer.innerHTML = '';
                 uploadedPhotos = [];
 
-                // Show previews
                 files.forEach((file, index) => {
                     const reader = new FileReader();
-                    reader.onload = function (e) {
+                    reader.onload = (event) => {
                         const preview = document.createElement('div');
                         preview.style.cssText = 'position: relative; aspect-ratio: 1; border-radius: 4px; overflow: hidden; border: 2px solid rgba(255, 215, 0, 0.3);';
                         preview.innerHTML = `
-                            <img src="${e.target.result}" style="width: 100%; height: 100%; object-fit: cover;">
-                            <button onclick="removePhoto(${index})" style="position: absolute; top: 2px; right: 2px; background: rgba(0,0,0,0.7); color: white; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 12px; cursor: pointer; line-height: 1;">×</button>
+                            <img src="${event.target.result}" style="width: 100%; height: 100%; object-fit: cover;">
+                            <button onclick="window.sbsSell.removePhoto(${index})" style="position: absolute; top: 2px; right: 2px; background: rgba(0,0,0,0.7); color: white; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 12px; cursor: pointer; line-height: 1;">×</button>
                         `;
                         photoPreviewsContainer.appendChild(preview);
                     };
@@ -1864,76 +1867,45 @@
                     uploadedPhotos.push(file);
                 });
 
+                // Auto-check the photos checkbox if photos are uploaded
                 if (files.length > 0) {
-                    uploadStatus.innerHTML = `<span style="color: #22c55e;">✓ ${files.length} photo${files.length > 1 ? 's' : ''} ready to upload</span>`;
+                    photosCheckbox.checked = true;
+                    uploadStatus.innerHTML = `<span style="color: #22c55e;">✓ ${files.length} photo${files.length > 1 ? 's' : ''} ready</span>`;
                 } else {
+                    photosCheckbox.checked = false;
                     uploadStatus.innerHTML = '';
                 }
             });
 
-            // Global function to remove photos
-            window.removePhoto = function (index) {
+            window.sbsSell.removePhoto = function (index) {
                 uploadedPhotos.splice(index, 1);
-                photoInput.value = '';
-
-                // Update previews
-                photoPreviewsContainer.innerHTML = '';
-                uploadedPhotos.forEach((file, idx) => {
-                    const reader = new FileReader();
-                    reader.onload = function (e) {
-                        const preview = document.createElement('div');
-                        preview.style.cssText = 'position: relative; aspect-ratio: 1; border-radius: 4px; overflow: hidden; border: 2px solid rgba(255, 215, 0, 0.3);';
-                        preview.innerHTML = `
-                            <img src="${e.target.result}" style="width: 100%; height: 100%; object-fit: cover;">
-                            <button onclick="removePhoto(${idx})" style="position: absolute; top: 2px; right: 2px; background: rgba(0,0,0,0.7); color: white; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 12px; cursor: pointer; line-height: 1;">×</button>
-                        `;
-                        photoPreviewsContainer.appendChild(preview);
-                    };
-                    reader.readAsDataURL(file);
-                });
-
-                if (uploadedPhotos.length > 0) {
-                    uploadStatus.innerHTML = `<span style="color: #22c55e;">✓ ${uploadedPhotos.length} photo${uploadedPhotos.length > 1 ? 's' : ''} ready to upload</span>`;
-                } else {
-                    uploadStatus.innerHTML = '';
-                }
+                photoInput.dispatchEvent(new Event('change')); // Re-trigger to update previews
             };
 
-            // Category change - show brand dropdown
+            // Form logic
             category.addEventListener('change', function () {
                 const cat = this.value;
-                console.log('Category selected:', cat);
-
                 if (!cat) return;
-
-                // Populate brands
                 brand.innerHTML = '<option value="">Select brand...</option>';
-                QB.brands[cat].forEach(b => {
+                QB_DATA.brands[cat].forEach(b => {
                     const opt = document.createElement('option');
                     opt.value = b;
                     opt.textContent = b;
                     brand.appendChild(opt);
                 });
-
                 document.getElementById('qb-brand-group').style.display = 'block';
             });
 
-            // Brand change - show condition pills
-            brand.addEventListener('change', function () {
-                if (this.value) {
-                    document.getElementById('qb-condition-group').style.display = 'block';
-                }
+            brand.addEventListener('change', () => {
+                if (brand.value) document.getElementById('qb-condition-group').style.display = 'block';
             });
 
-            // Condition radio buttons - show rest of form
             document.querySelectorAll('input[name="qb-condition"]').forEach(radio => {
-                radio.addEventListener('change', function () {
+                radio.addEventListener('change', () => {
                     const cat = category.value;
-
-                    // Show size if needed
-                    if (QB.sizes[cat] && QB.sizes[cat].length > 0) {
+                    if (QB_DATA.sizes[cat] && QB_DATA.sizes[cat].length > 0) {
                         size.innerHTML = '<option value="">Select size...</option>';
-                        QB.sizes[cat].forEach(s => {
+                        QB_DATA.sizes[cat].forEach(s => {
                             const opt = document.createElement('option');
                             opt.value = s;
                             opt.textContent = s;
@@ -1941,223 +1913,97 @@
                         });
                         document.getElementById('qb-size-group').style.display = 'block';
                     }
-
                     document.getElementById('qb-price-group').style.display = 'block';
-                    document.getElementById('qb-location-group').style.display = 'block';
                     document.getElementById('qb-defects-group').style.display = 'block';
                     document.getElementById('qb-photos-group').style.display = 'block';
                     checkComplete();
                 });
             });
 
-            // Photos checkbox - show contact section
-            photos.addEventListener('change', function () {
-                if (this.checked) {
-                    document.getElementById('qb-contact-group').style.display = 'block';
-                }
+            photos.addEventListener('change', () => {
+                if (photos.checked) document.getElementById('qb-contact-group').style.display = 'block';
                 checkComplete();
             });
 
-            // Social channel toggle - show correct handle input
             document.querySelectorAll('input[name="qb-social"]').forEach(radio => {
                 radio.addEventListener('change', function () {
-                    if (this.value === 'instagram') {
-                        document.getElementById('qb-ig-input').style.display = 'block';
-                        document.getElementById('qb-snap-input').style.display = 'none';
-                        document.getElementById('qb-snap-handle').value = '';
-                    } else {
-                        document.getElementById('qb-snap-input').style.display = 'block';
-                        document.getElementById('qb-ig-input').style.display = 'none';
-                        document.getElementById('qb-ig-handle').value = '';
-                    }
+                    document.getElementById('qb-ig-input').style.display = this.value === 'instagram' ? 'block' : 'none';
+                    document.getElementById('qb-snap-input').style.display = this.value === 'snapchat' ? 'block' : 'none';
+                    if (this.value === 'instagram') snapInput.value = ''; else igInput.value = '';
                     checkComplete();
                 });
             });
 
-            // Phone validation (E.164 format)
-            const phoneInput = document.getElementById('qb-phone');
-            const phoneHelper = document.getElementById('qb-phone-helper');
-
             phoneInput.addEventListener('input', function () {
-                let phone = this.value.replace(/\s/g, '');
-
-                // Auto-add +353 for Irish numbers
-                if (phone.startsWith('0') && phone.length > 1) {
-                    phone = '+353' + phone.substring(1);
-                    this.value = phone;
-                }
-
-                // Validate E.164
+                const phoneHelper = document.getElementById('qb-phone-helper');
+                if (this.value.startsWith('0')) this.value = '+353' + this.value.substring(1);
                 const e164Regex = /^\+[1-9]\d{1,14}$/;
-                if (e164Regex.test(phone)) {
-                    phoneHelper.textContent = '✓ Looks good';
-                    phoneHelper.style.color = 'var(--success, #22c55e)';
-                } else if (phone.length > 0) {
-                    phoneHelper.textContent = 'Enter a valid phone number incl. country code (e.g., +353...)';
-                    phoneHelper.style.color = 'var(--error, #ef4444)';
-                } else {
-                    phoneHelper.textContent = '';
-                }
-
+                phoneHelper.textContent = e164Regex.test(this.value) ? '✓ Looks good' : 'Use format +353...';
+                phoneHelper.style.color = e164Regex.test(this.value) ? '#22c55e' : '#ef4444';
                 checkComplete();
             });
 
-            // Instagram handle validation
-            const igInput = document.getElementById('qb-ig-handle');
-            igInput.addEventListener('input', function () {
-                this.value = this.value.replace(/[^A-Za-z0-9._]/g, '');
-                checkComplete();
-            });
+            igInput.addEventListener('input', () => { igInput.value = igInput.value.replace(/[^A-Za-z0-9._]/g, ''); checkComplete(); });
+            snapInput.addEventListener('input', () => { snapInput.value = snapInput.value.replace(/[^A-Za-z0-9._-]/g, ''); checkComplete(); });
 
-            // Snapchat username validation
-            const snapInput = document.getElementById('qb-snap-handle');
-            snapInput.addEventListener('input', function () {
-                this.value = this.value.replace(/[^A-Za-z0-9._-]/g, '');
-                checkComplete();
-            });
-
-            // Check if form is complete
             function checkComplete() {
                 const cat = category.value;
                 const conditionRadio = document.querySelector('input[name="qb-condition"]:checked');
-                const needsSize = QB.sizes[cat] && QB.sizes[cat].length > 0;
+                const needsSize = QB_DATA.sizes[cat] && QB_DATA.sizes[cat].length > 0;
                 const sizeOK = !needsSize || size.value;
-
-                // Validate phone (E.164)
-                const phone = phoneInput.value.replace(/\s/g, '');
-                const e164Regex = /^\+[1-9]\d{1,14}$/;
-                const phoneValid = e164Regex.test(phone);
-
-                // Validate social handle
+                const phoneValid = /^\+[1-9]\d{1,14}$/.test(phoneInput.value);
                 const socialChannel = document.querySelector('input[name="qb-social"]:checked');
                 let socialValid = false;
                 if (socialChannel) {
-                    if (socialChannel.value === 'instagram') {
-                        socialValid = igInput.value.length > 0 && igInput.value.length <= 30;
-                    } else {
-                        const snap = snapInput.value;
-                        socialValid = snap.length >= 3 && snap.length <= 15 && /^[A-Za-z]/.test(snap);
-                    }
+                    if (socialChannel.value === 'instagram') socialValid = igInput.value.length > 0 && igInput.value.length <= 30;
+                    else socialValid = snapInput.value.length >= 3 && snapInput.value.length <= 15 && /^[A-Za-z]/.test(snapInput.value);
                 }
-
-                // Consent checkbox
                 const consent = document.getElementById('qb-consent').checked;
-
-                // Address fields
                 const addressComplete = address.value && city.value;
 
-                const complete = cat && brand.value && conditionRadio && sizeOK &&
-                    price.value && addressComplete && photos.checked &&
-                    phoneValid && socialValid && consent;
-
-                // Show specific validation feedback
-                const validationFeedback = document.getElementById('qb-validation-feedback');
-                const validationList = document.getElementById('qb-validation-list');
-                const missingFields = [];
-
-                if (!cat) missingFields.push('Select a category');
-                if (!brand.value) missingFields.push('Select a brand');
-                if (!conditionRadio) missingFields.push('Choose a condition');
-                if (!sizeOK) missingFields.push('Select a size');
-                if (!price.value) missingFields.push('Enter your asking price');
-                if (!address.value) missingFields.push('Enter your street address');
-                if (!city.value) missingFields.push('Enter your city/town');
-                if (!photos.checked) missingFields.push('Confirm you have photos ready');
-                if (!phoneValid) {
-                    if (!phoneInput.value) {
-                        missingFields.push('Enter your phone number');
-                    } else {
-                        missingFields.push('Phone number must be in E.164 format (e.g., +353 87 123 4567)');
-                    }
-                }
-                if (!socialValid) {
-                    if (!socialChannel) {
-                        missingFields.push('Choose Instagram or Snapchat');
-                    } else if (socialChannel.value === 'instagram' && !igInput.value) {
-                        missingFields.push('Enter your Instagram username');
-                    } else if (socialChannel.value === 'snapchat' && !snapInput.value) {
-                        missingFields.push('Enter your Snapchat username');
-                    } else if (socialChannel.value === 'instagram' && igInput.value.length > 30) {
-                        missingFields.push('Instagram username too long (max 30 characters)');
-                    } else if (socialChannel.value === 'snapchat') {
-                        const snap = snapInput.value;
-                        if (snap.length < 3) {
-                            missingFields.push('Snapchat username too short (min 3 characters)');
-                        } else if (snap.length > 15) {
-                            missingFields.push('Snapchat username too long (max 15 characters)');
-                        } else if (!/^[A-Za-z]/.test(snap)) {
-                            missingFields.push('Snapchat username must start with a letter');
-                        }
-                    }
-                }
-                if (!consent) missingFields.push('Accept the data storage consent');
-
-                if (missingFields.length > 0) {
-                    validationList.innerHTML = missingFields.map(field => `<li>${field}</li>`).join('');
-                    validationFeedback.style.display = 'block';
-                } else {
-                    validationFeedback.style.display = 'none';
-                }
-
+                // PHOTOS ARE OPTIONAL - removed photos.checked requirement
+                // Photos checkbox auto-checks when photos are uploaded
+                const complete = cat && brand.value && conditionRadio && sizeOK && price.value && addressComplete && phoneValid && socialValid && consent;
+                
+                // Validation feedback logic can be added here if desired
+                
                 generateBtn.disabled = !complete;
             }
 
-            // Listen to all fields
-            const consentCheckbox = document.getElementById('qb-consent');
-            [category, brand, size, price, address, city, eircode, consentCheckbox].forEach(el => {
-                el.addEventListener('change', checkComplete);
+            const allInputs = [category, brand, size, price, address, city, eircode, document.getElementById('qb-consent'), phoneInput, igInput, snapInput];
+            allInputs.forEach(el => {
                 el.addEventListener('input', checkComplete);
+                el.addEventListener('change', checkComplete);
             });
 
             // Add item to list
             generateBtn.addEventListener('click', function () {
-                const defects = document.getElementById('qb-defects');
-                const conditionRadio = document.querySelector('input[name="qb-condition"]:checked');
-
-                // Add current item to items array
+                if (generateBtn.disabled) return;
                 const item = {
                     category: category.value,
                     brand: brand.value,
-                    condition: conditionRadio.value,
+                    condition: document.querySelector('input[name="qb-condition"]:checked').value,
                     size: size.value || null,
                     price: price.value,
-                    defects: defects.value || null,
+                    defects: document.getElementById('qb-defects').value || null,
                     photoCount: uploadedPhotos.length,
-                    photos: [...uploadedPhotos] // Clone array
+                    photos: [...uploadedPhotos]
                 };
-
                 items.push(item);
                 updateItemsUI();
-
-                // Scroll to items list
-                itemsList.scrollIntoView({ behavior: 'smooth' });
+                resetItemForm();
             });
 
-            // Generate final message with all items
+            // Generate final message
             finishBtn.addEventListener('click', function () {
-                const defects = document.getElementById('qb-defects');
-                const conditionRadio = document.querySelector('input[name="qb-condition"]:checked');
                 const socialChannel = document.querySelector('input[name="qb-social"]:checked');
                 const phone = phoneInput.value.trim();
                 const email = document.getElementById('qb-email').value;
                 const saveProfile = document.getElementById('qb-save-profile').checked;
-
-                const sizeText = size.value ? `\nSize: ${size.value}` : '';
-                const defectsText = defects.value ? `\n\n⚠️ Defects/Issues:\n${defects.value}` : '';
                 const eircodeText = eircode.value ? `, ${eircode.value}` : '';
 
-                // Get social handle
-                let socialHandle = '';
-                let socialPlatform = '';
-                if (socialChannel.value === 'instagram') {
-                    socialHandle = igInput.value;
-                    socialPlatform = 'Instagram';
-                } else {
-                    socialHandle = snapInput.value;
-                    socialPlatform = 'Snapchat';
-                }
-
-                // Save contact info to localStorage if user wants to save
+                let socialHandle = socialChannel.value === 'instagram' ? igInput.value : snapInput.value;
+                
                 if (saveProfile) {
                     localStorage.setItem('sbs-address', address.value);
                     localStorage.setItem('sbs-city', city.value);
@@ -2166,223 +2012,62 @@
                     localStorage.setItem('sbs-social-channel', socialChannel.value);
                     localStorage.setItem('sbs-social-handle', socialHandle);
                     if (email) localStorage.setItem('sbs-email', email);
-                    console.log('✅ Profile saved for next time');
                 }
 
-                const fullAddress = `${address.value}, ${city.value}${eircodeText}`;
-                const phone = phoneInput.value.trim();
-                const socialChannel = document.querySelector('input[name="qb-social"]:checked');
-                const email = document.getElementById('qb-email').value;
-                const saveProfile = document.getElementById('qb-save-profile').checked;
+                const itemsText = items.map((item, index) => {
+                    let text = `${index + 1}) ${item.brand} ${item.category} — Size ${item.size || 'N/A'} — ${item.condition} — €${item.price}`;
+                    if (item.defects) text += `\n   - Issues: ${item.defects}`;
+                    return text;
+                }).join('\n');
 
-                // Save contact info to localStorage if user wants to save
-                if (saveProfile) {
-                    localStorage.setItem('sbs-address', address.value);
-                    localStorage.setItem('sbs-city', city.value);
-                    if (eircode.value) localStorage.setItem('sbs-eircode', eircode.value);
-                    localStorage.setItem('sbs-phone', phone);
-                    localStorage.setItem('sbs-social-channel', socialChannel.value);
-                    if (email) localStorage.setItem('sbs-email', email);
-                }
+                const message = `🔥 SELLING MULTIPLE ITEMS TO SBS 🔥
 
-                // Build message with all items
-                let itemsText = '';
-                const totalPhotos = items.reduce((sum, item) => sum + item.photoCount, 0);
+📸 PICTURES: [I have ${items.reduce((acc, item) => acc + item.photoCount, 0)} photos ready]
+📍 MY LOCATION: ${address.value}, ${city.value}${eircodeText}
 
-                items.forEach((item, index) => {
-                    const sizeText = item.size ? `\nSize: ${item.size}` : '';
-                    const defectsText = item.defects ? `\nIssues: ${item.defects}` : '';
-                    const photoText = item.photoCount > 0 ? ` (${item.photoCount} photo${item.photoCount > 1 ? 's' : ''})` : '';
-
-                    itemsText += `
-${index + 1}. ${item.brand} ${item.category}
-Condition: ${item.condition}${sizeText}
-Price: €${item.price}${defectsText}${photoText}
-
-`;
-                });
-
-                const photoSummary = totalPhotos > 0 ? `\n📷 Total: ${totalPhotos} photo${totalPhotos > 1 ? 's' : ''} attached` : '';
-
-                const message = `I have ${items.length} item${items.length > 1 ? 's' : ''} to sell:
+📋 ITEMS & PRICES:
 ${itemsText}
-Collection address: ${fullAddress}
-Photos: ✓ Ready to send${photoSummary}
 
-📞 Phone: ${phone}
-
-✅ Ready for same-day collection`;
+✅ Ready for same-day collection.`;
 
                 document.getElementById('qb-message-text').textContent = message;
-                document.getElementById('qb-message-output').style.display = 'block'; const encoded = encodeURIComponent(message);
-                document.getElementById('qb-whatsapp-link').href = `https://wa.me/353899662211?text=${encoded}`;
-
-                if (typeof lucide !== 'undefined') lucide.createIcons();
-
-                setTimeout(() => {
-                    document.getElementById('qb-message-output').scrollIntoView({ behavior: 'smooth' });
-                }, 100);
-            });
-        });
-
-        // Copy function
-        function copyQuickBuilderMessage() {
-            const text = document.getElementById('qb-message-text').textContent;
-            navigator.clipboard.writeText(text).then(() => {
-                const btn = event.target.closest('button');
-                const originalHTML = btn.innerHTML;
-                btn.innerHTML = '<i data-lucide="check" class="icon"></i> Copied!';
-                if (typeof lucide !== 'undefined') lucide.createIcons();
-                setTimeout(() => {
-                    btn.innerHTML = originalHTML;
-                    if (typeof lucide !== 'undefined') lucide.createIcons();
-                }, 2000);
-                console.log('Message copied to clipboard');
+                document.getElementById('qb-whatsapp-link').href = `https://wa.me/353899662211?text=${encodeURIComponent(message)}`;
+                document.getElementById('qb-message-output').style.display = 'block';
+                document.getElementById('qb-message-output').scrollIntoView({ behavior: 'smooth' });
             });
         }
 
-        // Web Share API function
+        // =================================================================================
+        // SHARING & COPYING
+        // =================================================================================
+
+        function copyQuickBuilderMessage() {
+            const text = document.getElementById('qb-message-text').textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = document.querySelector('.btn-copy');
+                btn.textContent = 'Copied!';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.innerHTML = '<i data-lucide="copy" class="icon"></i> Copy Message';
+                    btn.classList.remove('copied');
+                    if (typeof lucide !== 'undefined') lucide.createIcons();
+                }, 2000);
+            });
+        }
+
         function shareQuickBuilderMessage() {
             const text = document.getElementById('qb-message-text').textContent;
             if (navigator.share) {
                 navigator.share({
-                    title: 'Selling to SBS',
-                    text: text
-                }).then(() => {
-                    console.log('Message shared successfully');
-                }).catch((error) => {
-                    console.log('Share cancelled or failed:', error);
+                    title: 'Sell to SBS',
+                    text: text,
                 });
             }
         }
-
-        // Accordion functionality with analytics
-        document.querySelectorAll('.accordion-header').forEach(button => {
-            button.addEventListener('click', () => {
-                const accordionItem = button.parentElement;
-                const isActive = accordionItem.classList.contains('active');
-                const sectionName = button.textContent.trim();
-
-                // Track accordion opens
-                if (!isActive) {
-                    console.log('Accordion opened:', sectionName);
-                    // Future: gtag('event', 'accordion_open', { section: sectionName });
-                }
-
-                accordionItem.classList.toggle('active');
-                button.setAttribute('aria-expanded', !isActive);
-            });
-        });
-
-        // Track WhatsApp template clicks
-        document.addEventListener('click', (e) => {
-            const link = e.target.closest('a[href*="wa.me"]');
-            if (link) {
-                const templateType = link.textContent.includes('Multiple') ? 'multiple_items' : 'single_item';
-                console.log('WhatsApp template clicked:', templateType);
-                // Future: gtag('event', 'cta_whatsapp', { template_type: templateType });
-            }
-        });
-
-        // Track Instagram clicks
-        document.addEventListener('click', (e) => {
-            const link = e.target.closest('a[href*="instagram"]');
-            if (link) {
-                console.log('Instagram clicked');
-                // Future: gtag('event', 'cta_instagram', { page: 'sell' });
-            }
-        });
-
-        // Track Snapchat clicks
-        document.addEventListener('click', (e) => {
-            const link = e.target.closest('a[href*="snapchat"]');
-            if (link) {
-                console.log('Snapchat clicked');
-                // Future: gtag('event', 'cta_snapchat', { page: 'sell' });
-            }
-        });
     </script>
 
-    <!-- Load Icons with Multiple CDN Fallbacks -->
-    <script>
-        // Try loading Lucide from multiple CDNs with fallback to Font Awesome
-        (function () {
-            const cdns = [
-                'https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js',
-                'https://unpkg.com/lucide@latest/dist/umd/lucide.min.js',
-                'https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.min.js'
-            ];
-
-            let currentCdn = 0;
-
-            function loadScript(url) {
-                return new Promise((resolve, reject) => {
-                    const script = document.createElement('script');
-                    script.src = url;
-                    script.onload = resolve;
-                    script.onerror = reject;
-                    document.body.appendChild(script);
-                });
-            }
-
-            function tryNextCdn() {
-                if (currentCdn >= cdns.length) {
-                    console.log('Lucide failed, loading Font Awesome...');
-                    loadFontAwesome();
-                    return;
-                }
-
-                loadScript(cdns[currentCdn])
-                    .then(() => {
-                        if (typeof lucide !== 'undefined') {
-                            lucide.createIcons();
-                            console.log('Lucide loaded from:', cdns[currentCdn]);
-                        } else {
-                            currentCdn++;
-                            tryNextCdn();
-                        }
-                    })
-                    .catch(() => {
-                        currentCdn++;
-                        tryNextCdn();
-                    });
-            }
-
-            function loadFontAwesome() {
-                const link = document.createElement('link');
-                link.rel = 'stylesheet';
-                link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css';
-                document.head.appendChild(link);
-
-                setTimeout(() => {
-                    document.querySelectorAll('[data-lucide]').forEach(el => {
-                        const iconName = el.getAttribute('data-lucide');
-                        const iconMap = {
-                            'instagram': 'fab fa-instagram',
-                            'ghost': 'fab fa-snapchat-ghost',
-                            'link': 'fas fa-link',
-                            'message-circle': 'fab fa-whatsapp',
-                            'camera': 'fas fa-camera',
-                            'dollar-sign': 'fas fa-dollar-sign',
-                            'map-pin': 'fas fa-map-marker-alt',
-                            'banknote': 'fas fa-money-bill',
-                            'smartphone': 'fas fa-mobile-alt',
-                            'truck': 'fas fa-truck',
-                            'check-circle': 'fas fa-check-circle',
-                            'lock': 'fas fa-lock'
-                        };
-
-                        if (iconMap[iconName]) {
-                            el.className = iconMap[iconName];
-                            el.removeAttribute('data-lucide');
-                        }
-                    });
-                }, 100);
-            }
-
-            tryNextCdn();
-        })();
-    </script>
+    <!-- Auth State Management -->
+    <script src="/js/auth-state.js"></script>
 </body>
 
 </html>

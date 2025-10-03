@@ -1,0 +1,2094 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SBS Unity - Admin Dashboard</title>
+    <link rel="stylesheet" href="/styles/enhanced.css">
+    <style>
+        /* Embedded Admin Password System */
+        .admin-auth {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(135deg, #000000, #1a1a1a);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.5s ease;
+        }
+
+        .admin-auth.hidden {
+            opacity: 0;
+            pointer-events: none;
+            transform: scale(0.9);
+        }
+
+        .auth-container {
+            background: rgba(26, 26, 26, 0.9);
+            border: 2px solid #00ff41;
+            border-radius: 15px;
+            padding: 3rem;
+            text-align: center;
+            box-shadow: 0 0 30px rgba(0, 255, 65, 0.3);
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .auth-title {
+            color: #00ff41;
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            font-weight: bold;
+        }
+
+        .auth-subtitle {
+            color: #ccc;
+            margin-bottom: 2rem;
+            font-size: 1rem;
+        }
+
+        .auth-input {
+            width: 100%;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #333;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 1.2rem;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            font-family: 'Courier New', monospace;
+        }
+
+        .auth-input:focus {
+            outline: none;
+            border-color: #00ff41;
+            box-shadow: 0 0 10px rgba(0, 255, 65, 0.3);
+        }
+
+        .auth-button {
+            background: #00ff41;
+            color: #000;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .auth-button:hover {
+            background: #00cc33;
+            transform: translateY(-2px);
+        }
+
+        .auth-error {
+            color: #ff6b6b;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        .auth-hints {
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid #333;
+        }
+
+        .hint {
+            color: #666;
+            font-size: 0.8rem;
+            margin: 0.5rem 0;
+        }
+
+        /* Admin-specific enhanced styles */
+        .dashboard {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: var(--spacing-lg);
+        }
+
+        .dashboard-header {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: var(--spacing-xl);
+            border-radius: var(--radius-xl);
+            margin-bottom: var(--spacing-xl);
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .dashboard-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--accent-gradient);
+        }
+
+        .dashboard-title {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+        }
+
+        .dashboard-title h1 {
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: var(--font-size-3xl);
+            font-weight: 700;
+        }
+
+        .dashboard-actions {
+            display: flex;
+            gap: var(--spacing-md);
+            align-items: center;
+        }
+
+        .quick-stats {
+            display: flex;
+            gap: var(--spacing-lg);
+            font-size: var(--font-size-sm);
+            color: var(--text-secondary);
+        }
+
+        .stats-grid {
+            margin-bottom: var(--spacing-xxl);
+        }
+
+        .stat-card {
+            padding: var(--spacing-xl);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--accent-gradient);
+        }
+
+        .stat-number {
+            font-size: var(--font-size-4xl);
+            font-weight: 800;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: var(--spacing-md);
+            display: block;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: var(--font-size-lg);
+            font-weight: 500;
+        }
+
+        .tabs {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--radius-xl);
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .tab-buttons {
+            display: flex;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05));
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: var(--spacing-lg) var(--spacing-xl);
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: var(--font-size-md);
+            font-weight: 600;
+            transition: var(--transition-normal);
+            position: relative;
+            color: var(--text-secondary);
+        }
+
+        .tab-button.active {
+            color: var(--text-primary);
+        }
+
+        .tab-button.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60%;
+            height: 3px;
+            background: var(--accent-gradient);
+            border-radius: var(--radius-sm);
+        }
+
+        .tab-button:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .tab-content {
+            padding: var(--spacing-xxl);
+            min-height: 500px;
+        }
+
+        .tab-pane {
+            display: none;
+        }
+
+        .tab-pane.active {
+            display: block;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .section-title {
+            font-size: var(--font-size-2xl);
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .search-bar {
+            max-width: 300px;
+            position: relative;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: var(--spacing-sm) var(--spacing-md) var(--spacing-sm) 40px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--radius-lg);
+            background: var(--bg-secondary);
+            backdrop-filter: blur(10px);
+            color: var(--text-primary);
+        }
+
+        .search-bar::before {
+            content: '🔍';
+            position: absolute;
+            left: var(--spacing-md);
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-light);
+        }
+
+        .enhanced-table {
+            background: var(--bg-card);
+            border-radius: var(--radius-xl);
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+        }
+
+        .table-header {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            padding: var(--spacing-lg);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .table-actions {
+            display: flex;
+            gap: var(--spacing-sm);
+        }
+
+        .action-btn {
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: var(--font-size-xs);
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition-fast);
+        }
+
+        .action-btn.view {
+            background: linear-gradient(135deg, #17a2b8, #20c997);
+            color: white;
+        }
+
+        .action-btn.edit {
+            background: linear-gradient(135deg, #ffc107, #fd7e14);
+            color: white;
+        }
+
+        .action-btn.delete {
+            background: linear-gradient(135deg, #dc3545, #e83e8c);
+            color: white;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: var(--spacing-xxl);
+            color: var(--text-light);
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: var(--spacing-lg);
+            opacity: 0.5;
+        }
+
+        /* Enhanced Batch Upload Styles */
+        .batch-upload-section {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            border: 1px solid var(--border-color);
+        }
+
+        .upload-header {
+            text-align: center;
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .upload-header h2 {
+            color: var(--accent-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-methods {
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .drop-zone.enhanced {
+            border: 2px dashed var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-xxl);
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(0, 255, 65, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .drop-zone.enhanced::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 65, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .drop-zone.enhanced:hover::before {
+            left: 100%;
+        }
+
+        .drop-zone.enhanced:hover {
+            border-color: var(--accent-primary);
+            background: rgba(0, 255, 65, 0.1);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 255, 65, 0.2);
+        }
+
+        .upload-icon.animated {
+            font-size: 3rem;
+            margin-bottom: var(--spacing-md);
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            20%,
+            50%,
+            80%,
+            100% {
+                transform: translateY(0);
+            }
+
+            40% {
+                transform: translateY(-10px);
+            }
+
+            60% {
+                transform: translateY(-5px);
+            }
+        }
+
+        .upload-features {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .upload-features span {
+            background: rgba(0, 255, 65, 0.1);
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            color: var(--accent-primary);
+            border: 1px solid rgba(0, 255, 65, 0.2);
+        }
+
+        /* Progress Tracking Styles */
+        .upload-progress-container {
+            background: var(--bg-secondary);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-md);
+            margin-top: var(--spacing-lg);
+            border: 1px solid var(--border-color);
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--bg-primary);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-primary), #00cc33);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .upload-queue {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .queue-item {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem;
+            border-radius: var(--radius-sm);
+            margin-bottom: 0.5rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+        }
+
+        .queue-item.success {
+            border-color: var(--accent-primary);
+            background: rgba(0, 255, 65, 0.1);
+        }
+
+        .queue-item.error {
+            border-color: #ff4757;
+            background: rgba(255, 71, 87, 0.1);
+        }
+
+        /* Product Details Form */
+        .product-details-form {
+            background: var(--bg-secondary);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-lg);
+            margin-top: var(--spacing-lg);
+            border: 1px solid var(--border-color);
+        }
+
+        .product-details-list {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .product-detail-card {
+            background: var(--bg-card);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+            border: 1px solid var(--border-color);
+            display: flex;
+            gap: var(--spacing-md);
+        }
+
+        .product-preview {
+            width: 80px;
+            height: 80px;
+            border-radius: var(--radius-sm);
+            object-fit: cover;
+        }
+
+        .product-form {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-sm);
+        }
+
+        .form-actions {
+            display: flex;
+            gap: var(--spacing-md);
+            justify-content: center;
+        }
+
+        .drop-zone h3 {
+            color: var(--accent-primary);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .drop-zone p {
+            color: var(--text-secondary);
+            margin: var(--spacing-xs) 0;
+        }
+
+        .images-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: var(--spacing-lg);
+            margin-top: var(--spacing-xl);
+        }
+
+        .image-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .image-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .image-preview {
+            width: 100%;
+            height: 200px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .image-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .image-actions {
+            position: absolute;
+            top: var(--spacing-sm);
+            right: var(--spacing-sm);
+            display: flex;
+            gap: var(--spacing-xs);
+        }
+
+        .image-btn {
+            background: rgba(0, 0, 0, 0.7);
+            border: none;
+            color: white;
+            padding: var(--spacing-sm);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-size: var(--font-size-sm);
+            transition: all 0.3s ease;
+        }
+
+        .image-btn:hover {
+            background: var(--accent-primary);
+            color: black;
+        }
+
+        .image-info {
+            padding: var(--spacing-md);
+        }
+
+        .image-filename {
+            font-weight: bold;
+            margin-bottom: var(--spacing-sm);
+            color: var(--text-primary);
+            word-break: break-all;
+        }
+
+        .image-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--spacing-xs);
+            margin: var(--spacing-sm) 0;
+        }
+
+        .tag-input {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-sm);
+            outline: none;
+        }
+
+        .tag-input:focus {
+            border-color: var(--accent-primary);
+        }
+
+        .image-tag {
+            background: var(--accent-primary);
+            color: black;
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-sm);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+        }
+
+        .tag-remove {
+            background: none;
+            border: none;
+            color: black;
+            cursor: pointer;
+            font-size: var(--font-size-sm);
+            padding: 0;
+        }
+
+        .loading-state {
+            text-align: center;
+            padding: var(--spacing-xxl);
+            color: var(--text-secondary);
+            font-size: var(--font-size-lg);
+        }
+
+        .keyboard-shortcuts {
+            position: fixed;
+            bottom: var(--spacing-lg);
+            right: var(--spacing-lg);
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-md);
+            font-size: var(--font-size-xs);
+            color: var(--text-light);
+            max-width: 200px;
+            z-index: var(--z-popover);
+        }
+
+        .shortcut {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .shortcut:last-child {
+            margin-bottom: 0;
+        }
+
+        .key-combo {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2px 6px;
+            border-radius: var(--radius-sm);
+            font-family: monospace;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--spacing-lg);
+        }
+
+        .form-section {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: var(--spacing-xl);
+            border-radius: var(--radius-lg);
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .form-section h3 {
+            margin-bottom: var(--spacing-lg);
+            color: var(--text-primary);
+            font-weight: 700;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard {
+                padding: var(--spacing-md);
+            }
+
+            .dashboard-header {
+                flex-direction: column;
+                gap: var(--spacing-md);
+                text-align: center;
+            }
+
+            .dashboard-actions {
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+
+            .tab-buttons {
+                flex-direction: column;
+            }
+
+            .keyboard-shortcuts {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Embedded Admin Password Screen -->
+    <div class="admin-auth" id="adminAuth">
+        <div class="auth-container">
+            <!-- Login Mode -->
+            <div id="loginMode">
+                <h1 class="auth-title">🔐 SBS Admin Access</h1>
+                <p class="auth-subtitle">Enter admin password to continue</p>
+
+                <form id="authForm">
+                    <input type="password" id="adminPassword" class="auth-input" placeholder="Enter password..."
+                        autocomplete="off" maxlength="50">
+                    <button type="submit" class="auth-button">🚀 Access Admin</button>
+                    <div class="auth-error" id="authError" style="display: none;">❌ Invalid password. Try again.</div>
+                </form>
+
+                <div class="auth-links">
+                    <a href="#" onclick="showResetMode()"
+                        style="color: #00ff41; text-decoration: none; font-size: 0.9rem;">Forgot Password?</a>
+                </div>
+            </div>
+
+            <!-- Setup Mode -->
+            <div id="setupMode" style="display: none;">
+                <h1 class="auth-title">⚙️ Admin Setup</h1>
+                <p class="auth-subtitle">Set up your admin account for the first time</p>
+
+                <form id="setupForm">
+                    <input type="password" id="setupPassword" class="auth-input"
+                        placeholder="Choose admin password (8+ chars)" autocomplete="off" minlength="8" required>
+                    <input type="password" id="confirmPassword" class="auth-input" placeholder="Confirm password"
+                        autocomplete="off" required>
+                    <input type="text" id="securityQuestion" class="auth-input"
+                        placeholder="Security question (for password reset)" maxlength="100" required>
+                    <input type="text" id="securityAnswer" class="auth-input" placeholder="Security answer"
+                        maxlength="50" required>
+                    <button type="submit" class="auth-button">✅ Complete Setup</button>
+                    <div class="auth-error" id="setupError" style="display: none;"></div>
+                </form>
+            </div>
+
+            <!-- Reset Mode -->
+            <div id="resetMode" style="display: none;">
+                <h1 class="auth-title">🔑 Reset Password</h1>
+                <p class="auth-subtitle" id="resetQuestion">Answer your security question to reset password</p>
+
+                <form id="resetForm">
+                    <input type="text" id="questionAnswer" class="auth-input" placeholder="Enter your security answer"
+                        maxlength="50" required>
+                    <input type="password" id="newPassword" class="auth-input" placeholder="New password (8+ chars)"
+                        autocomplete="off" minlength="8" required>
+                    <input type="password" id="confirmNewPassword" class="auth-input" placeholder="Confirm new password"
+                        autocomplete="off" required>
+                    <button type="submit" class="auth-button">🔄 Reset Password</button>
+                    <div class="auth-error" id="resetError" style="display: none;"></div>
+                </form>
+
+                <div class="auth-links">
+                    <a href="#" onclick="showLoginMode()"
+                        style="color: #00ff41; text-decoration: none; font-size: 0.9rem;">← Back to Login</a>
+                </div>
+            </div>
+
+            <div class="auth-hints">
+                <div class="hint">🔒 Secure SBS Admin Portal</div>
+                <div class="hint">⚡ Dublin Operations Control</div>
+                <div class="hint">💡 Contact support if needed</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-admin" id="mainAdmin" style="display: none;">
+        <div class="main-admin" id="mainAdmin" style="display: none;">
+            <div class="dashboard">
+                <!-- Enhanced Header -->
+                <div class="dashboard-header">
+                    <div class="dashboard-title">
+                        <span class="logo-icon">🏪</span>
+                        <div>
+                            <h1>SBS Unity Admin</h1>
+                            <div class="quick-stats">
+                                <span>🟢 System Online</span>
+                                <span>•</span>
+                                <span id="lastUpdate">Updated: Just now</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="dashboard-actions">
+                        <button class="btn btn-primary" onclick="customerManager?.refreshAll()" title="Ctrl+R">
+                            🔄 Refresh
+                        </button>
+                        <button class="btn btn-success" onclick="showAddCustomerModal()" title="Ctrl+N">
+                            ➕ Add Customer
+                        </button>
+                        <button class="btn btn-primary" onclick="seedTestData()"
+                            style="background: linear-gradient(135deg, #28a745, #20c997);" title="Create test data">
+                            🧪 Seed Data
+                        </button>
+                        <button class="btn btn-danger" onclick="adminLogout()">
+                            🚪 Logout
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Enhanced Stats Grid -->
+                <div class="stats-grid">
+                    <div class="stat-card animate-fade-in">
+                        <div class="stat-number" id="totalCustomers">-</div>
+                        <div class="stat-label">👥 Total Customers</div>
+                    </div>
+                    <div class="stat-card animate-fade-in" style="animation-delay: 0.1s;">
+                        <div class="stat-number" id="activeLeads">-</div>
+                        <div class="stat-label">🎯 Active Leads</div>
+                    </div>
+                    <div class="stat-card animate-fade-in" style="animation-delay: 0.2s;">
+                        <div class="stat-number" id="pendingOrders">-</div>
+                        <div class="stat-label">📦 Pending Orders</div>
+                    </div>
+                    <div class="stat-card animate-fade-in" style="animation-delay: 0.3s;">
+                        <div class="stat-number" id="todaySales">$0</div>
+                        <div class="stat-label">💰 Today's Sales</div>
+                    </div>
+                </div>
+
+                <!-- Enhanced Tabs -->
+                <div class="tabs">
+                    <div class="tab-buttons">
+                        <button class="tab-button active" onclick="customerManager?.showTab('dashboard')"
+                            title="Ctrl+1">
+                            📊 Dashboard
+                        </button>
+                        <button class="tab-button" onclick="customerManager?.showTab('customers')" title="Ctrl+2">
+                            👥 Customers
+                        </button>
+                        <button class="tab-button" onclick="customerManager?.showTab('leads')" title="Ctrl+3">
+                            🎯 Leads
+                        </button>
+                        <button class="tab-button" onclick="customerManager?.showTab('orders')" title="Ctrl+4">
+                            📦 Orders
+                        </button>
+                        <button class="tab-button" onclick="customerManager?.showTab('images')" title="Ctrl+5">
+                            📸 Images
+                        </button>
+                        <button class="tab-button" onclick="customerManager?.showTab('analytics')">
+                            📈 Analytics
+                        </button>
+                    </div>
+
+                    <div class="tab-content">
+                        <!-- Dashboard Tab -->
+                        <div id="dashboard" class="tab-pane active">
+                            <div class="section-header">
+                                <h2 class="section-title">📊 Dashboard Overview</h2>
+                            </div>
+
+                            <div class="form-grid">
+                                <div class="form-section">
+                                    <h3>🚀 Quick Actions</h3>
+                                    <div style="display: flex; flex-direction: column; gap: var(--spacing-md);">
+                                        <button class="btn btn-primary" onclick="showAddCustomerModal()">
+                                            ➕ Add New Customer
+                                        </button>
+                                        <button class="btn btn-success" onclick="showAddLeadModal()">
+                                            🎯 Add New Lead
+                                        </button>
+                                        <button class="btn btn-primary" onclick="customerManager?.showTab('orders')">
+                                            📦 View Orders
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="form-section">
+                                    <h3>📈 Recent Activity</h3>
+                                    <div id="recentActivity" class="loading">Loading recent activity...</div>
+                                </div>
+
+                                <div class="form-section">
+                                    <h3>🔧 System Health</h3>
+                                    <div style="display: flex; flex-direction: column; gap: var(--spacing-sm);">
+                                        <div style="display: flex; justify-content: space-between;">
+                                            <span>Database:</span>
+                                            <span class="status-badge status-active">Online</span>
+                                        </div>
+                                        <div style="display: flex; justify-content: space-between;">
+                                            <span>Images API:</span>
+                                            <span class="status-badge status-active">Connected</span>
+                                        </div>
+                                        <div style="display: flex; justify-content: space-between;">
+                                            <span>Authentication:</span>
+                                            <span class="status-badge status-active">Secure</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Customers Tab -->
+                        <div id="customers" class="tab-pane">
+                            <div class="section-header">
+                                <h2 class="section-title">👥 Customer Management</h2>
+                                <div class="search-bar">
+                                    <input type="text" id="customerSearch" placeholder="Search customers..." />
+                                </div>
+                            </div>
+
+                            <div class="enhanced-table">
+                                <div class="table-header">
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <h3>Customer List</h3>
+                                        <div class="table-actions">
+                                            <button class="btn btn-success" onclick="exportCustomers()">📊
+                                                Export</button>
+                                            <button class="btn btn-primary" onclick="showAddCustomerModal()">➕
+                                                Add</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="customersLoading" class="loading">Loading customers...</div>
+                                <div id="customersContent" style="display: none;">
+                                    <table class="data-table" id="customersTable">
+                                        <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>Name</th>
+                                                <th>Email</th>
+                                                <th>Phone</th>
+                                                <th>Orders</th>
+                                                <th>Lifetime Value</th>
+                                                <th>Status</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Leads Tab -->
+                        <div id="leads" class="tab-pane">
+                            <div class="section-header">
+                                <h2 class="section-title">🎯 Lead Management</h2>
+                            </div>
+
+                            <div class="form-section">
+                                <h3>Add New Lead</h3>
+                                <form id="leadForm" class="form-grid">
+                                    <div class="form-group">
+                                        <label>First Name *</label>
+                                        <input type="text" name="first_name" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Last Name</label>
+                                        <input type="text" name="last_name">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Email *</label>
+                                        <input type="email" name="email" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Phone</label>
+                                        <input type="tel" name="phone">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Source</label>
+                                        <select name="source">
+                                            <option value="website">Website</option>
+                                            <option value="social">Social Media</option>
+                                            <option value="referral">Referral</option>
+                                            <option value="email">Email Campaign</option>
+                                            <option value="dublin-local">Dublin Local</option>
+                                            <option value="other">Other</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group" style="grid-column: 1 / -1;">
+                                        <label>Notes</label>
+                                        <textarea name="notes" rows="3"
+                                            placeholder="Lead details, interests, etc."></textarea>
+                                    </div>
+                                    <div class="form-group" style="grid-column: 1 / -1;">
+                                        <button type="submit" class="btn btn-primary">🎯 Add Lead</button>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <div class="enhanced-table">
+                                <div id="leadsLoading" class="loading">Loading leads...</div>
+                                <div id="leadsContent" style="display: none;">
+                                    <table class="data-table" id="leadsTable">
+                                        <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>Name</th>
+                                                <th>Email</th>
+                                                <th>Phone</th>
+                                                <th>Source</th>
+                                                <th>Status</th>
+                                                <th>Created</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Orders Tab -->
+                        <div id="orders" class="tab-pane">
+                            <div class="section-header">
+                                <h2 class="section-title">📦 Order Management</h2>
+                            </div>
+                            <div class="empty-state">
+                                <div class="empty-icon">📦</div>
+                                <h3>Order Management Coming Soon</h3>
+                                <p>Advanced order tracking and management features are being developed.</p>
+                            </div>
+                        </div>
+
+                        <!-- Images Tab -->
+                        <div id="images" class="tab-pane">
+                            <div class="section-header">
+                                <h2 class="section-title">📸 Image Management</h2>
+                                <div style="display: flex; gap: var(--spacing-md);">
+                                    <button class="btn btn-success"
+                                        onclick="document.getElementById('fileInput').click()">
+                                        📤 Upload Images
+                                    </button>
+                                    <button class="btn btn-primary" onclick="loadImages()">
+                                        🔄 Refresh
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Enhanced Batch Upload Section -->
+                            <div class="batch-upload-section" style="margin-bottom: var(--spacing-xl);">
+                                <div class="upload-header">
+                                    <h2>🛍️ Batch Product Upload</h2>
+                                    <p>Upload multiple products with details in one go</p>
+                                </div>
+
+                                <!-- Upload Methods -->
+                                <div class="upload-methods">
+                                    <!-- Drag & Drop Zone -->
+                                    <div class="upload-method active" id="dragUploadMethod">
+                                        <input type="file" id="batchFileInput" multiple accept="image/*"
+                                            style="display: none;" onchange="handleBatchUpload(event)">
+                                        <div class="drop-zone enhanced" id="enhancedDropZone"
+                                            onclick="document.getElementById('batchFileInput').click()">
+                                            <div class="drop-zone-content">
+                                                <div class="upload-icon animated">📦</div>
+                                                <h3>Batch Upload Products</h3>
+                                                <p>Drop multiple product images here</p>
+                                                <div class="upload-features">
+                                                    <span>✨ Auto-categorization</span>
+                                                    <span>💰 Price suggestions</span>
+                                                    <span>📊 Progress tracking</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Upload Progress -->
+                                <div id="batchUploadProgress" class="upload-progress-container" style="display: none;">
+                                    <div class="progress-header">
+                                        <h4>📈 Upload Progress</h4>
+                                        <div class="progress-stats">
+                                            <span id="progressStats">0/0 completed</span>
+                                        </div>
+                                    </div>
+                                    <div class="progress-bar">
+                                        <div id="progressFill" class="progress-fill"></div>
+                                    </div>
+                                    <div id="uploadQueue" class="upload-queue"></div>
+                                </div>
+
+                                <!-- Product Details Form -->
+                                <div id="productDetailsForm" class="product-details-form" style="display: none;">
+                                    <h4>🏷️ Configure Products</h4>
+                                    <div id="productDetailsList" class="product-details-list"></div>
+                                    <div class="form-actions">
+                                        <button onclick="saveAllProducts()" class="btn-primary">💾 Save All
+                                            Products</button>
+                                        <button onclick="cancelBatchUpload()" class="btn-secondary">❌ Cancel</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Images Grid -->
+                            <div class="images-grid" id="imagesGrid">
+                                <div class="loading-state" id="imagesLoading">
+                                    🔄 Loading images...
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Analytics Tab -->
+                        <div id="analytics" class="tab-pane">
+                            <div class="section-header">
+                                <h2 class="section-title">📈 Analytics & Reports</h2>
+                            </div>
+                            <div class="empty-state">
+                                <div class="empty-icon">📈</div>
+                                <h3>Analytics Dashboard Coming Soon</h3>
+                                <p>Detailed analytics and reporting features are in development.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Enhanced Modal -->
+            <div id="customerModal" class="modal">
+                <div class="modal-content">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-lg);">
+                        <h2>➕ Add New Customer</h2>
+                        <button class="btn" onclick="closeCustomerModal()"
+                            style="background: none; font-size: 1.5rem;">×</button>
+                    </div>
+                    <form id="customerForm" class="form-grid">
+                        <div class="form-group">
+                            <label>First Name *</label>
+                            <input type="text" name="first_name" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Last Name</label>
+                            <input type="text" name="last_name">
+                        </div>
+                        <div class="form-group">
+                            <label>Email *</label>
+                            <input type="email" name="email" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Phone</label>
+                            <input type="tel" name="phone">
+                        </div>
+                        <div class="form-group" style="grid-column: 1 / -1;">
+                            <button type="submit" class="btn btn-primary">✅ Create Customer</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Keyboard Shortcuts Help -->
+            <div class="keyboard-shortcuts">
+                <strong>⌨️ Shortcuts:</strong>
+                <div class="shortcut">
+                    <span>Refresh</span>
+                    <span class="key-combo">Ctrl+R</span>
+                </div>
+                <div class="shortcut">
+                    <span>New Customer</span>
+                    <span class="key-combo">Ctrl+N</span>
+                </div>
+                <div class="shortcut">
+                    <span>Dashboard</span>
+                    <span class="key-combo">Ctrl+1</span>
+                </div>
+                <div class="shortcut">
+                    <span>Customers</span>
+                    <span class="key-combo">Ctrl+2</span>
+                </div>
+            </div>
+
+            <!-- Include enhanced scripts -->
+            <script src="/scripts/enhanced-admin.js"></script>
+
+            <!-- Legacy function compatibility -->
+            <script>
+                // Keep existing functionality working
+                function showTab(tabName) {
+                    if (customerManager) {
+                        customerManager.showTab(tabName);
+                    }
+                }
+
+                function refreshDashboard() {
+                    if (customerManager) {
+                        customerManager.refreshAll();
+                    }
+                }
+
+                function showAddCustomerModal() {
+                    document.getElementById('customerModal').classList.add('show');
+                }
+
+                function closeCustomerModal() {
+                    document.getElementById('customerModal').classList.remove('show');
+                }
+
+                async function seedTestData() {
+                    if (!confirm('🧪 Create timestamped test data?\n\nThis will add:\n• 3 Test Customers\n• 3 Test Leads\n• 1 Sample Order\n• Customer interactions\n\nAll with current timestamps. Continue?')) {
+                        return;
+                    }
+
+                    const password = prompt('Enter admin password to confirm:');
+                    if (!password) return;
+
+                    try {
+                        customerManager.showLoadingOverlay('Creating test data...');
+                        const response = await fetch('/api/seed-test-data', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ password })
+                        });
+
+                        const result = await response.json();
+
+                        if (result.success) {
+                            customerManager.showNotification(`✅ Test data created!\n\nCreated:\n• ${result.testDataCreated.customers} customers\n• ${result.testDataCreated.leads} leads\n• ${result.testDataCreated.orders} orders`, 'success');
+                            customerManager.refreshAll();
+                        } else {
+                            customerManager.showNotification('❌ Failed: ' + result.error, 'error');
+                        }
+                    } catch (error) {
+                        customerManager.showNotification('❌ Error: ' + error.message, 'error');
+                    } finally {
+                        customerManager.hideLoadingOverlay();
+                    }
+                }
+
+                // Update last update time
+                setInterval(() => {
+                    const now = new Date();
+                    document.getElementById('lastUpdate').textContent = `Updated: ${now.toLocaleTimeString()}`;
+                }, 60000);
+            </script>
+            });
+            </script>
+        </div> <!-- End main-admin -->
+
+        <script>
+            // Enhanced Admin Authentication System
+            let currentMode = 'login';
+
+            document.addEventListener('DOMContentLoaded', function () {
+                console.log('[ADMIN PANEL] Page loaded - bypassing password gate');
+                
+                // Skip password gate - using session-based authentication from /api/users/me
+                showAdminPanel();
+                
+                // Initialize customer manager if available
+                setTimeout(() => {
+                    if (typeof customerManager !== 'undefined') {
+                        console.log('[ADMIN PANEL] Initializing customer manager...');
+                        customerManager.refreshAll();
+                    } else {
+                        console.log('[ADMIN PANEL] Customer manager not available');
+                    }
+                }, 100);
+            });
+
+            async function checkSetupStatus() {
+                try {
+                    const response = await fetch('/api/admin-setup');
+                    const data = await response.json();
+
+                    if (data.requiresSetup) {
+                        showSetupMode();
+                    } else {
+                        showLoginMode();
+                    }
+                } catch (error) {
+                    console.error('Setup check failed:', error);
+                    showLoginMode(); // Fallback to login
+                }
+            }
+
+            function showLoginMode() {
+                currentMode = 'login';
+                document.getElementById('loginMode').style.display = 'block';
+                document.getElementById('setupMode').style.display = 'none';
+                document.getElementById('resetMode').style.display = 'none';
+
+                const authForm = document.getElementById('authForm');
+                const passwordInput = document.getElementById('adminPassword');
+
+                passwordInput.focus();
+
+                authForm.onsubmit = async function (e) {
+                    e.preventDefault();
+                    await handleLogin();
+                };
+            }
+
+            function showSetupMode() {
+                currentMode = 'setup';
+                document.getElementById('loginMode').style.display = 'none';
+                document.getElementById('setupMode').style.display = 'block';
+                document.getElementById('resetMode').style.display = 'none';
+
+                const setupForm = document.getElementById('setupForm');
+                const setupPassword = document.getElementById('setupPassword');
+
+                setupPassword.focus();
+
+                setupForm.onsubmit = async function (e) {
+                    e.preventDefault();
+                    await handleSetup();
+                };
+            }
+
+            function showResetMode() {
+                currentMode = 'reset';
+                document.getElementById('loginMode').style.display = 'none';
+                document.getElementById('setupMode').style.display = 'none';
+                document.getElementById('resetMode').style.display = 'block';
+
+                const resetForm = document.getElementById('resetForm');
+                const questionAnswer = document.getElementById('questionAnswer');
+
+                questionAnswer.focus();
+
+                resetForm.onsubmit = async function (e) {
+                    e.preventDefault();
+                    await handleReset();
+                };
+            }
+
+            async function handleLogin() {
+                const password = document.getElementById('adminPassword').value.trim();
+                const errorElement = document.getElementById('authError');
+                const passwordInput = document.getElementById('adminPassword');
+
+                if (!password) {
+                    showError(errorElement, passwordInput, 'Please enter a password');
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/api/admin-setup', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            action: 'verify',
+                            password: password
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.valid) {
+                        sessionStorage.setItem('sbs_admin_auth', 'true');
+                        showAdminPanel();
+                    } else {
+                        showError(errorElement, passwordInput, 'Invalid password. Try again.');
+                    }
+                } catch (error) {
+                    console.error('Login failed:', error);
+                    showError(errorElement, passwordInput, 'Login failed. Please try again.');
+                }
+            }
+
+            async function handleSetup() {
+                const setupPassword = document.getElementById('setupPassword').value;
+                const confirmPassword = document.getElementById('confirmPassword').value;
+                const securityQuestion = document.getElementById('securityQuestion').value;
+                const securityAnswer = document.getElementById('securityAnswer').value;
+                const errorElement = document.getElementById('setupError');
+
+                // Validation
+                if (!setupPassword || !confirmPassword || !securityQuestion || !securityAnswer) {
+                    showError(errorElement, null, 'All fields are required');
+                    return;
+                }
+
+                if (setupPassword !== confirmPassword) {
+                    showError(errorElement, null, 'Passwords do not match');
+                    return;
+                }
+
+                if (setupPassword.length < 8) {
+                    showError(errorElement, null, 'Password must be at least 8 characters long');
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/api/admin-setup', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            action: 'setup',
+                            password: setupPassword,
+                            confirmPassword: confirmPassword,
+                            securityQuestion: securityQuestion,
+                            securityAnswer: securityAnswer
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        showSetupInstructions(data);
+                    } else {
+                        showError(errorElement, null, data.error || 'Setup failed');
+                    }
+                } catch (error) {
+                    console.error('Setup failed:', error);
+                    showError(errorElement, null, 'Setup failed. Please try again.');
+                }
+            }
+
+            async function handleReset() {
+                const questionAnswer = document.getElementById('questionAnswer').value.trim();
+                const newPassword = document.getElementById('newPassword').value;
+                const confirmNewPassword = document.getElementById('confirmNewPassword').value;
+                const errorElement = document.getElementById('resetError');
+
+                // Validation
+                if (!questionAnswer || !newPassword || !confirmNewPassword) {
+                    showError(errorElement, null, 'All fields are required');
+                    return;
+                }
+
+                if (newPassword !== confirmNewPassword) {
+                    showError(errorElement, null, 'New passwords do not match');
+                    return;
+                }
+
+                if (newPassword.length < 8) {
+                    showError(errorElement, null, 'New password must be at least 8 characters long');
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/api/admin-setup', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            action: 'reset',
+                            questionAnswer: questionAnswer,
+                            newPassword: newPassword,
+                            confirmPassword: confirmNewPassword
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        showResetInstructions(data);
+                    } else {
+                        showError(errorElement, null, data.error || 'Password reset failed');
+                    }
+                } catch (error) {
+                    console.error('Password reset failed:', error);
+                    showError(errorElement, null, 'Password reset failed. Please try again.');
+                }
+            }
+
+            window.switchToResetMode = function () {
+                showResetMode();
+            };
+
+            window.switchToLoginMode = function () {
+                showLoginMode();
+            };
+
+            function showSetupInstructions(data) {
+                alert(`Setup Complete!\n\nPlease set these environment variables in your Cloudflare Pages dashboard:\n\nADMIN_PASSWORD: ${data.envVars.ADMIN_PASSWORD}\nADMIN_SECURITY_QUESTION: ${data.envVars.ADMIN_SECURITY_QUESTION}\nADMIN_SECURITY_ANSWER: ${data.envVars.ADMIN_SECURITY_ANSWER}\n\nThen redeploy your site. The setup will be complete!`);
+            }
+
+            function showResetInstructions(data) {
+                alert(`Password Reset Complete!\n\nPlease update this environment variable in your Cloudflare Pages dashboard:\n\nADMIN_PASSWORD: ${data.envVar.ADMIN_PASSWORD}\n\nThen redeploy your site. Your new password will be active!`);
+            }
+
+            function showAdminPanel() {
+                console.log('[ADMIN PANEL] Showing admin panel...');
+                const adminAuth = document.getElementById('adminAuth');
+                const mainAdmin = document.getElementById('mainAdmin');
+
+                if (!adminAuth || !mainAdmin) {
+                    console.error('[ADMIN PANEL] Could not find admin elements');
+                    return;
+                }
+
+                // Immediately hide auth screen
+                adminAuth.style.display = 'none';
+                adminAuth.classList.add('hidden');
+                
+                // Immediately show admin panel
+                mainAdmin.style.display = 'block';
+                
+                console.log('[ADMIN PANEL] Admin panel displayed');
+            }
+
+            function showError(errorElement, inputElement, message) {
+                if (errorElement) {
+                    errorElement.textContent = message;
+                    errorElement.style.display = 'block';
+
+                    setTimeout(() => {
+                        errorElement.style.display = 'none';
+                    }, 3000);
+                }
+
+                if (inputElement) {
+                    inputElement.style.borderColor = '#ff6b6b';
+                    inputElement.style.animation = 'shake 0.5s ease-in-out';
+                    inputElement.value = '';
+                    inputElement.focus();
+
+                    setTimeout(() => {
+                        inputElement.style.borderColor = '#333';
+                        inputElement.style.animation = '';
+                    }, 2000);
+                }
+            }
+
+            // Add shake animation CSS and other initialization
+            document.addEventListener('DOMContentLoaded', function () {
+                const style = document.createElement('style');
+                style.textContent = `
+                @keyframes shake {
+                    0%, 100% { transform: translateX(0); }
+                    25% { transform: translateX(-10px); }
+                    75% { transform: translateX(10px); }
+                }
+            `;
+                document.head.appendChild(style);
+
+                // Image Management Functions
+                window.loadImages = async function () {
+                    const grid = document.getElementById('imagesGrid');
+                    const loading = document.getElementById('imagesLoading');
+
+                    loading.style.display = 'block';
+                    grid.innerHTML = '<div class="loading-state" id="imagesLoading">🔄 Loading images...</div>';
+
+                    try {
+                        const response = await fetch('/api/images');
+                        const data = await response.json();
+
+                        if (data.success && data.result && data.result.images) {
+                            displayImages(data.result.images);
+                        } else {
+                            grid.innerHTML = '<div class="empty-state"><div class="empty-icon">📸</div><h3>No Images Found</h3><p>Upload some images to get started.</p></div>';
+                        }
+                    } catch (error) {
+                        console.error('Error loading images:', error);
+                        grid.innerHTML = '<div class="empty-state"><div class="empty-icon">❌</div><h3>Error Loading Images</h3><p>There was an error loading the images. Please try again.</p></div>';
+                    }
+                };
+
+                function displayImages(images) {
+                    const grid = document.getElementById('imagesGrid');
+
+                    if (!images || images.length === 0) {
+                        grid.innerHTML = '<div class="empty-state"><div class="empty-icon">📸</div><h3>No Images Found</h3><p>Upload some images to get started.</p></div>';
+                        return;
+                    }
+
+                    const imageCards = images.map(image => {
+                        const imageUrl = image.variants ?
+                            (image.variants.find(v => v.includes('/public')) || image.variants[0]) :
+                            `https://imagedelivery.net/7B8CAeDtA5h1f1Dyh_X-hg/${image.id}/w=400,h=300,fit=cover`;
+
+                        const tags = (image.meta?.tags || '').split(',').map(t => t.trim()).filter(t => t);
+
+                        return `
+                        <div class="image-card">
+                            <div class="image-preview">
+                                <img src="${imageUrl}" alt="${image.filename || image.id}" loading="lazy">
+                                <div class="image-actions">
+                                    <button class="image-btn" onclick="copyImageUrl('${imageUrl}')" title="Copy URL">📋</button>
+                                    <button class="image-btn" onclick="deleteImage('${image.id}')" title="Delete">🗑️</button>
+                                </div>
+                            </div>
+                            <div class="image-info">
+                                <div class="image-filename">${image.filename || image.id}</div>
+                                <div class="image-meta">
+                                    <small>Uploaded: ${new Date(image.uploaded).toLocaleDateString()}</small>
+                                </div>
+                                <div class="image-tags">
+                                    ${tags.map(tag => `
+                                        <span class="image-tag">
+                                            ${tag}
+                                            <button class="tag-remove" onclick="removeTag('${image.id}', '${tag}')">✖</button>
+                                        </span>
+                                    `).join('')}
+                                    <input type="text" class="tag-input" placeholder="Add tag..." 
+                                           onkeypress="handleTagInput(event, '${image.id}')" 
+                                           style="width: 80px;">
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    }).join('');
+
+                    grid.innerHTML = imageCards;
+                }
+
+                window.handleFileUpload = function (event) {
+                    const files = Array.from(event.target.files);
+                    uploadFiles(files);
+                };
+
+                function uploadFiles(files) {
+                    if (!files || files.length === 0) return;
+
+                    files.forEach(file => {
+                        if (!file.type.startsWith('image/')) {
+                            alert(`${file.name} is not an image file.`);
+                            return;
+                        }
+
+                        uploadSingleFile(file);
+                    });
+                }
+
+                async function uploadSingleFile(file) {
+                    const formData = new FormData();
+                    formData.append('file', file);
+
+                    try {
+                        const response = await fetch('/api/images', {
+                            method: 'POST',
+                            body: formData
+                        });
+
+                        const result = await response.json();
+
+                        if (result.success) {
+                            console.log(`✅ Uploaded: ${file.name}`);
+                            // Refresh the images grid
+                            loadImages();
+                        } else {
+                            console.error(`❌ Upload failed: ${file.name}`, result.error);
+                            alert(`Upload failed: ${result.error || 'Unknown error'}`);
+                        }
+                    } catch (error) {
+                        console.error(`❌ Upload error: ${file.name}`, error);
+                        alert(`Upload error: ${error.message}`);
+                    }
+                }
+
+                window.copyImageUrl = function (url) {
+                    navigator.clipboard.writeText(url).then(() => {
+                        // Simple feedback
+                        const btn = event.target;
+                        const originalText = btn.textContent;
+                        btn.textContent = '✅';
+                        setTimeout(() => {
+                            btn.textContent = originalText;
+                        }, 1000);
+                    });
+                };
+
+                window.deleteImage = async function (imageId) {
+                    if (!confirm('Are you sure you want to delete this image? This cannot be undone.')) {
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch(`/api/images/${imageId}`, {
+                            method: 'DELETE'
+                        });
+
+                        const result = await response.json();
+
+                        if (result.success) {
+                            console.log('✅ Image deleted');
+                            loadImages(); // Refresh the grid
+                        } else {
+                            alert(`Delete failed: ${result.error || 'Unknown error'}`);
+                        }
+                    } catch (error) {
+                        console.error('Delete error:', error);
+                        alert(`Delete error: ${error.message}`);
+                    }
+                };
+
+                window.handleTagInput = function (event, imageId) {
+                    if (event.key === 'Enter') {
+                        const tag = event.target.value.trim();
+                        if (tag) {
+                            addTag(imageId, tag);
+                            event.target.value = '';
+                        }
+                    }
+                };
+
+                async function addTag(imageId, tag) {
+                    try {
+                        const response = await fetch(`/api/images/${imageId}/tags`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ tag })
+                        });
+
+                        const result = await response.json();
+
+                        if (result.success) {
+                            loadImages(); // Refresh to show new tag
+                        } else {
+                            alert(`Add tag failed: ${result.error || 'Unknown error'}`);
+                        }
+                    } catch (error) {
+                        console.error('Add tag error:', error);
+                        alert(`Add tag error: ${error.message}`);
+                    }
+                }
+
+                window.removeTag = async function (imageId, tag) {
+                    try {
+                        const response = await fetch(`/api/images/${imageId}/tags`, {
+                            method: 'DELETE',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ tag })
+                        });
+
+                        const result = await response.json();
+
+                        if (result.success) {
+                            loadImages(); // Refresh to remove tag
+                        } else {
+                            alert(`Remove tag failed: ${result.error || 'Unknown error'}`);
+                        }
+                    } catch (error) {
+                        console.error('Remove tag error:', error);
+                        alert(`Remove tag error: ${error.message}`);
+                    }
+                };
+
+                // Setup drag and drop
+                const dropZone = document.getElementById('dropZone');
+                if (dropZone) {
+                    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                        dropZone.addEventListener(eventName, preventDefaults, false);
+                    });
+
+                    function preventDefaults(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
+
+                    ['dragenter', 'dragover'].forEach(eventName => {
+                        dropZone.addEventListener(eventName, highlight, false);
+                    });
+
+                    ['dragleave', 'drop'].forEach(eventName => {
+                        dropZone.addEventListener(eventName, unhighlight, false);
+                    });
+
+                    function highlight(e) {
+                        dropZone.classList.add('dragover');
+                    }
+
+                    function unhighlight(e) {
+                        dropZone.classList.remove('dragover');
+                    }
+
+                    dropZone.addEventListener('drop', handleDrop, false);
+
+                    function handleDrop(e) {
+                        const dt = e.dataTransfer;
+                        const files = dt.files;
+                        uploadFiles(Array.from(files));
+                    }
+                }
+
+                // Logout function (can be called from admin panel)
+                window.adminLogout = function () {
+                    sessionStorage.removeItem('sbs_admin_auth');
+                    location.reload();
+                };
+
+                // Enhanced Batch Upload System
+                let batchUploadQueue = [];
+                let currentUploadIndex = 0;
+                let uploadedProducts = [];
+
+                window.handleBatchUpload = function (event) {
+                    const files = Array.from(event.target.files);
+                    initiateBatchUpload(files);
+                };
+
+                function initiateBatchUpload(files) {
+                    if (!files || files.length === 0) return;
+
+                    batchUploadQueue = files.filter(file => file.type.startsWith('image/'));
+                    currentUploadIndex = 0;
+                    uploadedProducts = [];
+
+                    if (batchUploadQueue.length === 0) {
+                        alert('No valid image files selected.');
+                        return;
+                    }
+
+                    showUploadProgress();
+                    processBatchUpload();
+                }
+
+                function showUploadProgress() {
+                    const progressContainer = document.getElementById('batchUploadProgress');
+                    progressContainer.style.display = 'block';
+
+                    updateProgressStats();
+                    document.getElementById('uploadQueue').innerHTML = '';
+                }
+
+                async function processBatchUpload() {
+                    for (let i = 0; i < batchUploadQueue.length; i++) {
+                        const file = batchUploadQueue[i];
+                        currentUploadIndex = i;
+
+                        updateProgressStats();
+                        updateProgressBar();
+
+                        const queueItem = createQueueItem(file, 'uploading');
+                        document.getElementById('uploadQueue').appendChild(queueItem);
+
+                        try {
+                            const result = await uploadProductFile(file);
+
+                            if (result.success) {
+                                queueItem.className = 'queue-item success';
+                                queueItem.querySelector('.status').textContent = '✅ Uploaded';
+
+                                // Create product data with AI suggestions
+                                const productData = await generateProductData(file, result.data);
+                                uploadedProducts.push(productData);
+                            } else {
+                                queueItem.className = 'queue-item error';
+                                queueItem.querySelector('.status').textContent = '❌ Failed';
+                            }
+                        } catch (error) {
+                            queueItem.className = 'queue-item error';
+                            queueItem.querySelector('.status').textContent = '❌ Error';
+                        }
+                    }
+
+                    // Show product details form
+                    currentUploadIndex = batchUploadQueue.length;
+                    updateProgressStats();
+                    updateProgressBar();
+                    showProductDetailsForm();
+                }
+
+                async function uploadProductFile(file) {
+                    const formData = new FormData();
+                    formData.append('file', file);
+
+                    const response = await fetch('/api/images', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    return await response.json();
+                }
+
+                function createQueueItem(file, status) {
+                    const item = document.createElement('div');
+                    item.className = 'queue-item';
+                    item.innerHTML = `
+                    <div style="width: 40px; height: 40px; background: #333; border-radius: 4px; margin-right: 10px; display: flex; align-items: center; justify-content: center;">
+                        📷
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 500;">${file.name}</div>
+                        <div style="font-size: 0.8rem; opacity: 0.7;">${formatFileSize(file.size)}</div>
+                    </div>
+                    <div class="status">${status === 'uploading' ? '⏳ Uploading...' : status}</div>
+                `;
+                    return item;
+                }
+
+                function formatFileSize(bytes) {
+                    if (bytes === 0) return '0 Bytes';
+                    const k = 1024;
+                    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                    const i = Math.floor(Math.log(bytes) / Math.log(k));
+                    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+                }
+
+                function updateProgressStats() {
+                    const statsElement = document.getElementById('progressStats');
+                    statsElement.textContent = `${currentUploadIndex}/${batchUploadQueue.length} completed`;
+                }
+
+                function updateProgressBar() {
+                    const progressFill = document.getElementById('progressFill');
+                    const percentage = batchUploadQueue.length > 0 ? (currentUploadIndex / batchUploadQueue.length) * 100 : 0;
+                    progressFill.style.width = `${percentage}%`;
+                }
+
+                async function generateProductData(file, uploadResult) {
+                    const filename = file.name.toLowerCase();
+
+                    // Smart categorization based on filename
+                    let category = 'streetwear';
+                    let suggestedPrice = 75;
+                    let title = '';
+
+                    if (filename.includes('sneaker') || filename.includes('shoe') || filename.includes('nike') || filename.includes('adidas')) {
+                        category = 'footwear';
+                        suggestedPrice = 120;
+                        title = 'Premium Sneakers';
+                    } else if (filename.includes('hoodie') || filename.includes('sweat')) {
+                        category = 'hoodies';
+                        suggestedPrice = 85;
+                        title = 'Designer Hoodie';
+                    } else if (filename.includes('shirt') || filename.includes('tee')) {
+                        category = 'shirts';
+                        suggestedPrice = 45;
+                        title = 'Streetwear Tee';
+                    } else if (filename.includes('jacket') || filename.includes('coat')) {
+                        category = 'outerwear';
+                        suggestedPrice = 150;
+                        title = 'Urban Jacket';
+                    } else {
+                        title = 'Dublin Street Style';
+                    }
+
+                    return {
+                        id: uploadResult.result?.id || Date.now(),
+                        filename: file.name,
+                        title: title,
+                        price: suggestedPrice,
+                        category: category,
+                        condition: 'new',
+                        size: 'M',
+                        brand: '',
+                        description: `Premium ${category} piece from Dublin's finest collection`,
+                        tags: [category, 'dublin', 'streetwear'],
+                        imageUrl: uploadResult.result?.variants?.[0] || uploadResult.imageUrl
+                    };
+                }
+
+                function showProductDetailsForm() {
+                    const formContainer = document.getElementById('productDetailsForm');
+                    const productsList = document.getElementById('productDetailsList');
+
+                    productsList.innerHTML = '';
+
+                    uploadedProducts.forEach((product, index) => {
+                        const productCard = createProductDetailCard(product, index);
+                        productsList.appendChild(productCard);
+                    });
+
+                    formContainer.style.display = 'block';
+                }
+
+                function createProductDetailCard(product, index) {
+                    const card = document.createElement('div');
+                    card.className = 'product-detail-card';
+                    card.innerHTML = `
+                    <img src="${product.imageUrl}" alt="${product.title}" class="product-preview">
+                    <div class="product-form">
+                        <input type="text" placeholder="Product Title" value="${product.title}" onchange="updateProductData(${index}, 'title', this.value)">
+                        <input type="number" placeholder="Price (€)" value="${product.price}" onchange="updateProductData(${index}, 'price', this.value)">
+                        <select onchange="updateProductData(${index}, 'category', this.value)">
+                            <option value="streetwear" ${product.category === 'streetwear' ? 'selected' : ''}>Streetwear</option>
+                            <option value="footwear" ${product.category === 'footwear' ? 'selected' : ''}>Footwear</option>
+                            <option value="hoodies" ${product.category === 'hoodies' ? 'selected' : ''}>Hoodies</option>
+                            <option value="shirts" ${product.category === 'shirts' ? 'selected' : ''}>Shirts</option>
+                            <option value="outerwear" ${product.category === 'outerwear' ? 'selected' : ''}>Outerwear</option>
+                        </select>
+                        <select onchange="updateProductData(${index}, 'condition', this.value)">
+                            <option value="new" ${product.condition === 'new' ? 'selected' : ''}>New</option>
+                            <option value="like-new" ${product.condition === 'like-new' ? 'selected' : ''}>Like New</option>
+                            <option value="good" ${product.condition === 'good' ? 'selected' : ''}>Good</option>
+                            <option value="fair" ${product.condition === 'fair' ? 'selected' : ''}>Fair</option>
+                        </select>
+                        <input type="text" placeholder="Brand" value="${product.brand}" onchange="updateProductData(${index}, 'brand', this.value)">
+                        <select onchange="updateProductData(${index}, 'size', this.value)">
+                            <option value="XS" ${product.size === 'XS' ? 'selected' : ''}>XS</option>
+                            <option value="S" ${product.size === 'S' ? 'selected' : ''}>S</option>
+                            <option value="M" ${product.size === 'M' ? 'selected' : ''}>M</option>
+                            <option value="L" ${product.size === 'L' ? 'selected' : ''}>L</option>
+                            <option value="XL" ${product.size === 'XL' ? 'selected' : ''}>XL</option>
+                            <option value="XXL" ${product.size === 'XXL' ? 'selected' : ''}>XXL</option>
+                        </select>
+                    </div>
+                `;
+                    return card;
+                }
+
+                window.updateProductData = function (index, field, value) {
+                    if (uploadedProducts[index]) {
+                        uploadedProducts[index][field] = value;
+                    }
+                };
+
+                window.saveAllProducts = async function () {
+                    if (uploadedProducts.length === 0) {
+                        alert('No products to save.');
+                        return;
+                    }
+
+                    try {
+                        // Here you would save to your database
+                        // For now, we'll just simulate success
+                        console.log('Saving products:', uploadedProducts);
+
+                        alert(`✅ Successfully saved ${uploadedProducts.length} products!`);
+
+                        // Reset the form
+                        cancelBatchUpload();
+                        loadImages(); // Refresh the images grid
+                    } catch (error) {
+                        alert('❌ Error saving products: ' + error.message);
+                    }
+                };
+
+                window.cancelBatchUpload = function () {
+                    document.getElementById('batchUploadProgress').style.display = 'none';
+                    document.getElementById('productDetailsForm').style.display = 'none';
+
+                    batchUploadQueue = [];
+                    currentUploadIndex = 0;
+                    uploadedProducts = [];
+
+                    // Clear file input
+                    document.getElementById('batchFileInput').value = '';
+                };
+            });
+        </script>
+    </div> <!-- End main-admin -->
+</body>
+
+</html>

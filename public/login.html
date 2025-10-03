@@ -160,6 +160,52 @@
             font-weight: bold;
         }
 
+        /* AUTH BUTTONS */
+        .btn-gold {
+            background: var(--primary-gold);
+            color: var(--primary-black);
+            border: 2px solid var(--primary-gold);
+            padding: 0.5rem 1.5rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+            font-family: inherit;
+        }
+
+        .btn-gold:hover {
+            background: transparent;
+            color: var(--primary-gold);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(255, 215, 0, 0.3);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--text-primary);
+            border: 2px solid var(--border-subtle);
+            padding: 0.5rem 1.5rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 0.85rem;
+            font-family: inherit;
+        }
+
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--text-primary);
+            transform: translateY(-2px);
+        }
+
         @media (max-width: 768px) {
             .nav {
                 padding: 0 0.75rem;
@@ -532,7 +578,7 @@
     <header class="header">
         <nav class="nav">
             <div class="nav-left">
-                <a href="/" class="nav-link">Home</a>
+                <a href="/shop" class="nav-link">Shop</a>
                 <a href="/sell" class="nav-link">Sell</a>
             </div>
             <div class="nav-center">
@@ -542,8 +588,9 @@
                 </a>
             </div>
             <div class="nav-right">
-                <a href="/shop" class="nav-link">Shop</a>
-                <a href="/register" class="nav-link">Register</a>
+                <!-- Auth state dynamically updates this section -->
+                <a href="/login" class="nav-link">Sign In</a>
+                <a href="/register" class="btn-gold">Sign Up</a>
                 <button class="cart-toggle" onclick="toggleCart()">
                     Basket
                     <span class="cart-count" id="cart-count">0</span>
@@ -640,8 +687,12 @@
                     if (data.user) {
                         sessionStorage.setItem('sbs_user', JSON.stringify(data.user));
                     }
-                    const redirect = new URLSearchParams(window.location.search).get('redirect') || '/dashboard.html';
-                    window.location.replace(redirect);
+                    // Save login time for session expiry check
+                    sessionStorage.setItem('sbs_login_time', Date.now().toString());
+                    
+                    const redirect = new URLSearchParams(window.location.search).get('redirect');
+                    const defaultRedirect = data.user?.role === 'admin' ? '/admin/' : '/dashboard.html';
+                    window.location.replace(redirect || defaultRedirect);
                 }
             } catch (error) {
                 console.warn('Session check failed', error);
@@ -688,11 +739,19 @@
                     if (data.user) {
                         sessionStorage.setItem('sbs_user', JSON.stringify(data.user));
                     }
+                    // Save login time for session expiry check
+                    sessionStorage.setItem('sbs_login_time', Date.now().toString());
 
                     messageContainer.innerHTML = '<div class="message success">Welcome back! Redirecting...</div>';
                     setTimeout(() => {
-                        const redirect = new URLSearchParams(window.location.search).get('redirect') || '/dashboard.html';
-                        window.location.replace(redirect);
+                        const redirect = new URLSearchParams(window.location.search).get('redirect');
+                        if (!redirect) {
+                            // Redirect based on role
+                            const defaultRedirect = data.user?.role === 'admin' ? '/admin/' : '/dashboard.html';
+                            window.location.replace(defaultRedirect);
+                        } else {
+                            window.location.replace(redirect);
+                        }
                     }, 800);
                     return;
                 }
@@ -700,6 +759,44 @@
                 if (data.totp_required) {
                     totpGroup.style.display = 'block';
                     totpInput?.focus();
+                }
+
+                // Show email verification error with resend option
+                if (data.email_verification_required && data.email) {
+                    messageContainer.innerHTML = `
+                        <div class="message error">
+                            ${data.error || 'Email verification required'}
+                            <button id="resendVerification" style="display: block; margin-top: 10px; background: var(--primary-gold); color: var(--primary-black); border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                                📧 Resend Verification Email
+                            </button>
+                        </div>
+                    `;
+                    
+                    // Add click handler for resend button
+                    document.getElementById('resendVerification')?.addEventListener('click', async () => {
+                        try {
+                            const resendBtn = document.getElementById('resendVerification');
+                            resendBtn.textContent = 'Sending...';
+                            resendBtn.disabled = true;
+                            
+                            const resendResponse = await fetch('/api/resend-verification', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ email: data.email })
+                            });
+                            
+                            const resendData = await resendResponse.json();
+                            if (resendData.success) {
+                                messageContainer.innerHTML = '<div class="message success">✅ Verification email sent! Check your inbox.</div>';
+                            } else {
+                                messageContainer.innerHTML = `<div class="message error">${resendData.error}</div>`;
+                            }
+                        } catch (error) {
+                            console.error('Resend error:', error);
+                            messageContainer.innerHTML = '<div class="message error">Failed to resend email. Please try again.</div>';
+                        }
+                    });
+                    return;
                 }
 
                 messageContainer.innerHTML = `<div class="message error">${data.error || 'Login failed. Please check your credentials.'}</div>`;
@@ -821,6 +918,13 @@
             // Start loading
             tryNextCdn();
         })();
+    </script>
+
+    <!-- Redirect if already logged in -->
+    <script>
+        if (sessionStorage.getItem('sbs_user') && sessionStorage.getItem('sbs_csrf_token')) {
+            window.location.href = '/dashboard.html';
+        }
     </script>
 </body>
 

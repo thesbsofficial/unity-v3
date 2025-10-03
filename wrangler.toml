@@ -17,3 +17,13 @@ bucket_name = "sbs-product-images"
 [[r2_buckets]]
 binding = "USER_UPLOADS"
 bucket_name = "sbs-user-uploads"
+
+# Environment variables
+[vars]
+SITE_URL = "https://thesbsofficial.com"
+CLOUDFLARE_ACCOUNT_ID = "625959b904a63f24f6bb7ec9b8c1ed7c"
+ADMIN_ALLOWLIST_HANDLES = "ADMIN,fredbademosi,SBS"
+
+# Resend API Key (get from https://resend.com/api-keys)
+# Add this as a secret: npx wrangler secret put RESEND_API_KEY
+# Format: re_xxxxxxxxx

@@ -46,9 +46,9 @@ function secHeaders(origin, env) {
 
 // ---- Cookies ----
 const COOKIE_NAME = "sbs_session";
-const cookieAttrs = "; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=2592000"; // 30d
+const cookieAttrs = "; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=2592000"; // 30d
 const setCookie = (token) => `${COOKIE_NAME}=${token}${cookieAttrs}`;
-const clearCookie = () => `${COOKIE_NAME}=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Strict`;
+const clearCookie = () => `${COOKIE_NAME}=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Lax`;
 
 function getCookie(request, name) {
   const h = request.headers.get("Cookie") || "";
@@ -57,7 +57,7 @@ function getCookie(request, name) {
 }
 
 // ---- Password hashing (PBKDF2-HMAC-SHA256) ----
-async function hashPassword(password, iterations = 210000) {
+async function hashPassword(password, iterations = 100000) {
   const salt = randB32();
   const key = await crypto.subtle.importKey("raw", enc.encode(password), "PBKDF2", false, [
     "deriveBits",
@@ -77,7 +77,7 @@ async function hashPassword(password, iterations = 210000) {
 
 async function verifyPassword(password, user) {
   if (!user?.password_hash || !user?.password_salt) return false;
-  const iters = Number(user.password_iterations || 210000);
+  const iters = Number(user.password_iterations || 100000);
   const key = await crypto.subtle.importKey("raw", enc.encode(password), "PBKDF2", false, [
     "deriveBits",
   ]);
@@ -115,10 +115,10 @@ async function createSession(env, userId, ip, ua) {
   const tokenHash = await sha256b64(tokenRaw);
 
   await env.DB.prepare(
-    `INSERT INTO sessions (id, user_id, csrf_secret, created_at, expires_at, ip_address, user_agent)
-     VALUES (?, ?, ?, CURRENT_TIMESTAMP, ?, ?, ?)`
+    `INSERT INTO sessions (user_id, token, csrf_secret, expires_at, ip_address, user_agent)
+     VALUES (?, ?, ?, ?, ?, ?)`
   )
-    .bind(crypto.randomUUID(), userId, csrfSecret, exp, ip || null, ua || null)
+    .bind(userId, tokenHash, csrfSecret, exp, ip || null, ua || null)
     .run();
 
   // map token to user with a lightweight store table
@@ -146,7 +146,7 @@ async function readSession(env, tokenRaw) {
     .first();
   if (!tok) return null;
   const row = await env.DB.prepare(
-    `SELECT s.user_id, s.csrf_secret, s.expires_at, u.role, u.social_handle, u.first_name, u.last_name, u.email
+    `SELECT s.user_id, s.csrf_secret, s.expires_at, u.role, u.social_handle, u.first_name, u.last_name, u.email, u.is_allowlisted
        FROM sessions s
        JOIN users u ON u.id = s.user_id
       WHERE s.user_id = ? AND s.expires_at > datetime('now')
@@ -166,7 +166,7 @@ async function destroySession(env, tokenRaw) {
 
 // ---- Helpers ----
 const okOrigins = (env) => (env.ALLOWED_ORIGINS || "").split(",").map((s) => s.trim());
-const isAdmin = (session) => session?.role === "admin";
+const isAdmin = (session) => session?.role === "admin" && session?.is_allowlisted === 1;
 const ipOf = (req) =>
   req.headers.get("CF-Connecting-IP") ||
   (req.headers.get("X-Forwarded-For") || "").split(",")[0] ||
@@ -216,8 +216,10 @@ export async function onRequest(context) {
       }
       if (!body.social_handle || !body.password)
         return json({ success: false, error: "social_handle and password required" }, 400, headers);
-      if (body.password.length < 12)
-        return json({ success: false, error: "Password must be at least 12 characters" }, 400, headers);
+      if (body.password.length < 6)
+        return json({ success: false, error: "Password must be at least 6 characters" }, 400, headers);
+      if (!/\d/.test(body.password))
+        return json({ success: false, error: "Password must contain at least 1 number" }, 400, headers);
 
       const exists = await env.DB.prepare(
         "SELECT id FROM users WHERE social_handle = ? OR email = ?"
@@ -227,11 +229,15 @@ export async function onRequest(context) {
       if (exists) return json({ success: false, error: "User already exists" }, 409, headers);
 
       const { hash, salt, type, iterations } = await hashPassword(body.password);
+      
+      // Email verification: 0 = not verified (if email provided), 1 = verified (if no email)
+      const emailVerified = body.email ? 0 : 1;
+      
       const res = await env.DB.prepare(
         `INSERT INTO users
         (social_handle,email,phone,password_hash,password_salt,password_hash_type,password_iterations,
-         first_name,last_name,address,city,eircode,preferred_contact,role,email_verification_required,created_at)
-         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,'user',1,CURRENT_TIMESTAMP)`
+         first_name,last_name,address,city,eircode,preferred_contact,email_verified)
+         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
       )
         .bind(
           body.social_handle,
@@ -246,12 +252,49 @@ export async function onRequest(context) {
           body.address || null,
           body.city || null,
           body.eircode || null,
-          body.preferred_contact || null
+          body.preferred_contact || null,
+          emailVerified
         )
         .run();
 
+      const userId = res.meta?.last_row_id ?? null;
+
+      // Send verification email if email was provided
+      if (body.email && userId) {
+        try {
+          const { createVerificationToken, sendVerificationEmail } = await import('../lib/email.js');
+          const token = await createVerificationToken(env.DB, userId);
+          const siteUrl = env.SITE_URL || 'https://thesbsofficial.com';
+          await sendVerificationEmail(body.email, token, siteUrl);
+          
+          return json(
+            { 
+              success: true, 
+              message: "Account created! Check your email to verify your account.", 
+              user_id: userId,
+              email_sent: true
+            },
+            201,
+            headers
+          );
+        } catch (emailError) {
+          console.error('Failed to send verification email:', emailError);
+          // Account still created, just email failed
+          return json(
+            { 
+              success: true, 
+              message: "Account created! Email verification will be sent shortly.", 
+              user_id: userId,
+              email_sent: false
+            },
+            201,
+            headers
+          );
+        }
+      }
+
       return json(
-        { success: true, message: "Account created. Please verify your email.", user_id: res.meta?.last_row_id ?? null },
+        { success: true, message: "Account created successfully!", user_id: userId },
         201,
         headers
       );
@@ -268,6 +311,16 @@ export async function onRequest(context) {
         .first();
       if (!user || !(await verifyPassword(password, user)))
         return json({ success: false, error: "Invalid credentials" }, 401, headers);
+
+      // Check if email verification is required
+      if (user.email && user.email_verified === 0) {
+        return json({ 
+          success: false, 
+          error: "Please verify your email before logging in. Check your inbox for the verification link.",
+          email_verification_required: true,
+          email: user.email
+        }, 403, headers);
+      }
 
       // Optional: auto-promote via allowlist (ADMIN_ALLOWLIST_HANDLES=fredbademosi,admin)
       const allowHandles = (env.ADMIN_ALLOWLIST_HANDLES || "").split(",").map((s) => s.trim());
@@ -304,6 +357,154 @@ export async function onRequest(context) {
       return json({ success: true }, 200, { ...headers, "Set-Cookie": clearCookie() });
     }
 
+    // Email verification endpoints (public)
+    if (path === "/api/verify-email" && method === "POST") {
+      const body = await request.json();
+      const { token } = body;
+      
+      if (!token) {
+        return json({ success: false, error: "Token required" }, 400, headers);
+      }
+      
+      try {
+        const { verifyEmailToken } = await import('../lib/email.js');
+        const result = await verifyEmailToken(env.DB, token);
+        
+        if (!result.success) {
+          return json({ success: false, error: result.error }, 400, headers);
+        }
+        
+        return json({ 
+          success: true, 
+          message: "Email verified successfully! You can now log in.",
+          user: result.user
+        }, 200, headers);
+      } catch (error) {
+        console.error('Email verification error:', error);
+        return json({ success: false, error: "Verification failed" }, 500, headers);
+      }
+    }
+
+    if (path === "/api/resend-verification" && method === "POST") {
+      const body = await request.json();
+      const { email } = body;
+      
+      if (!email) {
+        return json({ success: false, error: "Email required" }, 400, headers);
+      }
+      
+      // Find user by email
+      const user = await env.DB.prepare(
+        "SELECT id, email, email_verified, first_name FROM users WHERE email = ?"
+      ).bind(email).first();
+      
+      if (!user) {
+        // Don't reveal if email exists or not (security)
+        return json({ 
+          success: true, 
+          message: "If that email exists, a verification link has been sent."
+        }, 200, headers);
+      }
+      
+      if (user.email_verified === 1) {
+        return json({ 
+          success: false, 
+          error: "Email is already verified. You can log in now!"
+        }, 400, headers);
+      }
+      
+      try {
+        // Use Resend email system with beautiful templates
+        const { createVerificationToken } = await import('../lib/email.js');
+        const { sendBeautifulVerificationEmail } = await import('../lib/resend-wrapper.js');
+        
+        const token = await createVerificationToken(env.DB, user.id);
+        const siteUrl = env.SITE_URL || 'https://thesbsofficial.com';
+        
+        await sendBeautifulVerificationEmail(
+          env.RESEND_API_KEY,
+          user.email,
+          user.first_name || 'there',
+          token,
+          siteUrl
+        );
+        
+        return json({ 
+          success: true, 
+          message: "Verification email sent! Check your inbox."
+        }, 200, headers);
+      } catch (error) {
+        console.error('Resend verification error:', error);
+        return json({ 
+          success: false, 
+          error: "Failed to send verification email"
+        }, 500, headers);
+      }
+    }
+
+    // Test email endpoint (for debugging)
+    if (path === "/api/test-email" && method === "POST") {
+      const body = await request.json();
+      const { email } = body;
+      
+      if (!email) {
+        return json({ success: false, error: "Email required" }, 400, headers);
+      }
+      
+      try {
+        const { sendVerificationEmail } = await import('../lib/email.js');
+        const testToken = 'test-' + Math.random().toString(36).substring(2, 15);
+        const siteUrl = env.SITE_URL || 'https://thesbsofficial.com';
+        
+        const result = await sendVerificationEmail(email, testToken, siteUrl);
+        
+        return json({ 
+          success: true, 
+          message: `Test verification email sent to ${email}`,
+          note: 'This is a test email with a dummy token',
+          mailChannelsResponse: result
+        }, 200, headers);
+      } catch (error) {
+        console.error('Test email error:', error);
+        console.error('Error stack:', error.stack);
+        return json({ 
+          success: false, 
+          error: "Failed to send test email",
+          details: error.message,
+          errorType: error.name,
+          stack: error.stack
+        }, 500, headers);
+      }
+    }
+
+    // Products API - PUBLIC (can be accessed by anyone)
+    if (path === "/api/products" && method === "GET") {
+      try {
+        // For now, return empty array until CF Images is set up
+        // This prevents 500 errors and allows the shop page to load
+        return json(
+          {
+            success: true,
+            products: [],
+            message: "Products API ready - CF Images integration pending"
+          },
+          200,
+          headers
+        );
+      } catch (error) {
+        console.error('Products API error:', error);
+        return json(
+          {
+            success: true,
+            products: [],
+            error: "Failed to fetch products"
+          },
+          200,
+          headers
+        );
+      }
+    }
+
     // AUTH REQUIRED
     if (!session) return json({ success: false, error: "Unauthorized" }, 401, headers);
 
@@ -319,6 +520,7 @@ export async function onRequest(context) {
             role: session.role,
             first_name: session.first_name,
             last_name: session.last_name,
+            is_allowlisted: session.is_allowlisted,
           },
           csrf_token: csrfToken,
           is_admin: isAdmin(session),
@@ -335,10 +537,24 @@ export async function onRequest(context) {
       if (path === "/api/admin/menu" && method === "GET") {
         const html = `
           <section class="admin-menu">
-            <h2>Admin Controls</h2>
+            <h2>🎛️ SBS Unity Admin</h2>
             <ul>
-              <li><a href="/admin/dashboard">Open Admin Dashboard</a></li>
-              <li><button id="runBoard07" type="button">Run Admin Diagnostics</button></li>
+              <li><a href="/admin/" target="_blank">🏠 Overview</a></li>
+              <li><a href="/admin/inventory/" target="_blank">📦 Inventory</a></li>
+              <li><a href="/admin/requests/" target="_blank">📋 Requests</a></li>
+              <li><a href="/admin/customers/" target="_blank">👥 Customers</a></li>
+              <li><a href="/admin/data/" target="_blank">💾 Data</a></li>
+              <li><a href="/admin/logs/" target="_blank">� Logs & Analytics</a></li>
+              <li><a href="/admin/security/" target="_blank">🔒 Security</a></li>
+              <li><a href="/admin/audit/" target="_blank">📜 Audit</a></li>
+            </ul>
+            <hr style="margin: 20px 0; border-color: #333;">
+            <h3 style="font-size: 14px; color: #999; margin-bottom: 10px;">⚙️ Utilities</h3>
+            <ul>
+              <li><a href="/admin/system-check.html" target="_blank">🔍 System Check</a></li>
+              <li><a href="/admin/status.html" target="_blank">� API Status</a></li>
+              <li><a href="/admin/diagnostic.html" target="_blank">🛠️ Diagnostics</a></li>
+              <li><button id="runBoard07" type="button">⚡ Quick Diagnostics</button></li>
             </ul>
           </section>`;
         return new Response(html, { status: 200, headers: { "Content-Type": "text/html", ...headers } });
@@ -359,6 +575,234 @@ export async function onRequest(context) {
           200,
           headers
         );
+      }
+
+      // Upload image to Cloudflare Images
+      if (path === "/api/admin/upload-image" && method === "POST") {
+        try {
+          // Get environment variables
+          const accountId = env.CLOUDFLARE_ACCOUNT_ID;
+          const apiToken = env.CLOUDFLARE_API_TOKEN || env.CLOUDFLARE_IMAGES_API_TOKEN;
+
+          if (!accountId || !apiToken) {
+            return json({ success: false, error: "Missing CF Images credentials" }, 500, headers);
+          }
+
+          // Parse multipart form data with error handling
+          let formData;
+          try {
+            formData = await request.formData();
+          } catch (parseError) {
+            return json({ success: false, error: "Invalid form data format" }, 400, headers);
+          }
+
+          const file = formData.get('file');
+          const filename = formData.get('filename');
+          const metadata = formData.get('metadata');
+
+          if (!file) {
+            return json({ success: false, error: "File is required" }, 400, headers);
+          }
+
+          // Validate file type
+          if (!file.type || !file.type.startsWith('image/')) {
+            return json({ success: false, error: "File must be an image" }, 400, headers);
+          }
+
+          // Create form data for CF Images API
+          const cfFormData = new FormData();
+          cfFormData.append('file', file);
+          
+          // Set metadata if provided
+          if (metadata) {
+            const meta = JSON.parse(metadata);
+            cfFormData.append('metadata', JSON.stringify(meta));
+          }
+
+          // Set custom filename if provided
+          // NOTE: CF Images 'id' has strict requirements:
+          // - Only lowercase letters, numbers, hyphens, underscores
+          // - Max 1024 characters (but keep it reasonable)
+          // - Must be unique
+          if (filename) {
+            const cleanFilename = filename
+              .replace(/\.(jpeg|jpg|png|webp)$/i, '') // Remove extension
+              .toLowerCase(); // Convert to lowercase for CF Images compatibility
+            
+            cfFormData.append('id', cleanFilename);
+            console.log('Uploading with custom ID:', cleanFilename);
+          }
+
+          // Upload to Cloudflare Images
+          const uploadUrl = `https://api.cloudflare.com/client/v4/accounts/${accountId}/images/v1`;
+          const uploadResponse = await fetch(uploadUrl, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${apiToken}`
+            },
+            body: cfFormData
+          });
+
+          const result = await uploadResponse.json();
+
+          if (!uploadResponse.ok || !result.success) {
+            console.error('CF Images upload failed:', result);
+            console.error('Attempted filename:', filename);
+            return json({ 
+              success: false, 
+              error: result.errors?.[0]?.message || 'Upload failed',
+              details: result,
+              attemptedFilename: filename
+            }, uploadResponse.status, headers);
+          }
+
+          console.log('✅ Image uploaded successfully:', result.result?.id);
+          
+          return json({
+            success: true,
+            image: result.result,
+            message: 'Image uploaded successfully',
+            uploadedId: result.result?.id,
+            requestedFilename: filename
+          }, 200, headers);
+
+        } catch (err) {
+          console.error('Upload error:', err);
+          return json({ 
+            success: false, 
+            error: 'Upload failed', 
+            details: err.message 
+          }, 500, headers);
+        }
+      }
+
+      // Update image metadata in Cloudflare Images
+      if (path === "/api/admin/update-image-metadata" && method === "PATCH") {
+        try {
+          // Get environment variables
+          const accountId = env.CLOUDFLARE_ACCOUNT_ID;
+          const apiToken = env.CLOUDFLARE_API_TOKEN || env.CLOUDFLARE_IMAGES_API_TOKEN;
+
+          if (!accountId || !apiToken) {
+            return json({ success: false, error: "Missing CF Images credentials" }, 500, headers);
+          }
+
+          // Get image ID and metadata from request body
+          const body = await request.json();
+          const imageId = body.imageId || body.id;
+          const metadata = body.metadata;
+
+          if (!imageId) {
+            return json({ success: false, error: "Image ID required" }, 400, headers);
+          }
+
+          if (!metadata) {
+            return json({ success: false, error: "Metadata required" }, 400, headers);
+          }
+
+          // Update metadata via Cloudflare Images API
+          const updateUrl = `https://api.cloudflare.com/client/v4/accounts/${accountId}/images/v1/${imageId}`;
+          const updateResponse = await fetch(updateUrl, {
+            method: 'PATCH',
+            headers: {
+              'Authorization': `Bearer ${apiToken}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ metadata: metadata })
+          });
+
+          const result = await updateResponse.json();
+
+          if (!updateResponse.ok || !result.success) {
+            console.error('CF Images metadata update failed:', result);
+            return json({ 
+              success: false, 
+              error: result.errors?.[0]?.message || 'Metadata update failed',
+              details: result
+            }, updateResponse.status, headers);
+          }
+
+          return json({
+            success: true,
+            message: 'Metadata updated successfully',
+            imageId: imageId,
+            metadata: metadata
+          }, 200, headers);
+
+        } catch (err) {
+          console.error('Update metadata error:', err);
+          return json({ 
+            success: false, 
+            error: 'Metadata update failed', 
+            details: err.message 
+          }, 500, headers);
+        }
+      }
+
+      // Delete image from Cloudflare Images
+      if (path === "/api/admin/delete-image" && (method === "DELETE" || method === "POST")) {
+        try {
+          // Get environment variables
+          const accountId = env.CLOUDFLARE_ACCOUNT_ID;
+          const apiToken = env.CLOUDFLARE_API_TOKEN || env.CLOUDFLARE_IMAGES_API_TOKEN;
+
+          if (!accountId || !apiToken) {
+            return json({ success: false, error: "Missing CF Images credentials" }, 500, headers);
+          }
+
+          // Get image ID from request body with error handling
+          let body;
+          try {
+            body = await request.json();
+          } catch (parseError) {
+            return json({ success: false, error: "Invalid JSON format" }, 400, headers);
+          }
+
+          const imageId = body.imageId || body.id;
+
+          if (!imageId) {
+            return json({ success: false, error: "imageId is required" }, 400, headers);
+          }
+
+          // Validate imageId format
+          if (typeof imageId !== 'string' || imageId.trim().length === 0) {
+            return json({ success: false, error: "imageId must be a non-empty string" }, 400, headers);
+          }
+
+          // Delete from Cloudflare Images
+          const deleteUrl = `https://api.cloudflare.com/client/v4/accounts/${accountId}/images/v1/${imageId}`;
+          const deleteResponse = await fetch(deleteUrl, {
+            method: 'DELETE',
+            headers: {
+              'Authorization': `Bearer ${apiToken}`
+            }
+          });
+
+          const result = await deleteResponse.json();
+
+          if (!deleteResponse.ok || !result.success) {
+            console.error('CF Images delete failed:', result);
+            return json({ 
+              success: false, 
+              error: result.errors?.[0]?.message || 'Delete failed',
+              details: result
+            }, deleteResponse.status, headers);
+          }
+
+          return json({
+            success: true,
+            message: 'Image deleted successfully',
+            imageId: imageId
+          }, 200, headers);
+
+        } catch (err) {
+          console.error('Delete error:', err);
+          return json({ 
+            success: false, 
+            error: 'Delete failed', 
+            details: err.message 
+          }, 500, headers);
+        }
       }
     }
 
@@ -403,10 +847,289 @@ export async function onRequest(context) {
       return json({ success: true, orders: rows.results || [] }, 200, headers);
     }
 
+    // USER DATA & GDPR ENDPOINTS
+    
+    // Get user's data (GDPR: Right to Access)
+    if (path === "/api/users/me" && method === "GET") {
+      const user = await env.DB.prepare(
+        `SELECT id, social_handle, email, phone, first_name, last_name, address, city, eircode, 
+         preferred_contact, role, created_at FROM users WHERE id=?`
+      )
+        .bind(session.user_id)
+        .first();
+      
+      if (!user) return json({ success: false, error: "User not found" }, 404, headers);
+      
+      return json({ success: true, user }, 200, headers);
+    }
+
+    // Get user's orders
+    if (path === "/api/users/me/orders" && method === "GET") {
+      const orders = await env.DB.prepare(
+        `SELECT id, order_number, items_json, total_amount, delivery_address, delivery_city, 
+         delivery_method, status, created_at FROM orders WHERE user_id=? ORDER BY created_at DESC`
+      )
+        .bind(session.user_id)
+        .all();
+      
+      return json({ success: true, orders: orders.results || [] }, 200, headers);
+    }
+
+    // EMAIL VERIFICATION ENDPOINTS
+    
+    // Verify email token
+    if (path === "/api/verify-email" && method === "POST") {
+      const body = await request.json();
+      const { token } = body;
+      
+      if (!token) {
+        return json({ success: false, error: "Token required" }, 400, headers);
+      }
+      
+      try {
+        const { verifyEmailToken } = await import('../lib/email.js');
+        const result = await verifyEmailToken(env.DB, token);
+        
+        if (result.success) {
+          return json({
+            success: true,
+            message: "Email verified successfully! You can now login.",
+            user: result.user
+          }, 200, headers);
+        } else {
+          return json({
+            success: false,
+            error: result.error || "Verification failed"
+          }, 400, headers);
+        }
+      } catch (error) {
+        console.error('Verification error:', error);
+        return json({
+          success: false,
+          error: "Verification failed"
+        }, 500, headers);
+      }
+    }
+    
+    // Resend verification email
+    if (path === "/api/resend-verification" && method === "POST") {
+      const body = await request.json();
+      const { email } = body;
+      
+      if (!email) {
+        return json({ success: false, error: "Email required" }, 400, headers);
+      }
+      
+      // Find user
+      const user = await env.DB.prepare(
+        `SELECT id, email, email_verified_at FROM users WHERE email = ?`
+      ).bind(email).first();
+      
+      if (!user) {
+        // Don't reveal if email exists
+        return json({ success: true, message: "If that email is registered, a verification link has been sent." }, 200, headers);
+      }
+      
+      if (user.email_verified_at) {
+        return json({ success: false, error: "Email already verified" }, 400, headers);
+      }
+      
+      try {
+        const { createVerificationToken, sendVerificationEmail } = await import('../lib/email.js');
+        const token = await createVerificationToken(env.DB, user.id);
+        const siteUrl = env.SITE_URL || 'https://thesbsofficial.com';
+        await sendVerificationEmail(email, token, siteUrl);
+        
+        return json({
+          success: true,
+          message: "Verification email sent! Check your inbox."
+        }, 200, headers);
+      } catch (error) {
+        console.error('Resend email error:', error);
+        return json({
+          success: false,
+          error: "Failed to send email"
+        }, 500, headers);
+      }
+    }
+
+    // Get user's sell submissions
+    if (path === "/api/users/me/sell-cases" && method === "GET") {
+      const cases = await env.DB.prepare(
+        `SELECT case_id, brand, category, size, color, condition_rating, price, 
+         offer_amount, status, created_at FROM sell_cases WHERE user_id=? ORDER BY created_at DESC`
+      )
+        .bind(session.user_id)
+        .all();
+      
+      return json({ success: true, cases: cases.results || [] }, 200, headers);
+    }
+
+    // Update user profile
+    if (path === "/api/users/update-profile" && method === "PUT") {
+      const ok = await assertCsrf(request, session);
+      if (!ok) return json({ success: false, error: "Invalid CSRF token" }, 403, headers);
+
+      const body = await request.json();
+      const allowed = [
+        "first_name", "last_name", "social_handle", "email", "phone",
+        "address", "city", "eircode", "instagram", "snapchat",
+        "preferred_contact", "current_password", "new_password"
+      ];
+
+      for (const k of Object.keys(body)) {
+        if (!allowed.includes(k)) {
+          return json({ success: false, error: `Unknown field: ${k}` }, 400, headers);
+        }
+      }
+
+      // If changing password, verify current password first
+      if (body.new_password) {
+        if (!body.current_password) {
+          return json({ success: false, error: "Current password required" }, 400, headers);
+        }
+
+        const user = await env.DB.prepare("SELECT * FROM users WHERE id = ?")
+          .bind(session.user_id)
+          .first();
+
+        if (!user || !(await verifyPassword(body.current_password, user))) {
+          return json({ success: false, error: "Current password incorrect" }, 401, headers);
+        }
+
+        // Hash new password
+        const { hash, salt, type, iterations } = await hashPassword(body.new_password);
+        await env.DB.prepare(
+          `UPDATE users SET password_hash = ?, password_salt = ?, password_hash_type = ?, 
+           password_iterations = ? WHERE id = ?`
+        )
+          .bind(hash, salt, type, iterations, session.user_id)
+          .run();
+      }
+
+      // Update other fields
+      const updates = [];
+      const values = [];
+
+      if (body.first_name !== undefined) {
+        updates.push("first_name = ?");
+        values.push(body.first_name);
+      }
+      if (body.last_name !== undefined) {
+        updates.push("last_name = ?");
+        values.push(body.last_name);
+      }
+      if (body.social_handle !== undefined) {
+        updates.push("social_handle = ?");
+        values.push(body.social_handle);
+      }
+      if (body.email !== undefined) {
+        updates.push("email = ?");
+        values.push(body.email);
+      }
+      if (body.phone !== undefined) {
+        updates.push("phone = ?");
+        values.push(body.phone);
+      }
+      if (body.address !== undefined) {
+        updates.push("address = ?");
+        values.push(body.address);
+      }
+      if (body.city !== undefined) {
+        updates.push("city = ?");
+        values.push(body.city);
+      }
+      if (body.eircode !== undefined) {
+        updates.push("eircode = ?");
+        values.push(body.eircode);
+      }
+      if (body.instagram !== undefined) {
+        updates.push("instagram = ?");
+        values.push(body.instagram);
+      }
+      if (body.snapchat !== undefined) {
+        updates.push("snapchat = ?");
+        values.push(body.snapchat);
+      }
+      if (body.preferred_contact !== undefined) {
+        updates.push("preferred_contact = ?");
+        values.push(body.preferred_contact);
+      }
+
+      if (updates.length > 0) {
+        updates.push("updated_at = CURRENT_TIMESTAMP");
+        values.push(session.user_id);
+
+        await env.DB.prepare(
+          `UPDATE users SET ${updates.join(", ")} WHERE id = ?`
+        )
+          .bind(...values)
+          .run();
+      }
+
+      // Return updated user
+      const updatedUser = await env.DB.prepare(
+        `SELECT id, social_handle, email, phone, first_name, last_name, address, city, 
+         eircode, instagram, snapchat, preferred_contact, role FROM users WHERE id = ?`
+      )
+        .bind(session.user_id)
+        .first();
+
+      return json({
+        success: true,
+        message: "Profile updated successfully",
+        user: updatedUser
+      }, 200, headers);
+    }
+
+    // Delete user account (GDPR: Right to Erasure)
+    if (path === "/api/users/delete" && method === "DELETE") {
+      const ok = await assertCsrf(request, session);
+      if (!ok) return json({ success: false, error: "Invalid CSRF token" }, 403, headers);
+
+      try {
+        // GDPR Compliant: Soft delete - mark as inactive, keep data for legal/financial records
+        // This preserves order history and sell case records
+        await env.DB.prepare(
+          `UPDATE users SET 
+           is_active = 0,
+           email = NULL,
+           phone = NULL,
+           address = NULL,
+           city = NULL,
+           eircode = NULL,
+           social_handle = CONCAT('deleted_', id, '_', social_handle),
+           updated_at = CURRENT_TIMESTAMP
+           WHERE id = ?`
+        )
+          .bind(session.user_id)
+          .run();
+
+        // Delete all sessions for this user
+        await env.DB.prepare("DELETE FROM sessions WHERE user_id = ?")
+          .bind(session.user_id)
+          .run();
+
+        return json(
+          {
+            success: true,
+            message: "Account deleted. Your purchase and sell history has been anonymized.",
+          },
+          200,
+          { ...headers, "Set-Cookie": clearCookie() }
+        );
+      } catch (err) {
+        console.error("Delete user error:", err);
+        return json({ success: false, error: "Failed to delete account" }, 500, headers);
+      }
+    }
+
     // 404
     return json({ success: false, error: "Endpoint not found" }, 404, headers);
   } catch (err) {
     console.error("API error:", err);
-    return json({ success: false, error: "Internal server error" }, 500, secHeaders("", env));
+    console.error("Error stack:", err.stack);
+    console.error("Error message:", err.message);
+    return json({ success: false, error: "Internal server error", details: err.message }, 500, secHeaders("", env));
   }
 }

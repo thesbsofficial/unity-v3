@@ -2,19 +2,23 @@
 
 This directory contains PowerShell scripts for Cloudflare infrastructure setup and deployment automation.
 
-## Scripts
+## 🚀 Deployment Scripts
 
-### deploy-worker.ps1
+### deploy-production.ps1 ⭐ **USE THIS FOR PRODUCTION**
 
-Deploys standalone Cloudflare Workers (currently `workers/sbs-products-api.js`).
+Deploys to **production environment** (https://thesbsofficial.com)
 
 **Usage:**
-
 ```powershell
-.\scripts\deploy-worker.ps1 -WorkerName "sbs-products-api"
+.\scripts\deploy-production.ps1
 ```
 
-**Note:** The main app uses Pages Functions instead, so this is primarily for reference or future worker extraction.
+- ✅ Deploys to `main` branch (production)
+- ✅ Updates custom domain (thesbsofficial.com)
+- ✅ Uses `--commit-dirty=true` to force upload
+- ✅ Has access to production secrets/env vars
+
+## ⚙️ Setup Scripts
 
 ### setup-cloudflare-rules.ps1
 
@@ -24,20 +28,28 @@ Automated setup script for Cloudflare firewall rules, page rules, and security s
 
 Configures URL transform rules for the Cloudflare Pages deployment.
 
-## Current Deployment Method
+## 📝 Deployment Guide
 
-The primary deployment method is via Cloudflare Pages:
-
-```bash
-npx wrangler pages deploy public --project-name=unity-v3
+### Quick Deploy to Production:
+```powershell
+cd "C:\Users\fredb\Desktop\unity-v3\public (4)"
+.\scripts\deploy-production.ps1
 ```
 
-All API logic is in `/functions/api/[[path]].js` and auto-deploys with the Pages site.
+### Test Changes Before Production:
+- Use your local tooling or staging workflow of choice.
+- When you're satisfied, run `deploy-production.ps1` to publish.
+
+## 🔑 Important Notes
+
+- **Always use `deploy-production.ps1`** to update thesbsofficial.com (main branch)
+- Preview/alternate deployment scripts have been removed to avoid confusion
+- All API logic is in `/functions/api/[[path]].js` and auto-deploys with Pages
+- The `--commit-dirty=true` flag forces upload even with uncommitted git changes
 
 ## Future Considerations
 
 These scripts can be adapted if you decide to:
 
-- Extract specific APIs to standalone workers for better isolation
 - Set up multi-region deployments
-- Create staging/production environment automation
+- Create additional automation as needed

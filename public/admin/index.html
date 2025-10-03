@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -232,6 +233,7 @@
         }
     </style>
 </head>
+
 <body>
     <!-- Auth Check Screen -->
     <div id="authCheck" class="auth-check">
@@ -243,7 +245,12 @@
         <!-- Header -->
         <header class="admin-header">
             <div class="header-content">
-                <div class="logo">🎛️ SBS Unity Admin</div>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <a href="/" style="color: #999; text-decoration: none; font-size: 14px; padding: 6px 12px; border: 1px solid #333; border-radius: 6px; transition: all 0.2s;" onmouseover="this.style.color='#3b82f6'; this.style.borderColor='#3b82f6';" onmouseout="this.style.color='#999'; this.style.borderColor='#333';">
+                        ← Back to Shop
+                    </a>
+                    <div class="logo">🎛️ SBS Unity Admin</div>
+                </div>
                 <div class="user-info">
                     <span id="userName">Loading...</span>
                     <button class="btn-logout" onclick="logout()">Logout</button>
@@ -289,6 +296,9 @@
 
                 <div class="nav-section">
                     <div class="nav-title">Utilities</div>
+                    <a href="/debug.html" class="nav-link" style="background: rgba(59, 130, 246, 0.1); border-left: 3px solid #3b82f6;">
+                        <span>🔬</span> System Test
+                    </a>
                     <a href="/admin/system-check.html" class="nav-link">
                         <span>🔍</span> System Check
                     </a>
@@ -338,11 +348,7 @@
                     <div class="actions-grid">
                         <div class="action-btn" onclick="window.location.href='/admin/inventory/'">
                             <div class="action-icon">📦</div>
-                            <div class="action-label">Browse Inventory</div>
-                        </div>
-                        <div class="action-btn" onclick="window.location.href='/admin/inventory/sync.html'">
-                            <div class="action-icon">🔄</div>
-                            <div class="action-label">Sync CF Images</div>
+                            <div class="action-label">Manage Inventory</div>
                         </div>
                         <div class="action-btn" onclick="window.location.href='/admin/requests/'">
                             <div class="action-icon">📋</div>
@@ -351,6 +357,10 @@
                         <div class="action-btn" onclick="window.location.href='/admin/customers/'">
                             <div class="action-icon">👥</div>
                             <div class="action-label">Manage Customers</div>
+                        </div>
+                        <div class="action-btn" onclick="window.location.href='/debug.html'" style="border: 2px solid #3b82f6;">
+                            <div class="action-icon">🔬</div>
+                            <div class="action-label">System Test</div>
                         </div>
                     </div>
                 </div>
@@ -362,15 +372,22 @@
         // Auth Check (Session-based, NO PASSWORD)
         async function checkAuth() {
             try {
-                const response = await fetch('/api/session');
+                const response = await fetch('/api/users/me');
+
+                if (!response.ok) {
+                    // Not authenticated - redirect to login
+                    window.location.replace('/login.html?redirect=/admin/');
+                    return;
+                }
+
                 const data = await response.json();
 
-                if (data.authenticated && data.user?.role === 'admin') {
+                if (data.success && data.user?.role === 'admin') {
                     // Admin authenticated - show interface
                     document.getElementById('authCheck').style.display = 'none';
                     document.getElementById('adminInterface').style.display = 'block';
                     document.getElementById('userName').textContent = `@${data.user.social_handle || 'admin'}`;
-                    
+
                     // Load dashboard data
                     loadDashboardData();
                 } else {
@@ -406,7 +423,7 @@
         // Logout
         async function logout() {
             try {
-                await fetch('/api/logout', { method: 'POST' });
+                await fetch('/api/users/logout', { method: 'POST' });
             } catch (error) {
                 console.error('Logout failed:', error);
             }
@@ -417,4 +434,5 @@
         checkAuth();
     </script>
 </body>
+
 </html>

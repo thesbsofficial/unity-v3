@@ -197,6 +197,52 @@
             font-weight: bold;
         }
 
+        /* AUTH BUTTONS */
+        .btn-gold {
+            background: var(--primary-gold);
+            color: var(--primary-black);
+            border: 2px solid var(--primary-gold);
+            padding: 0.5rem 1.5rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+            font-family: inherit;
+        }
+
+        .btn-gold:hover {
+            background: transparent;
+            color: var(--primary-gold);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(255, 215, 0, 0.3);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--text-primary);
+            border: 2px solid var(--border-subtle);
+            padding: 0.5rem 1.5rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 0.85rem;
+            font-family: inherit;
+        }
+
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--text-primary);
+            transform: translateY(-2px);
+        }
+
         .nav-link {
             text-decoration: none;
             color: var(--text-primary);
@@ -624,7 +670,7 @@
     <header class="header">
         <nav class="nav">
             <div class="nav-left">
-                <a href="/" class="nav-link">Home</a>
+                <a href="/shop" class="nav-link">Shop</a>
                 <a href="/sell" class="nav-link">Sell</a>
             </div>
             <div class="nav-center">
@@ -634,8 +680,9 @@
                 </a>
             </div>
             <div class="nav-right">
-                <a href="/shop" class="nav-link">Shop</a>
-                <a href="/login" class="nav-link">Login</a>
+                <!-- Auth state dynamically updates this section -->
+                <a href="/login" class="nav-link">Sign In</a>
+                <a href="/register" class="btn-gold">Sign Up</a>
                 <button class="cart-toggle" onclick="toggleCart()">
                     Basket
                     <span class="cart-count" id="cart-count">0</span>
@@ -673,9 +720,16 @@
 
                     <div class="form-group">
                         <label for="password" class="required-label">Password</label>
-                        <input type="password" id="password" name="password" placeholder="Create a strong password"
-                            required minlength="12" autocomplete="new-password">
-                        <div class="form-help">Minimum 12 characters, mix of letters, numbers, and symbols.</div>
+                        <div style="position: relative;">
+                            <input type="password" id="password" name="password" placeholder="Create a password"
+                                required minlength="6" autocomplete="new-password" style="padding-right: 45px;">
+                            <button type="button" id="togglePassword"
+                                style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 1.2em; color: #666;"
+                                aria-label="Toggle password visibility">
+                                👁️
+                            </button>
+                        </div>
+                        <div class="form-help">Minimum 6 characters with at least 1 number</div>
                     </div>
 
                     <div class="form-row">
@@ -772,6 +826,35 @@
         }
 
         checkExistingSession();
+
+        // Toggle password visibility
+        document.getElementById('togglePassword').addEventListener('click', function () {
+            const passwordInput = document.getElementById('password');
+            const button = this;
+
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                button.textContent = '🙈'; // Hide icon
+                button.setAttribute('aria-label', 'Hide password');
+            } else {
+                passwordInput.type = 'password';
+                button.textContent = '👁️'; // Show icon
+                button.setAttribute('aria-label', 'Show password');
+            }
+        });
+
+        // Client-side password validation
+        document.getElementById('password').addEventListener('input', function () {
+            const password = this.value;
+            const hasNumber = /\d/.test(password);
+            const isLongEnough = password.length >= 6;
+
+            if (!isLongEnough || !hasNumber) {
+                this.setCustomValidity('Password must be at least 6 characters with at least 1 number');
+            } else {
+                this.setCustomValidity('');
+            }
+        });
 
         document.getElementById('registerForm').addEventListener('submit', async function (e) {
             e.preventDefault();
@@ -931,6 +1014,13 @@
 
             tryNextCdn();
         })();
+    </script>
+
+    <!-- Redirect if already logged in -->
+    <script>
+        if (sessionStorage.getItem('sbs_user') && sessionStorage.getItem('sbs_csrf_token')) {
+            window.location.href = '/dashboard.html';
+        }
     </script>
 </body>
 

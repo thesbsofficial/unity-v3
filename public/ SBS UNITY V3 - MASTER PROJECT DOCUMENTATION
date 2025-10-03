@@ -1,0 +1,498 @@
+
+
+---
+
+## STATIC IMAGE SYSTEM
+
+**Updated:** October 2, 2025 - Current icon and image implementation
+
+The project uses a static image system for all icons and visual elements instead of emoji characters.
+
+### Image Assets Structure
+`
+/assets/images/
+ sell-hero-image.png          - Hero image for sell page
+ shop-hero-image.png          - Hero image for shop page
+- SELL YOURE STREETWEAR.png    - Sell page banner
+
+/SBS (Your Story).png            - Main SBS logo (root level)
+`
+
+### Implementation Examples
+- Logo: <img src="/SBS (Your Story).png" alt="SBS">
+- Shop Hero: <img src="/assets/images/shop-hero-image.png" alt="SBS Shop" loading="lazy">
+- Sell Hero: <img src="/assets/images/sell-hero-image.png" alt="SBS Sell" loading="lazy">
+
+### Image File Formats
+- **Primary Format:** PNG for logos and icons
+- **Hero Images:** PNG format with lazy loading
+- **File Extensions:** .png, .jpg, .jpeg supported
+- **Location:** Static files served from /assets/images/
+
+**NOTE:** All emoji references in documentation are OUTDATED. The system now uses static image files exclusively.
+
+
+---
+
+## ICON SYSTEM - COMPLETE DOCUMENTATION
+
+**Updated:** October 2, 2025 - Current icon implementation across the platform
+
+### DUAL ICON SYSTEM IN USE:
+
+#### 1. UNICODE EMOJI ICONS (Admin Interface)
+**Location:** /admin/ interface and diagnostic tools
+**Method:** Direct Unicode characters in HTML
+**Purpose:** Admin navigation and status indicators
+
+**Admin Navigation Icons:**
+-  Overview (Dashboard home)
+-  Inventory (Stock management)
+-  Requests (User submissions)
+-  Customers (User management)
+-  Data (Database tools)
+-  Logs & Analytics (System monitoring)
+-  Security (Access control)
+-  Audit (System history)
+-  System Check (Health monitoring)
+-  API Status (Service monitoring)
+-  Diagnostics (System tools)
+
+**Quick Action Icons:**
+-  Browse Inventory
+-  Sync CF Images
+-  Review Requests
+-  Manage Customers
+
+**Status Icons (Diagnostic System):**
+-  Success/Online
+-  Loading/Processing
+-  Error/Offline
+-  Warning/Degraded
+
+**Implementation Example:**
+`html
+<a href="/admin/inventory/" class="nav-link">
+    <span></span> Inventory
+</a>
+
+<div class="action-icon"></div>
+`
+
+#### 2. STATIC IMAGE FILES (Public Site)
+**Location:** Public website (/, /shop, /sell)
+**Method:** Local PNG files via <img> tags
+**Purpose:** Branding and hero images
+
+**Static Assets:**
+`
+/assets/images/
+ sell-hero-image.png
+ shop-hero-image.png
+ SELL YOURE STREETWEAR.png
+
+/SBS (Your Story).png (main logo)
+`
+
+#### 3. CLOUDFLARE IMAGES CDN (Product Images)
+**Account Hash:** 7B8CAeDtA5h1f1Dyh_X-hg
+**Base URL:** https://imagedelivery.net/7B8CAeDtA5h1f1Dyh_X-hg/
+**Purpose:** Dynamic product inventory images
+
+**URL Pattern:** 
+`
+https://imagedelivery.net/{accountHash}/{imageId}/{transformations}
+`
+
+**Common Sizes:**
+- Shop Grid: w=360,h=640,fit=cover,quality=85,format=auto
+- Inventory: w=1920,h=1080
+- Admin Thumbnails: w=800,h=600
+
+### IMPLEMENTATION STRATEGY:
+1. **Admin Interface** = Unicode emoji for clean, fast loading
+2. **Public Site UI** = Static PNG files for branding consistency
+3. **Product Images** = Cloudflare CDN for performance and optimization
+
+**CSS Support:**
+`css
+.action-icon {
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+`
+
+**Fallback Strategy:**
+- Unicode emojis have excellent cross-platform support
+- Static images have loading="lazy" and error handlers
+- Cloudflare images have automatic format optimization
+
+
+---
+
+## MASTER PLAN CHECKLIST - OCTOBER 2025
+
+**Updated:** October 2, 2025 - Current implementation status and next actions
+
+### PHASE 0: FOUNDATION  COMPLETE
+- [x] Admin skeleton deployed to production
+- [x] Session-based authentication working  
+- [x] Navigation structure implemented
+- [x] File cleanup and organization
+- [x] Master documentation created
+- [x] Icon system documented
+
+### PHASE 1: ADMIN CORE  COMPLETE  
+- [x] Admin dashboard at /admin/ functional
+- [x] User authentication (GET /api/users/me)
+- [x] Logout functionality (POST /api/users/logout)
+- [x] Admin interface with navigation
+- [x] Quick actions and placeholder stats
+- [x] Diagnostic tools available
+
+### PHASE 2: INVENTORY SYSTEM  IN PROGRESS
+**PRIORITY: CURRENT FOCUS**
+
+#### Backend API (Next Up)
+- [ ] GET /api/admin/inventory (list with filters/pagination)
+- [ ] POST /api/admin/inventory/sync (CF Images sync)
+- [ ] PATCH /api/admin/inventory/bulk (bulk operations)
+- [ ] GET /api/admin/batches (batch management)
+- [ ] PATCH /api/admin/batches/:id (batch updates)
+
+#### Frontend Interface
+- [ ] Inventory browser with data grid
+- [ ] Filename parsing and filters (category, size, batch)
+- [ ] Search functionality with thumbnails
+- [ ] CF Images sync tool (one-click)
+- [ ] Batch console for daily management
+- [ ] Lock/unlock batches and assign aliases
+
+### PHASE 3: REQUESTS PIPELINE  FUTURE
+- [ ] Kanban board for request management
+- [ ] Drag-and-drop status updates
+- [ ] Offer calculator tool
+- [ ] Reply templates system
+- [ ] GET /api/admin/requests
+- [ ] PATCH /api/admin/requests/:id/status
+
+### PHASE 4: CRM SYSTEM  FUTURE
+- [ ] Customer hub with search
+- [ ] Customer detail drawer
+- [ ] Order history integration
+- [ ] Internal notes system
+- [ ] GET /api/admin/customers
+- [ ] GET /api/admin/customers/:id
+
+### PHASE 5: DATA MANAGEMENT  FUTURE
+- [ ] D1 table browser (read-only)
+- [ ] Saved views and custom filters
+- [ ] Safe editing with draft/apply
+- [ ] CSV export functionality
+
+### PHASE 6: LOGS & ANALYTICS  FUTURE
+- [ ] Request and error logs viewer
+- [ ] Key metrics dashboard
+- [ ] Latency and status code tracking
+- [ ] API endpoint usage stats
+
+### PHASE 7: SECURITY & AUDIT  FUTURE
+- [ ] Roles management UI
+- [ ] Active sessions viewer
+- [ ] Force logout functionality
+- [ ] Full audit log system
+
+### SECURITY UPGRADES NEEDED  CRITICAL
+- [ ] UPGRADE password hashing from SHA-256 to bcrypt
+- [ ] MOVE session storage from localStorage to HttpOnly cookies
+- [ ] ADD CSRF protection tokens
+- [ ] IMPLEMENT rate limiting (5 attempts/15min)
+- [ ] RESTRICT CORS from wildcard to whitelist
+
+### IMMEDIATE NEXT ACTIONS (This Week)
+
+#### 1. INVENTORY API ENDPOINTS (Priority 1)
+**File:** /functions/api/[[path]].js
+**Tasks:**
+- [ ] Create inventory list endpoint with filtering
+- [ ] Build CF Images sync functionality
+- [ ] Add batch management endpoints
+- [ ] Test with existing admin interface
+
+#### 2. SECURITY HARDENING (Priority 2) 
+**Files:** Authentication system
+**Tasks:**
+- [ ] Replace SHA-256 with bcrypt for passwords
+- [ ] Switch to HttpOnly cookies for sessions
+- [ ] Add basic rate limiting
+
+#### 3. INVENTORY FRONTEND (Priority 3)
+**File:** /admin/inventory/index.html
+**Tasks:**
+- [ ] Build data grid interface
+- [ ] Add filtering and search
+- [ ] Connect to new API endpoints
+- [ ] Test sync functionality
+
+### SUCCESS METRICS
+- [ ] Inventory system replaces need for CF Images dashboard
+- [ ] Admin can manage all batches from single interface
+- [ ] Security vulnerabilities addressed
+- [ ] Documentation stays current with implementation
+
+**NEXT REVIEW:** Weekly check on inventory system progress
+
+
+---
+
+## ACTION CHECKLIST - WORK FROM MASTER PLAN
+
+**Updated:** October 2, 2025 - Actionable tasks based on current roadmap
+
+### PHASE 0: HOUSEKEEPING (IMMEDIATE)
+**Status:** READY TO EXECUTE
+
+- [ ] **File Cleanup** (10 files identified)
+  - [ ] Move sell.html.backup-* files to archive
+  - [ ] Move nav-test-* and test-* files to archive  
+  - [ ] Delete DELETE ME/ directory
+  - [ ] Verify no broken references after cleanup
+
+### PHASE 1: ADMIN SKELETON (COMPLETED )
+**Status:** DONE - Live at https://thesbsofficial.com/admin/
+
+- [x] Admin dashboard skeleton
+- [x] Session-based authentication
+- [x] Navigation structure (7 phases)
+- [x] Overview page with stats placeholders
+- [x] Quick actions interface
+
+### PHASE 2: INVENTORY SYSTEM (IN PROGRESS )
+**Status:** NEXT PRIORITY - Start with API endpoints
+
+**Backend Tasks:**
+- [ ] **API Endpoint: GET /api/admin/inventory**
+  - [ ] Connect to Cloudflare Images API
+  - [ ] Parse filename system (CAT-SIZE-DATE format)
+  - [ ] Add pagination (50 items per page)
+  - [ ] Add filters (category, size, batch, date)
+  
+- [ ] **API Endpoint: POST /api/admin/inventory/sync**
+  - [ ] Fetch all CF Images via API
+  - [ ] Compare with D1 database
+  - [ ] Show sync status and differences
+  - [ ] Batch update D1 with new items
+
+- [ ] **API Endpoint: GET /api/admin/batches**
+  - [ ] Group images by batch identifier
+  - [ ] Show batch stats (count, date, status)
+  - [ ] Add batch locking/unlocking
+
+**Frontend Tasks:**
+- [ ] **Inventory Browser** (/admin/inventory/index.html)
+  - [ ] Data grid with image thumbnails
+  - [ ] Search and filter interface
+  - [ ] Bulk selection and actions
+  - [ ] Image preview modal
+  
+- [ ] **CF Images Sync Tool** (/admin/inventory/sync.html)
+  - [ ] One-click sync button
+  - [ ] Progress indicator
+  - [ ] Sync results display
+  - [ ] Reconciliation report
+
+- [ ] **Batch Console** (/admin/inventory/batches.html)
+  - [ ] Batch list with stats
+  - [ ] Lock/unlock batch controls
+  - [ ] Batch aliasing system
+  - [ ] Daily batch reports
+
+### PHASE 3: REQUESTS PIPELINE (FUTURE)
+**Status:** AFTER Phase 2 completion
+
+- [ ] **Kanban Board** (/admin/requests/index.html)
+- [ ] **Offer Calculator** tool
+- [ ] **Reply Templates** system
+- [ ] **API Endpoints:** requests management
+
+### PHASE 4: CRM SYSTEM (FUTURE)
+**Status:** AFTER Phase 3 completion
+
+- [ ] **Customer Hub** interface
+- [ ] **Customer Detail Drawer**
+- [ ] **Order History** integration
+- [ ] **Internal Notes** system
+
+### PHASE 5: DATA MANAGEMENT (FUTURE)
+**Status:** AFTER Phase 4 completion
+
+- [ ] **D1 Table Browser**
+- [ ] **Saved Views** system  
+- [ ] **Safe Edits** interface
+- [ ] **CSV Export** functionality
+
+### PHASE 6: LOGS & ANALYTICS (FUTURE)
+**Status:** AFTER Phase 5 completion
+
+- [ ] **Request/Error Logs**
+- [ ] **Key Metrics** dashboard
+- [ ] **Performance Monitoring**
+
+### PHASE 7: SECURITY & AUDIT (FUTURE)
+**Status:** AFTER Phase 6 completion
+
+- [ ] **Roles Manager**
+- [ ] **Active Sessions** monitor
+- [ ] **Full Audit Log**
+
+### SECURITY UPGRADES (PARALLEL PRIORITY)
+**Status:** CAN BE DONE ALONGSIDE PHASE 2
+
+- [ ] **Password Hashing Upgrade**
+  - [ ] Replace SHA-256 with bcrypt
+  - [ ] Migration script for existing users
+  - [ ] Test login flow
+
+- [ ] **Session Security**
+  - [ ] Move from localStorage to HttpOnly cookies
+  - [ ] Update login/logout logic
+  - [ ] Test authentication flow
+
+- [ ] **CSRF Protection**
+  - [ ] Add CSRF token generation
+  - [ ] Update all forms
+  - [ ] Validate on server side
+
+- [ ] **Rate Limiting**
+  - [ ] Implement 5 attempts per 15min
+  - [ ] Add IP tracking
+  - [ ] Error handling for blocked users
+
+### IMMEDIATE NEXT STEPS (TODAY/THIS WEEK):
+1. **File Housekeeping** - Move identified backup/test files
+2. **Start Phase 2** - Begin with inventory API endpoints
+3. **Security Review** - Plan bcrypt upgrade implementation
+
+### SUCCESS METRICS:
+- **Phase 2 Complete:** Full inventory management without CF dashboard
+- **Security Hardened:** All authentication vulnerabilities resolved  
+- **Admin Efficiency:** 50% faster inventory operations vs manual CF dashboard
+
+
+---
+
+## ACTIVE DEVELOPMENT CHECKLIST
+
+**Updated:** October 2, 2025 (11:55 PM) - Current work queue based on roadmap
+
+### PHASE 2: INVENTORY SYSTEM (IN PROGRESS)
+
+#### Step 1: Create Inventory Browser Page
+- [ ] Create /admin/inventory/index.html
+- [ ] Build data grid UI with columns: Thumbnail, Filename, Category, Size, Batch, Date
+- [ ] Implement table sorting (click column headers)
+- [ ] Add pagination controls (25/50/100 per page)
+- [ ] Style with dark theme matching admin dashboard
+
+#### Step 2: Add Filtering System
+- [ ] Category dropdown filter (Shoes, Clothing, Accessories, Other)
+- [ ] Size dropdown filter (all sizes from filename)
+- [ ] Batch dropdown filter (all batch IDs)
+- [ ] Date range picker
+- [ ] Search box for filename text search
+- [ ] "Clear Filters" button
+
+#### Step 3: Integrate Cloudflare Images
+- [ ] Create API endpoint: GET /api/admin/inventory
+- [ ] Fetch images from Cloudflare Images API
+- [ ] Parse filenames to extract metadata
+- [ ] Display thumbnails using imagedelivery.net URLs
+- [ ] Handle loading states and errors
+
+#### Step 4: Build Sync Tool
+- [ ] Create /admin/inventory/sync.html
+- [ ] Add "Sync Now" button
+- [ ] Create API endpoint: POST /api/admin/inventory/sync
+- [ ] Show sync progress (X of Y images processed)
+- [ ] Display sync results (new/updated/unchanged)
+- [ ] Update D1 database with synced data
+
+#### Step 5: Batch Management Console
+- [ ] Create /admin/inventory/batches.html
+- [ ] List all batches with counts
+- [ ] Show batch stats (total items, date created)
+- [ ] Add lock/unlock batch toggle
+- [ ] Batch alias input field
+- [ ] Save batch metadata to D1
+
+### PHASE 3: REQUESTS PIPELINE (NEXT)
+
+#### Step 1: Create Requests Dashboard
+- [ ] Create /admin/requests/index.html
+- [ ] Fetch sell requests from D1 database
+- [ ] Display in card/list view
+- [ ] Show request status badges
+
+#### Step 2: Build Kanban Board
+- [ ] Implement drag-and-drop columns
+- [ ] Status columns: Pending, Reviewing, Accepted, Declined, Completed
+- [ ] Update request status via API
+- [ ] Visual feedback on drag operations
+
+#### Step 3: Offer Calculator
+- [ ] Create calculator UI component
+- [ ] Input fields: base price, condition, demand multiplier
+- [ ] Calculate offer automatically
+- [ ] Save offer to request record
+
+#### Step 4: Reply Templates
+- [ ] Create template editor
+- [ ] Pre-written templates: Accepted, Declined, More Info Needed
+- [ ] Variable replacement (customer name, item, offer)
+- [ ] Send reply via API
+
+### IMMEDIATE NEXT ACTIONS (Priority Order)
+
+1. [ ] **Create /admin/inventory/ directory structure**
+2. [ ] **Build inventory browser HTML page (index.html)**
+3. [ ] **Create API endpoint: GET /api/admin/inventory**
+4. [ ] **Test inventory display with Cloudflare Images**
+5. [ ] **Add filtering controls**
+6. [ ] **Implement pagination**
+7. [ ] **Build sync tool page**
+8. [ ] **Create sync API endpoint**
+9. [ ] **Test full sync workflow**
+10. [ ] **Build batch management console**
+
+### API ENDPOINTS TO BUILD (In Order)
+
+1. [ ] GET /api/admin/inventory - List all items with filters
+2. [ ] POST /api/admin/inventory/sync - Sync with Cloudflare Images
+3. [ ] GET /api/admin/batches - List all batches
+4. [ ] PATCH /api/admin/batches/:id - Update batch metadata
+5. [ ] PATCH /api/admin/inventory/bulk - Bulk update items
+
+### CURRENT BLOCKERS
+
+- [ ] None identified - ready to start Phase 2
+
+### TESTING CHECKLIST
+
+- [ ] Admin authentication works
+- [ ] Cloudflare Images API accessible
+- [ ] D1 database queries working
+- [ ] Image thumbnails loading
+- [ ] Filters updating results
+- [ ] Pagination working correctly
+- [ ] Sync tool updates database
+
+### DEPLOYMENT CHECKLIST
+
+- [ ] Test on local dev environment
+- [ ] Deploy to Cloudflare Pages
+- [ ] Verify admin access
+- [ ] Test all inventory features
+- [ ] Monitor for errors
+- [ ] Update master documentation
