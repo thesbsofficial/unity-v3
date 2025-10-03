@@ -26,7 +26,17 @@ export async function onRequestPatch({ request, env }) {
             'SELECT u.*, s.user_id FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.session_id = ? AND s.expires_at > ?'
         ).bind(sessionId, Date.now()).first();
 
-        if (!userResult || !userResult.is_admin) {
+        if (!userResult) {
+            return new Response(JSON.stringify({ 
+                success: false, 
+                error: 'Session not found or expired' 
+            }), {
+                status: 401,
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
+
+        if (userResult.role !== 'admin') {
             return new Response(JSON.stringify({ 
                 success: false, 
                 error: 'Admin access required' 

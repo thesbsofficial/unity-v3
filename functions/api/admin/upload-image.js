@@ -27,10 +27,21 @@ export async function onRequestPost({ request, env }) {
             'SELECT u.*, s.user_id FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.session_id = ? AND s.expires_at > ?'
         ).bind(sessionId, Date.now()).first();
 
-        if (!userResult || !userResult.is_admin) {
+        if (!userResult) {
             return new Response(JSON.stringify({ 
                 success: false, 
-                error: 'Admin access required' 
+                error: 'Session not found or expired. Please log in again.' 
+            }), {
+                status: 401,
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
+
+        // Check if user is admin (role = 'admin')
+        if (userResult.role !== 'admin') {
+            return new Response(JSON.stringify({ 
+                success: false, 
+                error: 'Admin access required. Your account role is: ' + (userResult.role || 'user') 
             }), {
                 status: 403,
                 headers: { 'Content-Type': 'application/json' }
