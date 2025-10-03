@@ -1,1 +1,3 @@
-# NO REDIRECTS - Let Cloudflare Transform Rules handle everything
+# Redirect all pages.dev URLs to custom domain
+https://unity-v3.pages.dev/* https://thesbsofficial.com/:splat 301!
+https://*.unity-v3.pages.dev/* https://thesbsofficial.com/:splat 301!
