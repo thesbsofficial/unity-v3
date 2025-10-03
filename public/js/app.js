@@ -188,7 +188,7 @@
     const ErrorHandler = {
         errors: [],
         maxErrors: 50,
-        sessionId: this.generateSessionId?.() || 'SBS_' + Date.now(),
+        sessionId: 'SBS_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
 
         // Generate session ID
         generateSessionId() {

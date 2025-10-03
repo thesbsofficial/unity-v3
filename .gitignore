@@ -8,8 +8,12 @@ functions/.wrangler/
 # Environment variables and local configs
 .env
 .env.*
+*.env
+cloudflare.env
 wrangler.toml.local
 *.local
+secrets.txt
+credentials.txt
 
 # Logs and debug output
 npm-debug.log*
@@ -28,6 +32,8 @@ AUTH-SYSTEM-REVIEW/
 AUTH-SYSTEM-REVIEW.zip
 sbs-backups/
 *MOVE-OUT-THEN-DELETE*/
+PRODUCTION-READY-BACKUP-*/
+WORKING-VERSION/
 *.bak
 *.tmp
 
