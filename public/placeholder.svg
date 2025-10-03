@@ -1,0 +1,8 @@
+<svg width="300" height="300" xmlns="http://www.w3.org/2000/svg">
+  <rect width="100%" height="100%" fill="#1a1a1a"/>
+  <rect x="20" y="20" width="260" height="260" fill="none" stroke="#333" stroke-width="2" stroke-dasharray="8,4"/>
+  <text x="50%" y="45%" text-anchor="middle" fill="#666" font-family="Arial, sans-serif" font-size="16">SBS UNITY</text>
+  <text x="50%" y="55%" text-anchor="middle" fill="#666" font-family="Arial, sans-serif" font-size="14">Image Loading...</text>
+  <circle cx="150" cy="180" r="20" fill="none" stroke="#666" stroke-width="2"/>
+  <path d="M140 180 L150 190 L160 170" fill="none" stroke="#666" stroke-width="2"/>
+</svg>

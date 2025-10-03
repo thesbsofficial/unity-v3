@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Email - SBS</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-black: #000000;
+            --primary-gold: #ffd700;
+            --bg-dark: #0a0a0a;
+            --bg-card: #1a1a1a;
+            --text-primary: #ffffff;
+            --text-secondary: #cccccc;
+            --border-subtle: rgba(255, 255, 255, 0.1);
+            --success-green: #4caf50;
+            --error-red: #f44336;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .logo {
+            color: var(--primary-gold);
+            font-size: 3rem;
+            font-weight: 900;
+            margin-bottom: 1rem;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 3rem 2rem;
+            margin-top: 2rem;
+        }
+
+        .spinner {
+            border: 4px solid var(--border-subtle);
+            border-top: 4px solid var(--primary-gold);
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1.5rem;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        h1 {
+            font-size: 1.75rem;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        p {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .btn {
+            display: inline-block;
+            background: var(--primary-gold);
+            color: var(--primary-black);
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            margin-top: 1.5rem;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 215, 0, 0.3);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border-subtle);
+            color: var(--text-primary);
+        }
+
+        .btn-outline:hover {
+            border-color: var(--primary-gold);
+            color: var(--primary-gold);
+        }
+
+        .success {
+            color: var(--success-green);
+        }
+
+        .error {
+            color: var(--error-red);
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="logo">SBS</div>
+        <p style="color: var(--text-secondary);">Dublin's Premier Streetwear</p>
+
+        <div class="card">
+            <!-- Loading State -->
+            <div id="loading-state">
+                <div class="spinner"></div>
+                <h1>Verifying Your Email...</h1>
+                <p>Please wait while we confirm your email address.</p>
+            </div>
+
+            <!-- Success State -->
+            <div id="success-state" class="hidden">
+                <div class="icon">✅</div>
+                <h1 class="success">Email Verified!</h1>
+                <p>Your email has been successfully verified. You can now login and start using SBS Unity.</p>
+                <a href="/login.html" class="btn">Go to Login</a>
+            </div>
+
+            <!-- Error State -->
+            <div id="error-state" class="hidden">
+                <div class="icon">⚠️</div>
+                <h1 class="error">Verification Failed</h1>
+                <p id="error-message">This verification link is invalid or has expired.</p>
+                <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                    <button onclick="resendEmail()" class="btn-outline btn" id="resend-btn">Resend Email</button>
+                    <a href="/login.html" class="btn">Go to Login</a>
+                </div>
+            </div>
+
+            <!-- Resend Success State -->
+            <div id="resend-state" class="hidden">
+                <div class="icon">📧</div>
+                <h1>Email Sent!</h1>
+                <p>Check your inbox for a new verification link.</p>
+                <a href="/login.html" class="btn">Go to Login</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function verifyEmail() {
+            // Get token from URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const token = urlParams.get('token');
+
+            if (!token) {
+                showError('No verification token provided.');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/verify-email', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ token })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showSuccess();
+                } else {
+                    showError(data.error || 'Verification failed.');
+                }
+            } catch (error) {
+                console.error('Verification error:', error);
+                showError('Network error. Please try again.');
+            }
+        }
+
+        function showSuccess() {
+            document.getElementById('loading-state').classList.add('hidden');
+            document.getElementById('error-state').classList.add('hidden');
+            document.getElementById('resend-state').classList.add('hidden');
+            document.getElementById('success-state').classList.remove('hidden');
+        }
+
+        function showError(message) {
+            document.getElementById('loading-state').classList.add('hidden');
+            document.getElementById('success-state').classList.add('hidden');
+            document.getElementById('resend-state').classList.add('hidden');
+            document.getElementById('error-state').classList.remove('hidden');
+            document.getElementById('error-message').textContent = message;
+        }
+
+        async function resendEmail() {
+            const email = prompt('Enter your email address:');
+            if (!email) return;
+
+            const btn = document.getElementById('resend-btn');
+            btn.textContent = 'Sending...';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('/api/resend-verification', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    document.getElementById('loading-state').classList.add('hidden');
+                    document.getElementById('success-state').classList.add('hidden');
+                    document.getElementById('error-state').classList.add('hidden');
+                    document.getElementById('resend-state').classList.remove('hidden');
+                } else {
+                    alert(data.error || 'Failed to send email');
+                    btn.textContent = 'Resend Email';
+                    btn.disabled = false;
+                }
+            } catch (error) {
+                console.error('Resend error:', error);
+                alert('Network error. Please try again.');
+                btn.textContent = 'Resend Email';
+                btn.disabled = false;
+            }
+        }
+
+        // Auto-verify on page load
+        verifyEmail();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Account - SBS</title>
+
+    <style>
+        /* CSS RESET & VARIABLES */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-black: #000000;
+            --primary-gold: #ffd700;
+            --bg-dark: #0a0a0a;
+            --bg-card: #1a1a1a;
+            --text-primary: #ffffff;
+            --text-secondary: #cccccc;
+            --border-subtle: rgba(255, 255, 255, 0.1);
+            --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.3);
+            --success-green: #4caf50;
+            --warning-orange: #ff9800;
+            --danger-red: #f44336;
+        }
+
+        html {
+            overflow-x: hidden;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        .header {
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-subtle);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            padding: 1rem 0;
+        }
+
+        .nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .nav-left {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-center {
+            display: flex;
+            justify-content: center;
+        }
+
+        .nav-right {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+            justify-content: flex-end;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: var(--primary-gold);
+            font-size: 1.5rem;
+            font-weight: 900;
+        }
+
+        .nav-link {
+            color: var(--text-primary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: var(--primary-gold);
+        }
+
+        .btn-gold {
+            background: var(--primary-gold);
+            color: var(--primary-black);
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-gold:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 215, 0, 0.3);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--text-primary);
+            padding: 0.75rem 1.5rem;
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .btn-outline:hover {
+            border-color: var(--primary-gold);
+            color: var(--primary-gold);
+        }
+
+        .btn-danger {
+            background: var(--danger-red);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-danger:hover {
+            background: #d32f2f;
+            transform: translateY(-2px);
+        }
+
+        /* Main Content */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+        }
+
+        .page-header {
+            margin-bottom: 3rem;
+        }
+
+        .page-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        /* Dashboard Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 1.5rem;
+            height: fit-content;
+            border: 1px solid var(--border-subtle);
+        }
+
+        .profile-section {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            background: var(--primary-gold);
+            border-radius: 50%;
+            margin: 0 auto 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--primary-black);
+        }
+
+        .profile-name {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .profile-email {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+        }
+
+        .sidebar-menu li {
+            margin-bottom: 0.5rem;
+        }
+
+        .sidebar-menu a,
+        .sidebar-menu button {
+            display: block;
+            padding: 0.75rem 1rem;
+            color: var(--text-primary);
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            border: none;
+            background: transparent;
+            width: 100%;
+            text-align: left;
+            font-size: 1rem;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        .sidebar-menu a:hover,
+        .sidebar-menu button:hover {
+            background: rgba(255, 215, 0, 0.1);
+            color: var(--primary-gold);
+        }
+
+        .sidebar-menu a.active {
+            background: var(--primary-gold);
+            color: var(--primary-black);
+            font-weight: 600;
+        }
+
+        /* Main Content Area */
+        .main-content {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 2rem;
+            border: 1px solid var(--border-subtle);
+        }
+
+        .section {
+            margin-bottom: 3rem;
+        }
+
+        .section:last-child {
+            margin-bottom: 0;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .section-link {
+            color: var(--primary-gold);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        /* Cards */
+        .card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .card-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .badge-pending {
+            background: rgba(255, 152, 0, 0.2);
+            color: var(--warning-orange);
+        }
+
+        .badge-delivered {
+            background: rgba(76, 175, 80, 0.2);
+            color: var(--success-green);
+        }
+
+        .badge-reviewing {
+            background: rgba(33, 150, 243, 0.2);
+            color: #2196f3;
+        }
+
+        .badge-offered {
+            background: rgba(156, 39, 176, 0.2);
+            color: #9c27b0;
+        }
+
+        .card-details {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.8;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--text-secondary);
+        }
+
+        .empty-state svg {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 1rem;
+            opacity: 0.3;
+        }
+
+        /* Loading State */
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-secondary);
+        }
+
+        .spinner {
+            border: 3px solid var(--border-subtle);
+            border-top: 3px solid var(--primary-gold);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* GDPR Section */
+        .gdpr-section {
+            background: rgba(255, 68, 68, 0.05);
+            border: 1px solid rgba(255, 68, 68, 0.2);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-top: 3rem;
+        }
+
+        .gdpr-section h3 {
+            color: var(--danger-red);
+            margin-bottom: 1rem;
+        }
+
+        .gdpr-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .gdpr-actions {
+                flex-direction: column;
+            }
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .modal-header {
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="nav">
+            <div class="nav-left">
+                <a href="/shop" class="nav-link">Shop</a>
+                <a href="/sell" class="nav-link">Sell</a>
+            </div>
+            <div class="nav-center">
+                <a href="/" class="logo">
+                    <img src="/SBS (Your Story).png" alt="SBS"
+                        onerror="this.style.display='none'; this.parentNode.innerHTML='SBS'">
+                </a>
+            </div>
+            <div class="nav-right">
+                <!-- Auth state dynamically updates this section -->
+                <a href="/dashboard" class="nav-link">Dashboard</a>
+                <button class="cart-toggle" onclick="toggleCart()">
+                    Basket
+                    <span class="cart-count" id="cart-count">0</span>
+                </button>
+                <button class="btn-outline" id="signOutBtn">Sign Out</button>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container">
+        <div class="page-header">
+            <h1 class="page-title">My Account</h1>
+            <p class="page-subtitle">Manage your orders, sell submissions, and account settings</p>
+        </div>
+
+        <div class="dashboard-grid">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <div class="profile-section">
+                    <div class="profile-avatar" id="profileAvatar">?</div>
+                    <div class="profile-name" id="profileName">Loading...</div>
+                    <div class="profile-email" id="profileEmail"></div>
+                </div>
+
+                <ul class="sidebar-menu">
+                    <li><a href="#" class="active" data-section="overview">Overview</a></li>
+                    <li style="margin-top: 1rem; padding: 0.5rem 0; border-top: 1px solid var(--border-subtle);">
+                        <strong style="color: var(--primary-gold); font-size: 0.85rem; padding: 0 1rem; display: block; margin-bottom: 0.5rem;">BUY</strong>
+                    </li>
+                    <li><a href="#" data-section="orders">My Orders</a></li>
+                    <li style="margin-top: 1rem; padding: 0.5rem 0; border-top: 1px solid var(--border-subtle);">
+                        <strong style="color: var(--primary-gold); font-size: 0.85rem; padding: 0 1rem; display: block; margin-bottom: 0.5rem;">SELL</strong>
+                    </li>
+                    <li><a href="#" data-section="submissions">My Sales</a></li>
+                    <li style="margin-top: 1rem; padding: 0.5rem 0; border-top: 1px solid var(--border-subtle);">
+                        <strong style="color: var(--primary-gold); font-size: 0.85rem; padding: 0 1rem; display: block; margin-bottom: 0.5rem;">SETTINGS</strong>
+                    </li>
+                    <li><a href="#" data-section="profile">Edit Profile</a></li>
+                    <li><a href="#" data-section="settings">Privacy & Data</a></li>
+                </ul>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="main-content" id="mainContent">
+                <!-- Content loads here dynamically -->
+            </main>
+        </div>
+    </div>
+
+    <!-- Delete Account Modal -->
+    <div class="modal" id="deleteModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">⚠️ Delete Account</h3>
+                <p style="color: var(--text-secondary); margin-top: 0.5rem;">
+                    This action cannot be undone. All your data will be permanently deleted.
+                </p>
+            </div>
+            <div>
+                <p style="margin-bottom: 1rem;">Please type <strong>DELETE</strong> to confirm:</p>
+                <input type="text" id="deleteConfirm" placeholder="Type DELETE"
+                    style="width: 100%; padding: 0.75rem; background: var(--bg-dark); border: 1px solid var(--border-subtle); border-radius: 8px; color: var(--text-primary); font-size: 1rem;">
+            </div>
+            <div class="modal-actions">
+                <button class="btn-outline" onclick="closeDeleteModal()">Cancel</button>
+                <button class="btn-danger" onclick="confirmDelete()">Delete Account</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Auth Check
+        function checkAuth() {
+            const user = sessionStorage.getItem('sbs_user');
+            const token = sessionStorage.getItem('sbs_csrf_token');
+
+            if (!user || !token) {
+                window.location.href = '/login.html';
+                return null;
+            }
+
+            return JSON.parse(user);
+        }
+
+        // Load user profile
+        function loadProfile() {
+            const user = checkAuth();
+            if (!user) return;
+
+            // Set profile info
+            const firstName = user.first_name || 'User';
+            const lastName = user.last_name || '';
+            const initials = (firstName[0] + (lastName[0] || '')).toUpperCase();
+
+            document.getElementById('profileAvatar').textContent = initials;
+            document.getElementById('profileName').textContent = `${firstName} ${lastName}`.trim();
+            document.getElementById('profileEmail').textContent = user.email || '';
+        }
+
+        // Sign Out
+        document.getElementById('signOutBtn').addEventListener('click', () => {
+            sessionStorage.clear();
+            window.location.href = '/login.html';
+        });
+
+        // Load section content
+        async function loadSection(section) {
+            const content = document.getElementById('mainContent');
+            content.innerHTML = '<div class="loading"><div class="spinner"></div><p>Loading...</p></div>';
+
+            // Update active menu item
+            document.querySelectorAll('.sidebar-menu a').forEach(link => {
+                link.classList.toggle('active', link.dataset.section === section);
+            });
+
+            // Load appropriate content
+            switch (section) {
+                case 'overview':
+                    await loadOverview();
+                    break;
+                case 'orders':
+                    await loadOrders();
+                    break;
+                case 'submissions':
+                    await loadSubmissions();
+                    break;
+                case 'profile':
+                    loadProfileEdit();
+                    break;
+                case 'settings':
+                    loadSettings();
+                    break;
+            }
+        }
+
+        // Load Overview
+        async function loadOverview() {
+            const content = document.getElementById('mainContent');
+            const user = JSON.parse(sessionStorage.getItem('sbs_user'));
+            const token = sessionStorage.getItem('sbs_csrf_token');
+
+            content.innerHTML = `
+                <div class="section">
+                    <div class="section-header">
+                        <h2 class="section-title">Recent Orders</h2>
+                        <a href="#" class="section-link" onclick="loadSection('orders'); return false;">View all</a>
+                    </div>
+                    <div id="recentOrders" class="loading"><div class="spinner"></div></div>
+                </div>
+
+                <div class="section">
+                    <div class="section-header">
+                        <h2 class="section-title">Recent Submissions</h2>
+                        <a href="#" class="section-link" onclick="loadSection('submissions'); return false;">View all</a>
+                    </div>
+                    <div id="recentSubmissions" class="loading"><div class="spinner"></div></div>
+                </div>
+            `;
+
+            // Load data (placeholder - will need API endpoints)
+            setTimeout(() => {
+                document.getElementById('recentOrders').innerHTML = `
+                    <div class="empty-state">
+                        <p>No orders yet. <a href="/shop.html" style="color: var(--primary-gold);">Start shopping!</a></p>
+                    </div>
+                `;
+                document.getElementById('recentSubmissions').innerHTML = `
+                    <div class="empty-state">
+                        <p>No submissions yet. <a href="/sell.html" style="color: var(--primary-gold);">Sell your items!</a></p>
+                    </div>
+                `;
+            }, 500);
+        }
+
+        // Load Orders
+        async function loadOrders() {
+            const content = document.getElementById('mainContent');
+            content.innerHTML = `
+                <div class="section">
+                    <div class="section-header">
+                        <h2 class="section-title">My Orders</h2>
+                    </div>
+                    <div class="empty-state">
+                        <p>You haven't placed any orders yet.</p>
+                        <a href="/shop.html" class="btn-gold" style="display: inline-block; margin-top: 1rem;">Browse Shop</a>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Load Submissions
+        async function loadSubmissions() {
+            const content = document.getElementById('mainContent');
+            content.innerHTML = `
+                <div class="section">
+                    <div class="section-header">
+                        <h2 class="section-title">My Sell Submissions</h2>
+                    </div>
+                    <div class="empty-state">
+                        <p>You haven't submitted any items yet.</p>
+                        <a href="/sell.html" class="btn-gold" style="display: inline-block; margin-top: 1rem;">Sell Items</a>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Load Edit Profile Form
+        function loadProfileEdit() {
+            const user = JSON.parse(sessionStorage.getItem('sbs_user'));
+            const content = document.getElementById('mainContent');
+
+            content.innerHTML = `
+                <div class="section">
+                    <div class="section-header">
+                        <h2 class="section-title">Edit Profile</h2>
+                    </div>
+
+                    <form id="profileForm" style="max-width: 600px;">
+                        <div class="card">
+                            <h3 style="margin-bottom: 1.5rem; color: var(--primary-gold);">Personal Information</h3>
+                            
+                            <div style="display: grid; gap: 1.5rem;">
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                    <div>
+                                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">First Name</label>
+                                        <input type="text" id="edit-first-name" value="${user.first_name || ''}" 
+                                               style="width: 100%; padding: 0.75rem; background: var(--bg-dark); border: 1px solid var(--border-subtle); border-radius: 8px; color: var(--text-primary); font-size: 1rem;">
+                                    </div>
+                                    <div>
+                                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Last Name</label>
+                                        <input type="text" id="edit-last-name" value="${user.last_name || ''}"
+                                               style="width: 100%; padding: 0.75rem; background: var(--bg-dark); border: 1px solid var(--border-subtle); border-radius: 8px; color: var(--text-primary); font-size: 1rem;">
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Username (Social Handle)</label>
+                                    <input type="text" id="edit-social-handle" value="${user.social_handle || ''}"
+                                           style="width: 100%; padding: 0.75rem; background: var(--bg-dark); border: 1px solid var(--border-subtle); border-radius: 8px; color: var(--text-primary); font-size: 1rem;">
+                                    <small style="color: var(--text-secondary); display: block; margin-top: 0.25rem;">Used for login</small>
+                                </div>
+
+                                <div>
+                                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Email</label>
+                                    <input type="email" id="edit-email" value="${user.email || ''}"
+                                           style="width: 100%; padding: 0.75rem; background: var(--bg-dark); border: 1px solid var(--border-subtle); border-radius: 8px; color: var(--text-primary); font-size: 1rem;">
+                                </div>
+
+                                <div>
+                                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Phone</label>
+                                    <input type="tel" id="edit-phone" value="${user.phone || ''}" placeholder="+353..."
+                                           style="width: 100%; padding: 0.75rem; background: var(--bg-dark); border: 1px solid var(--border-subtle); border-radius: 8px; color: var(--text-primary); font-size: 1rem;">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card" style="margin-top: 1.5rem;">
+                            <h3 style="margin-bottom: 1.5rem; color: var(--primary-gold);">Address</h3>
+                            
+                            <div style="display: grid; gap: 1.5rem;">
+                                <div>
+                                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Street Address</label>
+                                    <input type="text" id="edit-address" value="${user.address || ''}"
+                                           style="width: 100%; padding: 0.75rem; background: var(--bg-dark); border: 1px solid var(--border-subtle); border-radius: 8px; color: var(--text-primary); font-size: 1rem;">
+                                </div>
+
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                    <div>
+                                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">City</label>
+                                        <input type="text" id="edit-city" value="${user.city || 'Dublin'}"
+                                               style="width: 100%; padding: 0.75rem; background: var(--bg-dark); border: 1px solid var(--border-subtle); border-radius: 8px; color: var(--text-primary); font-size: 1rem;">
+                                    </div>
+                                    <div>
+                                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Eircode</label>
+                                        <input type="text" id="edit-eircode" value="${user.eircode || ''}"
+                                               style="width: 100%; padding: 0.75rem; background: var(--bg-dark); border: 1px solid var(--border-subtle); border-radius: 8px; color: var(--text-primary); font-size: 1rem;">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card" style="margin-top: 1.5rem;">
+                            <h3 style="margin-bottom: 1.5rem; color: var(--primary-gold);">Social Media Handles</h3>
+                            
+                            <div style="display: grid; gap: 1.5rem;">
+                                <div>
+                                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">📸 Instagram</label>
+                                    <input type="text" id="edit-instagram" value="${user.instagram || ''}" placeholder="@yourusername"
+                                           style="width: 100%; padding: 0.75rem; background: var(--bg-dark); border: 1px solid var(--border-subtle); border-radius: 8px; color: var(--text-primary); font-size: 1rem;">
+                                </div>
+
+                                <div>
+                                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">👻 Snapchat</label>
+                                    <input type="text" id="edit-snapchat" value="${user.snapchat || ''}" placeholder="yourusername"
+                                           style="width: 100%; padding: 0.75rem; background: var(--bg-dark); border: 1px solid var(--border-subtle); border-radius: 8px; color: var(--text-primary); font-size: 1rem;">
+                                </div>
+
+                                <div>
+                                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Preferred Contact Method</label>
+                                    <select id="edit-preferred-contact"
+                                            style="width: 100%; padding: 0.75rem; background: var(--bg-dark); border: 1px solid var(--border-subtle); border-radius: 8px; color: var(--text-primary); font-size: 1rem;">
+                                        <option value="instagram" ${user.preferred_contact === 'instagram' ? 'selected' : ''}>Instagram</option>
+                                        <option value="snapchat" ${user.preferred_contact === 'snapchat' ? 'selected' : ''}>Snapchat</option>
+                                        <option value="phone" ${user.preferred_contact === 'phone' ? 'selected' : ''}>Phone</option>
+                                        <option value="email" ${user.preferred_contact === 'email' ? 'selected' : ''}>Email</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card" style="margin-top: 1.5rem; background: rgba(255, 215, 0, 0.05); border-color: rgba(255, 215, 0, 0.2);">
+                            <h3 style="margin-bottom: 1.5rem; color: var(--primary-gold);">🔒 Change Password</h3>
+                            
+                            <div style="display: grid; gap: 1.5rem;">
+                                <div>
+                                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Current Password</label>
+                                    <input type="password" id="edit-current-password" placeholder="Enter current password"
+                                           style="width: 100%; padding: 0.75rem; background: var(--bg-dark); border: 1px solid var(--border-subtle); border-radius: 8px; color: var(--text-primary); font-size: 1rem;">
+                                </div>
+
+                                <div>
+                                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">New Password</label>
+                                    <input type="password" id="edit-new-password" placeholder="Enter new password"
+                                           style="width: 100%; padding: 0.75rem; background: var(--bg-dark); border: 1px solid var(--border-subtle); border-radius: 8px; color: var(--text-primary); font-size: 1rem;">
+                                    <small style="color: var(--text-secondary); display: block; margin-top: 0.25rem;">Leave blank to keep current password</small>
+                                </div>
+
+                                <div>
+                                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Confirm New Password</label>
+                                    <input type="password" id="edit-confirm-password" placeholder="Confirm new password"
+                                           style="width: 100%; padding: 0.75rem; background: var(--bg-dark); border: 1px solid var(--border-subtle); border-radius: 8px; color: var(--text-primary); font-size: 1rem;">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                            <button type="submit" class="btn-gold" style="flex: 1; padding: 1rem; font-size: 1rem; border: none; cursor: pointer;">
+                                💾 Save Changes
+                            </button>
+                            <button type="button" onclick="loadSection('overview')" class="btn-outline" style="padding: 1rem 2rem; font-size: 1rem; cursor: pointer;">
+                                Cancel
+                            </button>
+                        </div>
+
+                        <div id="profile-message" style="margin-top: 1rem; padding: 1rem; border-radius: 8px; display: none;"></div>
+                    </form>
+                </div>
+            `;
+
+            // Handle form submission
+            document.getElementById('profileForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                await saveProfile();
+            });
+        }
+
+        // Save profile updates
+        async function saveProfile() {
+            const messageDiv = document.getElementById('profile-message');
+            messageDiv.style.display = 'none';
+
+            const updates = {
+                first_name: document.getElementById('edit-first-name').value,
+                last_name: document.getElementById('edit-last-name').value,
+                social_handle: document.getElementById('edit-social-handle').value,
+                email: document.getElementById('edit-email').value,
+                phone: document.getElementById('edit-phone').value,
+                address: document.getElementById('edit-address').value,
+                city: document.getElementById('edit-city').value,
+                eircode: document.getElementById('edit-eircode').value,
+                instagram: document.getElementById('edit-instagram').value,
+                snapchat: document.getElementById('edit-snapchat').value,
+                preferred_contact: document.getElementById('edit-preferred-contact').value
+            };
+
+            const currentPassword = document.getElementById('edit-current-password').value;
+            const newPassword = document.getElementById('edit-new-password').value;
+            const confirmPassword = document.getElementById('edit-confirm-password').value;
+
+            if (newPassword) {
+                if (newPassword !== confirmPassword) {
+                    messageDiv.innerHTML = '<strong style="color: var(--danger-red);">⚠️ Passwords don\'t match!</strong>';
+                    messageDiv.style.display = 'block';
+                    messageDiv.style.background = 'rgba(244, 67, 54, 0.1)';
+                    messageDiv.style.borderLeft = '3px solid var(--danger-red)';
+                    return;
+                }
+                if (!currentPassword) {
+                    messageDiv.innerHTML = '<strong style="color: var(--danger-red);">⚠️ Current password required to change password!</strong>';
+                    messageDiv.style.display = 'block';
+                    messageDiv.style.background = 'rgba(244, 67, 54, 0.1)';
+                    messageDiv.style.borderLeft = '3px solid var(--danger-red)';
+                    return;
+                }
+                updates.current_password = currentPassword;
+                updates.new_password = newPassword;
+            }
+
+            const token = sessionStorage.getItem('sbs_csrf_token');
+
+            try {
+                const response = await fetch('/api/users/update-profile', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': token
+                    },
+                    body: JSON.stringify(updates)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Update session storage with new user data
+                    sessionStorage.setItem('sbs_user', JSON.stringify(data.user));
+                    
+                    messageDiv.innerHTML = '<strong style="color: var(--success-green);">✅ Profile updated successfully!</strong>';
+                    messageDiv.style.display = 'block';
+                    messageDiv.style.background = 'rgba(76, 175, 80, 0.1)';
+                    messageDiv.style.borderLeft = '3px solid var(--success-green)';
+
+                    // Clear password fields
+                    document.getElementById('edit-current-password').value = '';
+                    document.getElementById('edit-new-password').value = '';
+                    document.getElementById('edit-confirm-password').value = '';
+
+                    // Reload profile display
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1500);
+                } else {
+                    messageDiv.innerHTML = `<strong style="color: var(--danger-red);">⚠️ ${data.error || 'Update failed'}</strong>`;
+                    messageDiv.style.display = 'block';
+                    messageDiv.style.background = 'rgba(244, 67, 54, 0.1)';
+                    messageDiv.style.borderLeft = '3px solid var(--danger-red)';
+                }
+            } catch (error) {
+                console.error('Update error:', error);
+                messageDiv.innerHTML = '<strong style="color: var(--danger-red);">⚠️ Network error. Please try again.</strong>';
+                messageDiv.style.display = 'block';
+                messageDiv.style.background = 'rgba(244, 67, 54, 0.1)';
+                messageDiv.style.borderLeft = '3px solid var(--danger-red)';
+            }
+        }
+
+        // Load Settings (Privacy & GDPR)
+        function loadSettings() {
+            const user = JSON.parse(sessionStorage.getItem('sbs_user'));
+            const content = document.getElementById('mainContent');
+
+            content.innerHTML = `
+                <div class="section">
+                    <div class="section-header">
+                        <h2 class="section-title">Privacy & Data Settings</h2>
+                    </div>
+
+                    <div class="card">
+                        <h3 style="margin-bottom: 1rem;">Account Information</h3>
+                        <div class="card-details">
+                            <p><strong>Name:</strong> ${user.first_name || ''} ${user.last_name || ''}</p>
+                            <p><strong>Username:</strong> ${user.social_handle || 'Not set'}</p>
+                            <p><strong>Email:</strong> ${user.email || 'Not set'}</p>
+                            <p><strong>Phone:</strong> ${user.phone || 'Not set'}</p>
+                            <p><strong>Instagram:</strong> ${user.instagram || 'Not set'}</p>
+                            <p><strong>Snapchat:</strong> ${user.snapchat || 'Not set'}</p>
+                        </div>
+                        <button onclick="loadSection('profile')" class="btn-outline" style="margin-top: 1rem; cursor: pointer;">✏️ Edit Profile</button>
+                    </div>
+
+                    <div class="gdpr-section">
+                        <h3>🔒 Data & Privacy (GDPR Compliant)</h3>
+                        <p style="color: var(--text-secondary); margin-bottom: 1rem;">
+                            You have full control over your personal data. You can request your data or delete your account at any time.
+                        </p>
+                        <div class="gdpr-actions">
+                            <button class="btn-outline" onclick="downloadMyData()">📥 Download My Data</button>
+                            <button class="btn-danger" onclick="openDeleteModal()">🗑️ Delete Account</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // GDPR Functions
+        function downloadMyData() {
+            const user = JSON.parse(sessionStorage.getItem('sbs_user'));
+            const dataStr = JSON.stringify(user, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `sbs-account-data-${Date.now()}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function openDeleteModal() {
+            document.getElementById('deleteModal').classList.add('active');
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').classList.remove('active');
+            document.getElementById('deleteConfirm').value = '';
+        }
+
+        async function confirmDelete() {
+            const confirmText = document.getElementById('deleteConfirm').value;
+
+            if (confirmText !== 'DELETE') {
+                alert('Please type DELETE to confirm');
+                return;
+            }
+
+            const user = JSON.parse(sessionStorage.getItem('sbs_user'));
+            const token = sessionStorage.getItem('sbs_csrf_token');
+
+            try {
+                const response = await fetch('/api/users/delete', {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': token
+                    },
+                    body: JSON.stringify({ user_id: user.id })
+                });
+
+                if (response.ok) {
+                    sessionStorage.clear();
+                    alert('Your account has been deleted. We\'re sorry to see you go!');
+                    window.location.href = '/';
+                } else {
+                    const data = await response.json();
+                    alert(data.message || 'Failed to delete account. Please contact support.');
+                }
+            } catch (error) {
+                console.error('Delete error:', error);
+                alert('Failed to delete account. Please try again or contact support.');
+            }
+        }
+
+        // Menu click handlers
+        document.querySelectorAll('.sidebar-menu a').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                loadSection(link.dataset.section);
+            });
+        });
+
+        // Initialize
+        loadProfile();
+        loadSection('overview');
+    </script>
+</body>
+
+</html>
