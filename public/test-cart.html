@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cart Debug Test - SBS Unity</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+        }
+
+        .section {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .section h2 {
+            color: #333;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .danger {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .success {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .info {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+
+        .storage-display {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            margin-top: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .storage-display pre {
+            margin: 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .cart-item {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+        }
+
+        .cart-item strong {
+            color: #667eea;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status.warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .log {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+
+        .log-entry {
+            margin: 3px 0;
+            padding: 2px 0;
+            border-bottom: 1px solid #333;
+        }
+
+        .log-time {
+            color: #858585;
+            margin-right: 10px;
+        }
+
+        .log-success {
+            color: #4ec9b0;
+        }
+
+        .log-error {
+            color: #f48771;
+        }
+
+        .log-info {
+            color: #569cd6;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .links {
+            margin-top: 20px;
+        }
+
+        .links a {
+            display: inline-block;
+            color: #667eea;
+            text-decoration: none;
+            padding: 8px 16px;
+            background: white;
+            border-radius: 6px;
+            margin-right: 10px;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+
+        .links a:hover {
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🛒 Cart Debug Test Tool</h1>
+            <p>Test cart functionality, storage, and checkout flow</p>
+        </div>
+
+        <!-- Stats -->
+        <div class="section">
+            <h2>📊 Cart Statistics</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-items">0</div>
+                    <div class="stat-label">Items in Cart</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-total">€0.00</div>
+                    <div class="stat-label">Total Value</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-storage">0 KB</div>
+                    <div class="stat-label">Storage Used</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="section">
+            <h2>⚡ Quick Actions</h2>
+            <div class="button-grid">
+                <button onclick="addTestItem()" class="success">Add Test Item</button>
+                <button onclick="addMultipleItems()">Add 5 Random Items</button>
+                <button onclick="viewCart()" class="info">View Cart Contents</button>
+                <button onclick="testCheckout()" class="info">Test Checkout</button>
+                <button onclick="clearCart()" class="danger">Clear Cart</button>
+                <button onclick="refreshStats()">Refresh Stats</button>
+            </div>
+        </div>
+
+        <!-- Storage Keys Test -->
+        <div class="section">
+            <h2>🔑 Storage Keys Test</h2>
+            <div class="button-grid">
+                <button onclick="checkStorageKey('sbs-basket')">Check 'sbs-basket' ✅</button>
+                <button onclick="checkStorageKey('cart')">Check 'cart' ❌</button>
+                <button onclick="checkStorageKey('basket')">Check 'basket'</button>
+                <button onclick="listAllKeys()">List All Storage Keys</button>
+            </div>
+            <div class="storage-display" id="storage-info">
+                <em>Click a button to check storage keys...</em>
+            </div>
+        </div>
+
+        <!-- Cart Contents -->
+        <div class="section">
+            <h2>📦 Current Cart Contents</h2>
+            <div id="cart-display">
+                <em>Cart is empty or not loaded yet...</em>
+            </div>
+        </div>
+
+        <!-- Debug Log -->
+        <div class="section">
+            <h2>📝 Debug Log</h2>
+            <button onclick="clearLog()" class="danger" style="margin-bottom: 10px;">Clear Log</button>
+            <div class="log" id="debug-log">
+                <div class="log-entry">
+                    <span class="log-time">[Ready]</span>
+                    <span class="log-info">Debug tool initialized. Start testing!</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Links -->
+        <div class="links">
+            <a href="/shop">← Back to Shop</a>
+            <a href="/test-analytics.html">Analytics Test</a>
+            <a href="/admin/analytics/">Admin Dashboard</a>
+        </div>
+    </div>
+
+    <script>
+        // Constants
+        const STORAGE_KEY = 'sbs-basket';
+        const TEST_PRODUCTS = [
+            { id: 'prod1', category: 'BN-CLOTHES', size: 'M', imageUrl: 'https://picsum.photos/200/300?random=1', price: 29.99 },
+            { id: 'prod2', category: 'BN-SHOES', size: 'UK 9', imageUrl: 'https://picsum.photos/200/300?random=2', price: 89.99 },
+            { id: 'prod3', category: 'PO-CLOTHES', size: 'L', imageUrl: 'https://picsum.photos/200/300?random=3', price: 19.99 },
+            { id: 'prod4', category: 'PO-SHOES', size: 'UK 10', imageUrl: 'https://picsum.photos/200/300?random=4', price: 59.99 },
+            { id: 'prod5', category: 'BN-CLOTHES', size: 'S', imageUrl: 'https://picsum.photos/200/300?random=5', price: 39.99 }
+        ];
+
+        // Logging
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('debug-log');
+            const time = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `
+                <span class="log-time">[${time}]</span>
+                <span class="log-${type}">${message}</span>
+            `;
+            logDiv.insertBefore(entry, logDiv.firstChild);
+        }
+
+        function clearLog() {
+            document.getElementById('debug-log').innerHTML = `
+                <div class="log-entry">
+                    <span class="log-time">[Cleared]</span>
+                    <span class="log-info">Log cleared. Start testing!</span>
+                </div>
+            `;
+            log('Log cleared', 'success');
+        }
+
+        // Get cart from storage
+        function getCart() {
+            try {
+                const cart = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+                log(`Retrieved cart: ${cart.length} items from '${STORAGE_KEY}'`, 'success');
+                return cart;
+            } catch (e) {
+                log(`Error reading cart: ${e.message}`, 'error');
+                return [];
+            }
+        }
+
+        // Save cart to storage
+        function saveCart(cart) {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(cart));
+                log(`Saved cart: ${cart.length} items to '${STORAGE_KEY}'`, 'success');
+                refreshStats();
+                return true;
+            } catch (e) {
+                log(`Error saving cart: ${e.message}`, 'error');
+                return false;
+            }
+        }
+
+        // Add test item
+        function addTestItem() {
+            const product = TEST_PRODUCTS[Math.floor(Math.random() * TEST_PRODUCTS.length)];
+            const cart = getCart();
+            
+            const item = {
+                id: product.id,
+                category: product.category,
+                size: product.size,
+                imageUrl: product.imageUrl,
+                price: product.price,
+                timestamp: Date.now()
+            };
+
+            cart.push(item);
+            saveCart(cart);
+            log(`✅ Added: ${item.category} (${item.size}) - €${item.price}`, 'success');
+            viewCart();
+        }
+
+        // Add multiple items
+        function addMultipleItems() {
+            const cart = getCart();
+            let added = 0;
+
+            for (let i = 0; i < 5; i++) {
+                const product = TEST_PRODUCTS[Math.floor(Math.random() * TEST_PRODUCTS.length)];
+                cart.push({
+                    id: product.id + '_' + Date.now() + '_' + i,
+                    category: product.category,
+                    size: product.size,
+                    imageUrl: product.imageUrl,
+                    price: product.price,
+                    timestamp: Date.now()
+                });
+                added++;
+            }
+
+            saveCart(cart);
+            log(`✅ Added ${added} random items to cart`, 'success');
+            viewCart();
+        }
+
+        // View cart
+        function viewCart() {
+            const cart = getCart();
+            const display = document.getElementById('cart-display');
+
+            if (cart.length === 0) {
+                display.innerHTML = '<em style="color: #999;">Cart is empty</em>';
+                log('Cart is empty', 'info');
+                return;
+            }
+
+            const total = cart.reduce((sum, item) => sum + (item.price || 0), 0);
+
+            display.innerHTML = cart.map((item, index) => `
+                <div class="cart-item">
+                    <strong>#${index + 1}</strong>
+                    <strong>${item.category}</strong> - Size: ${item.size}
+                    ${item.price ? ` - <span style="color: #ffd700;">€${item.price.toFixed(2)}</span>` : ''}
+                    <button onclick="removeItem(${index})" style="float: right; padding: 4px 8px; font-size: 12px;" class="danger">Remove</button>
+                </div>
+            `).join('') + `
+                <div style="margin-top: 15px; padding: 15px; background: #667eea; color: white; border-radius: 8px; text-align: center;">
+                    <strong>Total: €${total.toFixed(2)}</strong> (${cart.length} items)
+                </div>
+            `;
+
+            log(`Displayed ${cart.length} cart items`, 'info');
+            refreshStats();
+        }
+
+        // Remove item
+        function removeItem(index) {
+            const cart = getCart();
+            const removed = cart.splice(index, 1)[0];
+            saveCart(cart);
+            log(`🗑️ Removed: ${removed.category} (${removed.size})`, 'info');
+            viewCart();
+        }
+
+        // Clear cart
+        function clearCart() {
+            if (confirm('Clear all items from cart?')) {
+                localStorage.removeItem(STORAGE_KEY);
+                log('🗑️ Cart cleared completely', 'success');
+                viewCart();
+                refreshStats();
+            }
+        }
+
+        // Test checkout
+        function testCheckout() {
+            const cart = getCart();
+            
+            if (cart.length === 0) {
+                log('❌ Checkout failed: Cart is empty', 'error');
+                alert('Cart is empty! Add some items first.');
+                return;
+            }
+
+            const total = cart.reduce((sum, item) => sum + (item.price || 0), 0);
+            
+            log(`🛒 Checkout test: ${cart.length} items, Total: €${total.toFixed(2)}`, 'success');
+            alert(`Checkout Test:\n\nItems: ${cart.length}\nTotal: €${total.toFixed(2)}\n\nIn real checkout, this would open the modal with these items.`);
+            
+            // Simulate what checkout function does
+            log('✅ Checkout would succeed with current cart', 'success');
+        }
+
+        // Check storage key
+        function checkStorageKey(key) {
+            const value = localStorage.getItem(key);
+            const display = document.getElementById('storage-info');
+
+            if (value === null) {
+                display.innerHTML = `
+                    <div style="color: #f5576c;">
+                        <strong>Key '${key}': NOT FOUND</strong>
+                        <p>This key doesn't exist in localStorage</p>
+                    </div>
+                `;
+                log(`❌ Storage key '${key}' not found`, 'error');
+            } else {
+                try {
+                    const parsed = JSON.parse(value);
+                    const size = new Blob([value]).size;
+                    display.innerHTML = `
+                        <div style="color: #43e97b;">
+                            <strong>Key '${key}': FOUND ✅</strong>
+                            <p>Items: ${Array.isArray(parsed) ? parsed.length : 'N/A'}</p>
+                            <p>Size: ${(size / 1024).toFixed(2)} KB</p>
+                        </div>
+                        <pre style="margin-top: 10px; background: white; padding: 10px; border-radius: 4px; max-height: 200px; overflow: auto;">${JSON.stringify(parsed, null, 2)}</pre>
+                    `;
+                    log(`✅ Storage key '${key}' found with ${Array.isArray(parsed) ? parsed.length : 0} items`, 'success');
+                } catch (e) {
+                    display.innerHTML = `
+                        <div style="color: #f5576c;">
+                            <strong>Key '${key}': FOUND but INVALID JSON</strong>
+                            <pre>${value}</pre>
+                        </div>
+                    `;
+                    log(`⚠️ Storage key '${key}' found but contains invalid JSON`, 'error');
+                }
+            }
+        }
+
+        // List all keys
+        function listAllKeys() {
+            const keys = Object.keys(localStorage);
+            const display = document.getElementById('storage-info');
+
+            if (keys.length === 0) {
+                display.innerHTML = '<em>No keys in localStorage</em>';
+                log('No localStorage keys found', 'info');
+                return;
+            }
+
+            display.innerHTML = `
+                <strong>Found ${keys.length} localStorage keys:</strong>
+                <ul style="margin-left: 20px; margin-top: 10px;">
+                    ${keys.map(key => {
+                        const value = localStorage.getItem(key);
+                        const size = new Blob([value]).size;
+                        return `<li><strong>${key}</strong> (${(size / 1024).toFixed(2)} KB)</li>`;
+                    }).join('')}
+                </ul>
+            `;
+            log(`Listed ${keys.length} storage keys`, 'info');
+        }
+
+        // Refresh stats
+        function refreshStats() {
+            const cart = getCart();
+            const total = cart.reduce((sum, item) => sum + (item.price || 0), 0);
+            const storageSize = new Blob([localStorage.getItem(STORAGE_KEY) || '']).size;
+
+            document.getElementById('stat-items').textContent = cart.length;
+            document.getElementById('stat-total').textContent = `€${total.toFixed(2)}`;
+            document.getElementById('stat-storage').textContent = `${(storageSize / 1024).toFixed(2)} KB`;
+        }
+
+        // Initialize
+        window.addEventListener('DOMContentLoaded', () => {
+            log('🚀 Cart Debug Tool loaded', 'success');
+            refreshStats();
+            viewCart();
+            
+            // Check if correct storage key exists
+            if (localStorage.getItem(STORAGE_KEY)) {
+                log(`✅ Using correct storage key: '${STORAGE_KEY}'`, 'success');
+            } else {
+                log(`⚠️ Storage key '${STORAGE_KEY}' is empty`, 'info');
+            }
+
+            // Check for incorrect key
+            if (localStorage.getItem('cart')) {
+                log(`⚠️ WARNING: Found old 'cart' key in storage (should be '${STORAGE_KEY}')`, 'error');
+            }
+        });
+
+        // Auto-refresh stats every 2 seconds
+        setInterval(refreshStats, 2000);
+    </script>
+</body>
+</html>
