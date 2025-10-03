@@ -5,10 +5,19 @@
  * Admin-only endpoint
  */
 
+// Hash function for session tokens
+async function sha256b64(text) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(text);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = new Uint8Array(hashBuffer);
+    return btoa(String.fromCharCode(...hashArray));
+}
+
 export async function onRequestDelete({ request, env }) {
     // Check authentication
     const cookie = request.headers.get('Cookie') || '';
-    const sessionId = cookie.split('session_id=')[1]?.split(';')[0];
+    const sessionId = cookie.split('sbs_session=')[1]?.split(';')[0];
     
     if (!sessionId) {
         return new Response(JSON.stringify({ 
@@ -21,10 +30,13 @@ export async function onRequestDelete({ request, env }) {
     }
 
     try {
+        // Hash the session token to match database format
+        const sessionHash = await sha256b64(sessionId);
+        
         // Verify admin user - simplified query
         const sessionResult = await env.DB.prepare(
             'SELECT user_id, expires_at FROM sessions WHERE token = ? AND invalidated_at IS NULL'
-        ).bind(sessionId).first();
+        ).bind(sessionHash).first();
 
         if (!sessionResult) {
             return new Response(JSON.stringify({ 
