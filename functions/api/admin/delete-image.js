@@ -23,8 +23,8 @@ export async function onRequestDelete({ request, env }) {
     try {
         // Verify admin user
         const userResult = await env.DB.prepare(
-            'SELECT u.*, s.user_id FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.session_id = ? AND s.expires_at > ?'
-        ).bind(sessionId, Date.now()).first();
+            'SELECT u.*, s.user_id FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.token = ? AND s.expires_at > ? AND s.invalidated_at IS NULL'
+        ).bind(sessionId, new Date().toISOString()).first();
 
         if (!userResult) {
             return new Response(JSON.stringify({ 
