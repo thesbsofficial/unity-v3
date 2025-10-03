@@ -13,10 +13,12 @@ Your admin account is **fully configured and ready to use** without waiting for 
 
 ## 🔑 YOUR LOGIN CREDENTIALS
 
-### **Login Here**: 
+### **Login Here**:
+
 👉 https://main.unity-v3.pages.dev/login
 
 ### **Credentials**:
+
 - **Username**: `ADMIN`
 - **Password**: `IAMADMIN`
 
@@ -74,7 +76,7 @@ Just login and start using your admin account! 🎉
 
 1. **Login** at https://main.unity-v3.pages.dev/login
 2. **Username**: ADMIN
-3. **Password**: IAMADMIN  
+3. **Password**: IAMADMIN
 4. **Change password** in account settings
 5. **Access Admin Panel** from navigation
 6. **Start managing** your store!

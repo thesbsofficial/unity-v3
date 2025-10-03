@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -207,9 +208,17 @@
             gap: 4px;
         }
 
-        .kpi-change.positive { color: #10b981; }
-        .kpi-change.negative { color: #ef4444; }
-        .kpi-change.neutral { color: #999; }
+        .kpi-change.positive {
+            color: #10b981;
+        }
+
+        .kpi-change.negative {
+            color: #ef4444;
+        }
+
+        .kpi-change.neutral {
+            color: #999;
+        }
 
         /* Recent Activity */
         .section {
@@ -318,9 +327,17 @@
             border-radius: 50%;
         }
 
-        .status-operational { background: #10b981; }
-        .status-warning { background: #f59e0b; }
-        .status-error { background: #ef4444; }
+        .status-operational {
+            background: #10b981;
+        }
+
+        .status-warning {
+            background: #f59e0b;
+        }
+
+        .status-error {
+            background: #ef4444;
+        }
 
         /* Loading */
         .loading {
@@ -340,7 +357,9 @@
         }
 
         @keyframes spin {
-            to { transform: rotate(360deg); }
+            to {
+                transform: rotate(360deg);
+            }
         }
 
         /* Responsive */
@@ -348,17 +367,18 @@
             .sidebar {
                 display: none;
             }
-            
+
             .main-content {
                 padding: 20px;
             }
-            
+
             .kpi-grid {
                 grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             }
         }
     </style>
 </head>
+
 <body>
     <!-- Top Bar -->
     <div class="topbar">
@@ -557,21 +577,21 @@
                 const res = await fetch('/api/users/me', {
                     credentials: 'include'
                 });
-                
+
                 if (!res.ok) {
                     window.location.href = '/login.html';
                     return;
                 }
-                
+
                 const user = await res.json();
-                
+
                 // Check admin role
                 if (user.role !== 'admin') {
                     alert('Access denied. Admin privileges required.');
                     window.location.href = '/';
                     return;
                 }
-                
+
                 document.getElementById('userName').textContent = user.email;
                 loadDashboard();
             } catch (error) {
@@ -586,15 +606,15 @@
                 // Load KPIs (mock data for now - replace with real API calls)
                 document.getElementById('kpiInventory').textContent = '248';
                 document.getElementById('kpiInventoryChange').textContent = '+12 this week';
-                
+
                 document.getElementById('kpiRequests').textContent = '7';
-                
+
                 document.getElementById('kpiCustomers').textContent = '156';
                 document.getElementById('kpiCustomersChange').textContent = '+8 this month';
-                
+
                 document.getElementById('kpiRevenue').textContent = '€4,280';
                 document.getElementById('kpiRevenueChange').textContent = '+18% vs last month';
-                
+
                 // Load recent activity
                 loadRecentActivity();
             } catch (error) {
@@ -641,4 +661,5 @@
         checkAuth();
     </script>
 </body>
+
 </html>

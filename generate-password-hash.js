@@ -10,18 +10,18 @@ const salt = crypto.getRandomValues(new Uint8Array(32));
 
 // Import password as key
 const key = await crypto.subtle.importKey(
-  "raw",
-  enc.encode(password),
-  "PBKDF2",
-  false,
-  ["deriveBits"]
+    "raw",
+    enc.encode(password),
+    "PBKDF2",
+    false,
+    ["deriveBits"]
 );
 
 // Derive bits
 const bits = await crypto.subtle.deriveBits(
-  { name: "PBKDF2", hash: "SHA-256", salt, iterations },
-  key,
-  256
+    { name: "PBKDF2", hash: "SHA-256", salt, iterations },
+    key,
+    256
 );
 
 const hash = b64(bits);

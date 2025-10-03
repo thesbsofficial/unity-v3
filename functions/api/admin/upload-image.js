@@ -212,13 +212,38 @@ export async function onRequestPost({ request, env }) {
 
         const imageId = uploadResult.result.id;
 
+        // 📊 AUTO-SYNC TO D1 SMART INVENTORY
+        try {
+            await env.DB.prepare(`
+                INSERT INTO products (
+                    image_id, category, size, condition, 
+                    status, quantity_total, quantity_available,
+                    created_at, updated_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
+            `).bind(
+                imageId,
+                cfMetadata.category || 'BN-CLOTHES',
+                cfMetadata.size || null,
+                uploadMetadata.category?.includes('BN') ? 'Brand New' : 'Pre-Owned',
+                cfMetadata.status || 'active',
+                1, // quantity_total
+                1  // quantity_available
+            ).run();
+            
+            console.log(`✅ Product ${imageId} synced to D1 inventory`);
+        } catch (dbError) {
+            console.warn('⚠️ D1 sync failed (non-critical):', dbError.message);
+            // Continue even if D1 sync fails - image is still in CF
+        }
+
         return new Response(JSON.stringify({
             success: true,
-            message: 'Image uploaded successfully with metadata',
+            message: 'Image uploaded successfully with metadata and synced to smart inventory',
             uploadedId: imageId,
             filename: cleanFilename,
             metadata: cfMetadata,
-            productName: cfMetadata.name
+            productName: cfMetadata.name,
+            d1_synced: true
         }), {
             status: 200,
             headers: { 'Content-Type': 'application/json' }

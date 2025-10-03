@@ -18,11 +18,11 @@ export async function onRequestPatch({ request, env }) {
     // Check authentication
     const cookie = request.headers.get('Cookie') || '';
     const sessionId = cookie.split('sbs_session=')[1]?.split(';')[0];
-    
+
     if (!sessionId) {
-        return new Response(JSON.stringify({ 
-            success: false, 
-            error: 'Not authenticated' 
+        return new Response(JSON.stringify({
+            success: false,
+            error: 'Not authenticated'
         }), {
             status: 401,
             headers: { 'Content-Type': 'application/json' }
@@ -32,16 +32,16 @@ export async function onRequestPatch({ request, env }) {
     try {
         // Hash the session token to match database format
         const sessionHash = await sha256b64(sessionId);
-        
+
         // Verify admin user - simplified query
         const sessionResult = await env.DB.prepare(
             'SELECT user_id, expires_at FROM sessions WHERE token = ? AND invalidated_at IS NULL'
         ).bind(sessionHash).first();
 
         if (!sessionResult) {
-            return new Response(JSON.stringify({ 
-                success: false, 
-                error: 'Session not found. Please log in again.' 
+            return new Response(JSON.stringify({
+                success: false,
+                error: 'Session not found. Please log in again.'
             }), {
                 status: 401,
                 headers: { 'Content-Type': 'application/json' }
@@ -51,9 +51,9 @@ export async function onRequestPatch({ request, env }) {
         // Check if session expired
         const now = new Date().toISOString();
         if (sessionResult.expires_at < now) {
-            return new Response(JSON.stringify({ 
-                success: false, 
-                error: 'Session expired. Please log in again.' 
+            return new Response(JSON.stringify({
+                success: false,
+                error: 'Session expired. Please log in again.'
             }), {
                 status: 401,
                 headers: { 'Content-Type': 'application/json' }
@@ -66,9 +66,9 @@ export async function onRequestPatch({ request, env }) {
         ).bind(sessionResult.user_id).first();
 
         if (!userResult || userResult.role !== 'admin') {
-            return new Response(JSON.stringify({ 
-                success: false, 
-                error: 'Admin access required' 
+            return new Response(JSON.stringify({
+                success: false,
+                error: 'Admin access required'
             }), {
                 status: 403,
                 headers: { 'Content-Type': 'application/json' }
@@ -79,9 +79,9 @@ export async function onRequestPatch({ request, env }) {
         const { imageId, metadata } = await request.json();
 
         if (!imageId || !metadata) {
-            return new Response(JSON.stringify({ 
-                success: false, 
-                error: 'Missing imageId or metadata' 
+            return new Response(JSON.stringify({
+                success: false,
+                error: 'Missing imageId or metadata'
             }), {
                 status: 400,
                 headers: { 'Content-Type': 'application/json' }
@@ -93,9 +93,9 @@ export async function onRequestPatch({ request, env }) {
         const apiToken = env.CLOUDFLARE_IMAGES_API_TOKEN || env.CLOUDFLARE_API_TOKEN;
 
         if (!accountId || !apiToken) {
-            return new Response(JSON.stringify({ 
-                success: false, 
-                error: 'Missing Cloudflare credentials' 
+            return new Response(JSON.stringify({
+                success: false,
+                error: 'Missing Cloudflare credentials'
             }), {
                 status: 500,
                 headers: { 'Content-Type': 'application/json' }
@@ -104,7 +104,7 @@ export async function onRequestPatch({ request, env }) {
 
         // Update metadata in Cloudflare Images
         const updateUrl = `https://api.cloudflare.com/client/v4/accounts/${accountId}/images/v1/${imageId}`;
-        
+
         const updateResponse = await fetch(updateUrl, {
             method: 'PATCH',
             headers: {
@@ -118,9 +118,9 @@ export async function onRequestPatch({ request, env }) {
 
         if (!updateResponse.ok || !updateResult.success) {
             console.error('CF Images update failed:', updateResult);
-            return new Response(JSON.stringify({ 
-                success: false, 
-                error: updateResult.errors?.[0]?.message || 'Failed to update image metadata' 
+            return new Response(JSON.stringify({
+                success: false,
+                error: updateResult.errors?.[0]?.message || 'Failed to update image metadata'
             }), {
                 status: updateResponse.status,
                 headers: { 'Content-Type': 'application/json' }

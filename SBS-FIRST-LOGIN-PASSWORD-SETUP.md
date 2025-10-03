@@ -21,14 +21,17 @@ The **first person** who logs in with username `SBS` can set **any password they
 ## **Usage Instructions**
 
 ### **Step 1: Go to Login Page**
+
 - Navigate to: https://e19051af.unity-v3.pages.dev/login
 - Or: https://main.unity-v3.pages.dev/login
 
 ### **Step 2: Enter Credentials**
+
 - **Username:** `SBS`
 - **Password:** `[ANY PASSWORD YOU WANT]`
 
 ### **Step 3: Submit**
+
 - Click "Sign In"
 - System will:
   - Hash your password with SHA-256
@@ -37,6 +40,7 @@ The **first person** who logs in with username `SBS` can set **any password they
   - Set `last_login` timestamp
 
 ### **Step 4: Remember Your Password!**
+
 - ⚠️ **IMPORTANT:** The password you set on first login is PERMANENT
 - Write it down somewhere safe
 - After first login, you MUST use this password every time
@@ -57,13 +61,13 @@ The **first person** who logs in with username `SBS` can set **any password they
 
 ```javascript
 // 🎯 SPECIAL SETUP MODE FOR SBS ACCOUNT - FIRST LOGIN SETS PASSWORD
-if (user.social_handle === 'SBS' && user.last_login === null) {
+if (user.social_handle === "SBS" && user.last_login === null) {
   // First login for SBS - set whatever password they provide
   const hashedPassword = await hashPassword(password);
   await env.DB.prepare("UPDATE users SET password_hash = ? WHERE id = ?")
     .bind(hashedPassword, user.id)
     .run();
-  console.log('🔐 SBS first login - password set successfully');
+  console.log("🔐 SBS first login - password set successfully");
   // Continue with login below
 } else {
   // Normal password verification for everyone else
@@ -78,6 +82,7 @@ if (user.social_handle === 'SBS' && user.last_login === null) {
 ## **Current Database State**
 
 ### **Before First Login:**
+
 ```
 social_handle: SBS
 password_hash: 7026bb927dfc8bc2f425f39c7cf0810e5ac5749c081b1acbde41b85d16d6b404
@@ -87,6 +92,7 @@ role: admin
 ```
 
 ### **After First Login:**
+
 ```
 social_handle: SBS
 password_hash: [NEW HASH BASED ON YOUR PASSWORD]
@@ -106,6 +112,7 @@ The old password hash (`7026bb927dfc...` which was `IAMADMIN`) will be **replace
 ## **Files Modified**
 
 ### `functions/api/[[path]].js`
+
 - Added special first-login detection for SBS account
 - Password setup logic before normal verification
 - Logs "🔐 SBS first login - password set successfully"
@@ -115,7 +122,7 @@ The old password hash (`7026bb927dfc...` which was `IAMADMIN`) will be **replace
 ## **Deployment**
 
 **Production:** https://e19051af.unity-v3.pages.dev  
-**Main:** https://96851d52.unity-v3.pages.dev  
+**Main:** https://96851d52.unity-v3.pages.dev
 
 ---
 
@@ -136,13 +143,14 @@ The old password hash (`7026bb927dfc...` which was `IAMADMIN`) will be **replace
 ⚠️ **This is a ONE-TIME setup feature**  
 ⚠️ **Only works on FIRST login** (when last_login is NULL)  
 ⚠️ **After first login, you MUST use the password you set**  
-⚠️ **Write down your password - there's no password reset for SBS account**  
+⚠️ **Write down your password - there's no password reset for SBS account**
 
 ---
 
 ## **Additional Fixes Deployed**
 
 ### **Hero Image on Mobile:**
+
 - ✅ Image now covers full width on mobile
 - ✅ Uses `object-fit: cover` to fill the section
 - ✅ Min-height: 50vh ensures full coverage
@@ -160,4 +168,3 @@ The old password hash (`7026bb927dfc...` which was `IAMADMIN`) will be **replace
 🚀 **Both fixes deployed to production**
 
 Ready to set your SBS account password! 🔑👑
-

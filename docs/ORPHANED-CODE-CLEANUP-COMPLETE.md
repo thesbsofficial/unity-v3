@@ -14,6 +14,7 @@ After implementing Single Source of Truth, we discovered **50+ files** with dupl
 ## 🗑️ What Will Be Deleted
 
 ### **Folders (Safe to Delete)**
+
 ```
 ✅ /public/DELETE ME/              (~5MB, old docs)
 ✅ /public/archive/                 (~3MB, old backups)
@@ -21,6 +22,7 @@ After implementing Single Source of Truth, we discovered **50+ files** with dupl
 ```
 
 ### **Files (Safe to Delete)**
+
 ```
 ✅ /public/admin/inventory/index.html.backup
 ```
@@ -32,6 +34,7 @@ After implementing Single Source of Truth, we discovered **50+ files** with dupl
 ## ✅ What Was Updated
 
 ### **sell.html**
+
 - ❌ **Before:** Hardcoded sizes in QB_DATA
 - ✅ **After:** Imports from `/js/taxonomy.js`
 
@@ -55,12 +58,14 @@ sizes: {
 ## 🛠️ How To Run Cleanup
 
 ### **Option 1: Automated Script (Recommended)**
+
 ```powershell
 # From project root
 ./scripts/cleanup-orphaned-code.ps1
 ```
 
 **What it does:**
+
 1. Creates git backup
 2. Deletes orphaned folders/files
 3. Commits changes
@@ -69,6 +74,7 @@ sizes: {
 ---
 
 ### **Option 2: Manual Cleanup**
+
 ```powershell
 # Backup first
 git add -A
@@ -93,6 +99,7 @@ git commit -m "🧹 Remove orphaned taxonomy code"
 ## 📊 Impact Analysis
 
 ### **Before Cleanup**
+
 ```
 Taxonomy files: 50+
 Duplicated code: Yes (everywhere)
@@ -102,6 +109,7 @@ Risk of mismatch: High
 ```
 
 ### **After Cleanup**
+
 ```
 Taxonomy files: 5 (1 source + 4 consumers)
 Duplicated code: No
@@ -115,11 +123,13 @@ Risk of mismatch: Zero
 ## ✅ Files That Remain (Correct)
 
 ### **The Source**
+
 ```
 /public/js/taxonomy.js  ← THE ONLY SOURCE
 ```
 
 ### **Consumers (Import from source)**
+
 ```
 /functions/api/products.js          ← import taxonomy ✅
 /public/admin/inventory/index.html  ← import taxonomy ✅
@@ -128,6 +138,7 @@ Risk of mismatch: Zero
 ```
 
 ### **Documentation (Keep as reference)**
+
 ```
 /docs/SBS-8UNITY-TAXONOMY.md           ← Full spec
 /docs/SINGLE-SOURCE-SETUP.md           ← Guide
@@ -136,6 +147,7 @@ Risk of mismatch: Zero
 ```
 
 ### **Tools**
+
 ```
 /scripts/sync-taxonomy.js              ← Worker sync
 /scripts/cleanup-orphaned-code.ps1     ← This cleanup
@@ -147,6 +159,7 @@ Risk of mismatch: Zero
 ## 🎯 Testing After Cleanup
 
 ### **1. Test Locally**
+
 ```powershell
 # Visit these pages:
 # - /shop.html (should load products)
@@ -155,14 +168,16 @@ Risk of mismatch: Zero
 ```
 
 ### **2. Run Validator**
+
 ```javascript
 // In browser console
-await import('/scripts/taxonomy-validator.js');
+await import("/scripts/taxonomy-validator.js");
 ```
 
 Expected: ✅ All tests pass
 
 ### **3. Deploy**
+
 ```powershell
 npx wrangler pages deploy public --project-name=unity-v3
 ```
@@ -186,13 +201,13 @@ git checkout <previous-commit> -- <specific-file>
 
 ## 📈 Benefits
 
-| Benefit | Impact |
-|---------|--------|
-| **Storage saved** | ~18MB (90% reduction) |
-| **Maintenance** | 1 file to edit vs 50+ |
-| **Consistency** | Zero risk of mismatch |
-| **Clarity** | Clear system architecture |
-| **Speed** | Faster deployments (smaller) |
+| Benefit           | Impact                       |
+| ----------------- | ---------------------------- |
+| **Storage saved** | ~18MB (90% reduction)        |
+| **Maintenance**   | 1 file to edit vs 50+        |
+| **Consistency**   | Zero risk of mismatch        |
+| **Clarity**       | Clear system architecture    |
+| **Speed**         | Faster deployments (smaller) |
 
 ---
 
@@ -230,6 +245,7 @@ Tools: /scripts/*.js (automation)
 ---
 
 **Ready to run?**
+
 ```powershell
 ./scripts/cleanup-orphaned-code.ps1
 ```

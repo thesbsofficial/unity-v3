@@ -5,7 +5,7 @@
 **You're using: Cloudflare D1**
 
 - **Not MySQL** ❌
-- **Not MariaDB** ❌  
+- **Not MariaDB** ❌
 - **It's SQLite-based** ✅
 
 ### What is Cloudflare D1?
@@ -13,6 +13,7 @@
 D1 is Cloudflare's serverless SQL database built on SQLite. It runs at the edge and scales automatically.
 
 **Key features:**
+
 - SQLite-compatible syntax
 - Serverless (no connection strings needed)
 - Globally distributed
@@ -24,11 +25,13 @@ D1 is Cloudflare's serverless SQL database built on SQLite. It runs at the edge 
 ## 🗄️ Your Database Structure
 
 ### Database Name: `unity-v3`
+
 **Database ID:** `1235f2c7-7b73-44b7-95c2-b44260e51179`
 
 ### Tables:
 
 #### 1. `users` - Customer accounts
+
 ```sql
 - id (PRIMARY KEY, AUTOINCREMENT)
 - social_handle (UNIQUE, NOT NULL)
@@ -45,6 +48,7 @@ D1 is Cloudflare's serverless SQL database built on SQLite. It runs at the edge 
 ```
 
 #### 2. `orders` - Customer purchases
+
 ```sql
 - id (PRIMARY KEY, AUTOINCREMENT)
 - user_id (FOREIGN KEY → users.id)
@@ -59,6 +63,7 @@ D1 is Cloudflare's serverless SQL database built on SQLite. It runs at the edge 
 ```
 
 #### 3. `sessions` - Active login sessions
+
 ```sql
 - id (PRIMARY KEY, AUTOINCREMENT)
 - user_id (FOREIGN KEY → users.id)
@@ -74,11 +79,13 @@ D1 is Cloudflare's serverless SQL database built on SQLite. It runs at the edge 
 **Images are NOT stored in the database.**
 
 You use **Cloudflare Images** for product photos:
+
 - Account Hash: `7B8CAeDtA5h1f1Dyh_X-hg`
 - Currently: 78 images
 - Delivery URL: `https://imagedelivery.net/[ACCOUNT_HASH]/[IMAGE_ID]/[VARIANT]`
 
 **Also configured (but not yet used):**
+
 - R2 Bucket: `sbs-product-images` (admin-controlled marketing images)
 - R2 Bucket: `sbs-user-uploads` (seller-uploaded photos)
 
@@ -87,6 +94,7 @@ You use **Cloudflare Images** for product photos:
 ## 🔧 How It Works
 
 ### In `wrangler.toml`:
+
 ```toml
 [[d1_databases]]
 binding = "DB"
@@ -95,26 +103,27 @@ database_id = "1235f2c7-7b73-44b7-95c2-b44260e51179"
 ```
 
 ### In your Worker code:
+
 ```javascript
 // Access database via env.DB
-const result = await env.DB.prepare(
-  "SELECT * FROM users WHERE email = ?"
-).bind(email).first();
+const result = await env.DB.prepare("SELECT * FROM users WHERE email = ?")
+  .bind(email)
+  .first();
 ```
 
 ---
 
 ## 🆚 SQLite vs MySQL/MariaDB
 
-| Feature | D1/SQLite | MySQL/MariaDB |
-|---------|-----------|---------------|
-| **Type** | Serverless, file-based | Server-based |
-| **Syntax** | SQLite SQL | MySQL SQL |
-| **Auto-increment** | `AUTOINCREMENT` | `AUTO_INCREMENT` |
-| **Datetime** | `CURRENT_TIMESTAMP` | `NOW()` or `CURRENT_TIMESTAMP` |
-| **Boolean** | INTEGER (0/1) | BOOLEAN or TINYINT |
-| **Connection** | Built-in binding | Connection string required |
-| **Scaling** | Automatic | Manual configuration |
+| Feature            | D1/SQLite              | MySQL/MariaDB                  |
+| ------------------ | ---------------------- | ------------------------------ |
+| **Type**           | Serverless, file-based | Server-based                   |
+| **Syntax**         | SQLite SQL             | MySQL SQL                      |
+| **Auto-increment** | `AUTOINCREMENT`        | `AUTO_INCREMENT`               |
+| **Datetime**       | `CURRENT_TIMESTAMP`    | `NOW()` or `CURRENT_TIMESTAMP` |
+| **Boolean**        | INTEGER (0/1)          | BOOLEAN or TINYINT             |
+| **Connection**     | Built-in binding       | Connection string required     |
+| **Scaling**        | Automatic              | Manual configuration           |
 
 **Your syntax is already SQLite-compatible!** ✅
 
@@ -125,6 +134,7 @@ const result = await env.DB.prepare(
 **Main schema file:** `/schema.sql`
 
 **Migration files:** `/database/migrations/`
+
 - `db-indexes-working.sql`
 - `db-performance-boost.sql`
 - `migration-add-indexes.sql`
@@ -138,21 +148,22 @@ const result = await env.DB.prepare(
 ## 🚀 Applying Schema Changes
 
 ### Option 1: Via Wrangler (Recommended)
+
 ```bash
 npx wrangler d1 execute unity-v3 --file=schema.sql
 ```
 
 ### Option 2: Via Dashboard
+
 1. Go to Cloudflare Dashboard
 2. Workers & Pages → D1
 3. Select `unity-v3` database
 4. Use Console to run SQL commands
 
 ### Option 3: Via API
+
 ```javascript
-const result = await env.DB.prepare(
-  "CREATE TABLE IF NOT EXISTS ..."
-).run();
+const result = await env.DB.prepare("CREATE TABLE IF NOT EXISTS ...").run();
 ```
 
 ---
@@ -160,16 +171,19 @@ const result = await env.DB.prepare(
 ## 🔍 Querying Your Database
 
 ### Check tables:
+
 ```bash
 npx wrangler d1 execute unity-v3 --command="SELECT name FROM sqlite_master WHERE type='table'"
 ```
 
 ### View users:
+
 ```bash
 npx wrangler d1 execute unity-v3 --command="SELECT * FROM users LIMIT 10"
 ```
 
 ### Check orders:
+
 ```bash
 npx wrangler d1 execute unity-v3 --command="SELECT * FROM orders ORDER BY created_at DESC LIMIT 10"
 ```
@@ -200,6 +214,7 @@ For your e-commerce site with 78 products, this is more than enough! ✅
 ## 📊 Current Database Stats
 
 **From `/api/health` endpoint:**
+
 ```json
 {
   "status": "ok",

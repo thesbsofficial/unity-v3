@@ -21,7 +21,8 @@ if ($LASTEXITCODE -eq 0) {
     Write-Host "🧪 Test your API:" -ForegroundColor Yellow
     Write-Host "   https://thesbsofficial.com/api/products" -ForegroundColor Gray
     Write-Host ""
-} else {
+}
+else {
     Write-Host ""
     Write-Host "❌ Deployment failed!" -ForegroundColor Red
     Write-Host "Check the errors above for details." -ForegroundColor Yellow

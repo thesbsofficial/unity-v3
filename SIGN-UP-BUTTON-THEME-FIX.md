@@ -11,6 +11,7 @@
 The "Sign Up" button in the navigation was rendering with browser default blue color instead of matching the SBS gold/black theme.
 
 **Root Cause:**
+
 - `auth-state.js` was using class `btn-gold` for Sign Up button
 - CSS class `.btn-gold` didn't exist in `index.html`
 - Browser applied default blue link styling
@@ -22,10 +23,11 @@ The "Sign Up" button in the navigation was rendering with browser default blue c
 Added two new button style classes to `public/index.html`:
 
 ### **1. `.btn-gold` (Primary Action Button)**
+
 ```css
 .btn-gold {
-  background: var(--primary-gold);        /* Gold background */
-  color: var(--primary-black);            /* Black text */
+  background: var(--primary-gold); /* Gold background */
+  color: var(--primary-black); /* Black text */
   border: 2px solid var(--primary-gold);
   padding: 0.5rem 1.5rem;
   border-radius: 25px;
@@ -36,7 +38,7 @@ Added two new button style classes to `public/index.html`:
 }
 
 .btn-gold:hover {
-  background: var(--primary-black);       /* Inverts on hover */
+  background: var(--primary-black); /* Inverts on hover */
   color: var(--primary-gold);
   border-color: var(--primary-gold);
   transform: translateY(-2px);
@@ -45,6 +47,7 @@ Added two new button style classes to `public/index.html`:
 ```
 
 ### **2. `.btn-outline` (Secondary Action Button)**
+
 ```css
 .btn-outline {
   background: transparent;
@@ -70,11 +73,13 @@ Added two new button style classes to `public/index.html`:
 ## **Visual Design**
 
 ### **Sign Up Button (`.btn-gold`)**
+
 - **Default:** Gold background, black text
 - **Hover:** Black background, gold text + glow effect
 - **Style:** Rounded pill shape, uppercase, bold
 
 ### **Sign Out Button (`.btn-outline`)**
+
 - **Default:** Transparent background, gold border + text
 - **Hover:** Gold background, black text
 - **Style:** Rounded pill shape, uppercase
@@ -84,6 +89,7 @@ Added two new button style classes to `public/index.html`:
 ## **Files Modified**
 
 ### `public/index.html`
+
 - Added `.btn-gold` class definition (lines ~248-265)
 - Added `.btn-outline` class definition (lines ~267-280)
 - Positioned after `.cart-count` styles
@@ -94,17 +100,19 @@ Added two new button style classes to `public/index.html`:
 
 **Production:** https://7780b6e4.unity-v3.pages.dev  
 **Preview/Main:** https://acd00399.unity-v3.pages.dev  
-**Alias:** https://main.unity-v3.pages.dev  
+**Alias:** https://main.unity-v3.pages.dev
 
 ---
 
 ## **Where These Buttons Are Used**
 
 ### **Logged Out State:**
+
 - "Sign In" → `.nav-link` (text link)
 - "Sign Up" → `.btn-gold` (gold button) ✅ NOW THEMED
 
 ### **Logged In State:**
+
 - "👤 [First Name]" → `.nav-link` (text link)
 - "Sign Out" → `.btn-outline` (outlined button) ✅ NOW THEMED
 
@@ -134,6 +142,7 @@ Added two new button style classes to `public/index.html`:
 ## **Summary**
 
 The Sign Up button now properly matches the SBS brand theme with:
+
 - ✅ Gold primary color
 - ✅ Black text for contrast
 - ✅ Smooth hover effects
@@ -141,4 +150,3 @@ The Sign Up button now properly matches the SBS brand theme with:
 - ✅ Uppercase styling matching nav aesthetic
 
 **No more blue browser default!** 🎉
-

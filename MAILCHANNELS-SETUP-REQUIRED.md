@@ -1,6 +1,7 @@
 # 🚨 MAILCHANNELS SETUP REQUIRED - 401 ERROR FOUND
 
 ## ❌ Current Issue
+
 **Error:** `401 Authorization Required` from MailChannels  
 **Cause:** MailChannels requires DNS verification for Cloudflare Pages
 
@@ -9,6 +10,7 @@
 To enable MailChannels email sending, you need to add these DNS records to your domain:
 
 ### 1. SPF Record (Required)
+
 ```
 Type: TXT
 Name: @ (or thesbsofficial.com)
@@ -17,6 +19,7 @@ TTL: Auto
 ```
 
 ### 2. DKIM Record (Recommended)
+
 ```
 Type: TXT
 Name: mailchannels._domainkey
@@ -25,6 +28,7 @@ TTL: Auto
 ```
 
 ### 3. Domain Lockdown (Recommended - Prevents unauthorized use)
+
 ```
 Type: TXT
 Name: _mailchannels
@@ -42,22 +46,26 @@ TTL: Auto
 4. Click **Add record**
 
 **Add SPF Record:**
+
 - Type: `TXT`
 - Name: `@`
 - Content: `v=spf1 a mx include:relay.mailchannels.net ~all`
 - Click **Save**
 
 **Add MailChannels Lockdown (Optional but recommended):**
+
 - Type: `TXT`
 - Name: `_mailchannels`
 - Content: `v=mc1 cfid=thesbsofficial.com`
 - Click **Save**
 
 ### Step 2: Wait for DNS Propagation
+
 - DNS changes can take 1-5 minutes
 - Check status: `nslookup -type=TXT thesbsofficial.com`
 
 ### Step 3: Test Email Again
+
 ```powershell
 Invoke-WebRequest -Uri "https://thesbsofficial.com/api/test-email" -Method POST -Headers @{"Content-Type"="application/json"} -Body '{"email":"fredbademosi1@icloud.com"}'
 ```
@@ -65,21 +73,25 @@ Invoke-WebRequest -Uri "https://thesbsofficial.com/api/test-email" -Method POST 
 ## 🔍 VERIFICATION
 
 ### Check if SPF record is set:
+
 ```powershell
 nslookup -type=TXT thesbsofficial.com
 ```
 
 Should show:
+
 ```
 thesbsofficial.com text = "v=spf1 a mx include:relay.mailchannels.net ~all"
 ```
 
 ### Check MailChannels lockdown:
+
 ```powershell
 nslookup -type=TXT _mailchannels.thesbsofficial.com
 ```
 
 Should show:
+
 ```
 _mailchannels.thesbsofficial.com text = "v=mc1 cfid=thesbsofficial.com"
 ```
@@ -89,6 +101,7 @@ _mailchannels.thesbsofficial.com text = "v=mc1 cfid=thesbsofficial.com"
 MailChannels requires domain verification to prevent spam and unauthorized use. The DNS records prove you own the domain and authorize MailChannels to send emails on your behalf.
 
 ### Security Benefits:
+
 - ✅ Prevents unauthorized email sending from your domain
 - ✅ Improves email deliverability (less likely to go to spam)
 - ✅ Protects your domain reputation
@@ -97,6 +110,7 @@ MailChannels requires domain verification to prevent spam and unauthorized use. 
 ## 🎯 AFTER SETUP
 
 Once DNS records are added:
+
 1. Wait 5 minutes for propagation
 2. Test email will work
 3. Registration emails will be sent automatically
@@ -111,6 +125,7 @@ Once DNS records are added:
 ## ⚡ QUICK FIX
 
 If you can't add DNS records right now, you can:
+
 1. Use a different email service (SendGrid, Mailgun)
 2. Remove email verification requirement temporarily
 3. Add DNS records later when ready

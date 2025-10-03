@@ -3,6 +3,7 @@
 **Current Status**: API token is loaded, but getting "403 Forbidden" from Cloudflare Images API
 
 ## The Problem
+
 Your `CLOUDFLARE_IMAGES_API_TOKEN` is configured in Pages, but Cloudflare is rejecting it with a 403 error.
 
 ## How to Fix
@@ -14,11 +15,12 @@ Your `CLOUDFLARE_IMAGES_API_TOKEN` is configured in Pages, but Cloudflare is rej
 3. Click **"Create Custom Token"**
 4. Set these values:
 
-     - Account → **Cloudflare Images** → **Read**
+   - Account → **Cloudflare Images** → **Read**
    - **Account Resources**:
      - Include → **Specific account** → Select your account
    - **Zone Resources**: Not needed (leave as "All zones")
    - **TTL**: Start Date = now, End Date = leave blank (no expiry)
+
 5. Click **"Continue to summary"**
 6. Click **"Create Token"**
 7. **COPY THE TOKEN** (you won't see it again!)

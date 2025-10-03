@@ -1,6 +1,7 @@
 # 🚀 Development Mode - See Changes Instantly
 
 ## What is it?
+
 Makes your changes show up **immediately** instead of waiting for cache.
 
 ## How to Enable (3 Steps):
@@ -12,6 +13,7 @@ Makes your changes show up **immediately** instead of waiting for cache.
 ## That's It!
 
 Now when you deploy:
+
 ```powershell
 .\scripts\deploy-production.ps1
 ```
@@ -21,6 +23,7 @@ Your changes appear **instantly** on thesbsofficial.com!
 ---
 
 ## ⏰ How Long?
+
 - Lasts 3 hours
 - Turns off automatically
 - You can turn it off manually anytime
@@ -30,9 +33,11 @@ Your changes appear **instantly** on thesbsofficial.com!
 ## 💡 Why Use This?
 
 **Without Dev Mode:**
+
 - Deploy → Wait 30 minutes → Maybe see changes ❌
 
 **With Dev Mode:**
+
 - Deploy → Refresh → See changes NOW ✅
 
 ---

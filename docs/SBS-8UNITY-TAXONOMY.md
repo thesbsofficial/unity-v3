@@ -12,14 +12,15 @@
 
 **EXACTLY 4 categories - NO exceptions:**
 
-| Code | Human Label | Notes |
-| --- | --- | --- |
+| Code         | Human Label         | Notes                         |
+| ------------ | ------------------- | ----------------------------- |
 | `BN-CLOTHES` | Brand New • Clothes | Upload form → Category select |
 | `BN-SHOES`   | Brand New • Shoes   | Upload form → Category select |
 | `PO-CLOTHES` | Pre-Owned • Clothes | Upload form → Category select |
 | `PO-SHOES`   | Pre-Owned • Shoes   | Upload form → Category select |
 
 **Usage:**
+
 - Cloudflare Images metadata
 - Upload filename markers (e.g., `BN-CLOTHES-M-10021430.jpg`)
 - Public site `data-category` attributes
@@ -31,15 +32,18 @@
 ## 2. Size Vocabulary
 
 ### 2.1 Clothing (Brand New) — `BN-CLOTHES`
+
 ```
 XS, S, M, L, XL
 ```
+
 **Count:** 5 sizes  
 **Rule:** Standard sizing only, no mixed combinations
 
 ---
 
 ### 2.2 Clothing (Pre-Owned) — `PO-CLOTHES`
+
 ```
 XS, S, M, L, XL,
 XS-TOP-S-BOTTOM,
@@ -51,12 +55,14 @@ L-TOP-M-BOTTOM,
 L-TOP-XL-BOTTOM,
 XL-TOP-L-BOTTOM
 ```
+
 **Count:** 13 sizes (5 standard + 8 mixed)  
 **Rule:** Only allow ±1 size difference between top and bottom pieces. Keep hyphenated format exactly as shown for filename generation (`SIZE-<value>` markers).
 
 ---
 
 ### 2.3 Footwear — `BN-SHOES` + `PO-SHOES`
+
 ```
 UK-6, UK-6-5,
 UK-7, UK-7-5,
@@ -66,6 +72,7 @@ UK-10, UK-10-5,
 UK-11, UK-11-5,
 UK-12
 ```
+
 **Count:** 13 sizes  
 **Rule:** Half sizes use `-5` suffix (e.g., `UK-9-5` for UK 9.5). Maintain the `UK-` prefix for consistency with file naming and tag filtering.
 
@@ -76,20 +83,24 @@ UK-12
 ### Files Using This Taxonomy (MUST match exactly):
 
 #### **Frontend (HTML)**
+
 - [ ] `/public/admin/inventory/index.html` — Upload form dropdowns (lines 907-965)
 - [ ] `/public/shop.html` — Product filtering and display
 - [ ] `/public/sell.html` — Sell form category/size selects
 
 #### **Backend (API)**
+
 - [ ] `/functions/api/products.js` — Product size assignment (lines 98-120)
 - [ ] `/workers/sbs-products-api.js` — `generateSizes()` function (lines 210-235)
 
 #### **Database (D1)**
+
 - [ ] Inventory table `size` column constraints
 - [ ] Products table `category` column constraints
 - [ ] Validation triggers (if any)
 
 #### **Documentation**
+
 - [ ] `/docs/IMPORTANT-SBS-TAXONOMY.md` (legacy - archive this)
 - [ ] `/public/🚀 SBS UNITY V3 - MASTER PROJECT DOCUMENTATION` (update lines 417-470)
 
@@ -98,36 +109,75 @@ UK-12
 ## 4. Validation Rules
 
 ### Category Validation
+
 ```javascript
-const VALID_CATEGORIES = ['BN-CLOTHES', 'BN-SHOES', 'PO-CLOTHES', 'PO-SHOES'];
+const VALID_CATEGORIES = ["BN-CLOTHES", "BN-SHOES", "PO-CLOTHES", "PO-SHOES"];
 
 function isValidCategory(category) {
-    return VALID_CATEGORIES.includes(category);
+  return VALID_CATEGORIES.includes(category);
 }
 ```
 
 ### Size Validation
+
 ```javascript
 const VALID_SIZES = {
-    'BN-CLOTHES': ['XS', 'S', 'M', 'L', 'XL'],
-    'PO-CLOTHES': [
-        'XS', 'S', 'M', 'L', 'XL',
-        'XS-TOP-S-BOTTOM', 'S-TOP-XS-BOTTOM',
-        'S-TOP-M-BOTTOM', 'M-TOP-S-BOTTOM',
-        'M-TOP-L-BOTTOM', 'L-TOP-M-BOTTOM',
-        'L-TOP-XL-BOTTOM', 'XL-TOP-L-BOTTOM'
-    ],
-    'BN-SHOES': ['UK-6', 'UK-6-5', 'UK-7', 'UK-7-5', 'UK-8', 'UK-8-5', 'UK-9', 'UK-9-5', 'UK-10', 'UK-10-5', 'UK-11', 'UK-11-5', 'UK-12'],
-    'PO-SHOES': ['UK-6', 'UK-6-5', 'UK-7', 'UK-7-5', 'UK-8', 'UK-8-5', 'UK-9', 'UK-9-5', 'UK-10', 'UK-10-5', 'UK-11', 'UK-11-5', 'UK-12']
+  "BN-CLOTHES": ["XS", "S", "M", "L", "XL"],
+  "PO-CLOTHES": [
+    "XS",
+    "S",
+    "M",
+    "L",
+    "XL",
+    "XS-TOP-S-BOTTOM",
+    "S-TOP-XS-BOTTOM",
+    "S-TOP-M-BOTTOM",
+    "M-TOP-S-BOTTOM",
+    "M-TOP-L-BOTTOM",
+    "L-TOP-M-BOTTOM",
+    "L-TOP-XL-BOTTOM",
+    "XL-TOP-L-BOTTOM",
+  ],
+  "BN-SHOES": [
+    "UK-6",
+    "UK-6-5",
+    "UK-7",
+    "UK-7-5",
+    "UK-8",
+    "UK-8-5",
+    "UK-9",
+    "UK-9-5",
+    "UK-10",
+    "UK-10-5",
+    "UK-11",
+    "UK-11-5",
+    "UK-12",
+  ],
+  "PO-SHOES": [
+    "UK-6",
+    "UK-6-5",
+    "UK-7",
+    "UK-7-5",
+    "UK-8",
+    "UK-8-5",
+    "UK-9",
+    "UK-9-5",
+    "UK-10",
+    "UK-10-5",
+    "UK-11",
+    "UK-11-5",
+    "UK-12",
+  ],
 };
 
 function isValidSize(category, size) {
-    const validSizes = VALID_SIZES[category];
-    return validSizes && validSizes.includes(size);
+  const validSizes = VALID_SIZES[category];
+  return validSizes && validSizes.includes(size);
 }
 ```
 
 ### Filename Format
+
 ```
 [CATEGORY]-[SIZE]-[BATCH]-[TIMESTAMP].jpg
 
@@ -146,6 +196,7 @@ Examples:
 ## 5. Database Schema
 
 ### Products Table (Cloudflare D1)
+
 ```sql
 CREATE TABLE IF NOT EXISTS products (
     id TEXT PRIMARY KEY,
@@ -169,6 +220,7 @@ CREATE TABLE IF NOT EXISTS products (
 ## 6. Shop Filter Mapping
 
 ### Category Pills (shop.html)
+
 ```html
 <button data-category="BN-CLOTHES">Brand New Clothes</button>
 <button data-category="BN-SHOES">Brand New Shoes</button>
@@ -177,6 +229,7 @@ CREATE TABLE IF NOT EXISTS products (
 ```
 
 ### Size Filter (Dynamic)
+
 - Populated from `product.sizes` array
 - Sorted: numbers first (UK-6, UK-7...), then strings (XS, S, M...)
 - Hidden until category selected
@@ -185,18 +238,19 @@ CREATE TABLE IF NOT EXISTS products (
 
 ## 7. Change History
 
-| Date | Change | By | Reason |
-|------|--------|-----|--------|
-| 2025-10-02 | Created SBS 8UNITY Registry | System | Unify taxonomy across all systems |
-| 2025-10-02 | Changed `.5` to `-5` for half sizes | System | CF Images lowercase requirement |
-| 2025-10-02 | Removed XXS, XXL, XXXL from BN-CLOTHES | System | Standardize to XS-XL only |
-| 2025-10-02 | Added mixed top/bottom for PO-CLOTHES | System | Support outfit sets |
+| Date       | Change                                 | By     | Reason                            |
+| ---------- | -------------------------------------- | ------ | --------------------------------- |
+| 2025-10-02 | Created SBS 8UNITY Registry            | System | Unify taxonomy across all systems |
+| 2025-10-02 | Changed `.5` to `-5` for half sizes    | System | CF Images lowercase requirement   |
+| 2025-10-02 | Removed XXS, XXL, XXXL from BN-CLOTHES | System | Standardize to XS-XL only         |
+| 2025-10-02 | Added mixed top/bottom for PO-CLOTHES  | System | Support outfit sets               |
 
 ---
 
 ## 8. Emergency Contacts
 
 **If this taxonomy needs to change:**
+
 1. Update this document first
 2. Run global search for old values
 3. Update all 5 implementation files
@@ -205,6 +259,7 @@ CREATE TABLE IF NOT EXISTS products (
 6. Deploy to production
 
 **Critical Files:**
+
 - `/functions/api/products.js` (API sizes)
 - `/public/admin/inventory/index.html` (uploader dropdowns)
 - `/workers/sbs-products-api.js` (worker sizes)

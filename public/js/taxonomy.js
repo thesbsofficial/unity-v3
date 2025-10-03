@@ -19,7 +19,7 @@ export const SIZES = {
     'BN-CLOTHES': [
         'XS', 'S', 'M', 'L', 'XL'
     ],
-    
+
     'PO-CLOTHES': [
         // Standard sizes
         'XS', 'S', 'M', 'L', 'XL',
@@ -33,7 +33,7 @@ export const SIZES = {
         'L-TOP-XL-BOTTOM',
         'XL-TOP-L-BOTTOM'
     ],
-    
+
     'BN-SHOES': [
         'UK-6', 'UK-6-5',
         'UK-7', 'UK-7-5',
@@ -43,7 +43,7 @@ export const SIZES = {
         'UK-11', 'UK-11-5',
         'UK-12'
     ],
-    
+
     'PO-SHOES': [
         'UK-6', 'UK-6-5',
         'UK-7', 'UK-7-5',
@@ -66,7 +66,7 @@ export const SIZE_LABELS = {
         { value: 'L', label: 'L' },
         { value: 'XL', label: 'XL' }
     ],
-    
+
     'PO-CLOTHES': [
         // Standard
         { value: 'XS', label: 'XS' },
@@ -84,7 +84,7 @@ export const SIZE_LABELS = {
         { value: 'L-TOP-XL-BOTTOM', label: 'L Top / XL Bottom' },
         { value: 'XL-TOP-L-BOTTOM', label: 'XL Top / L Bottom' }
     ],
-    
+
     'BN-SHOES': [
         { value: 'UK-6', label: 'UK 6' },
         { value: 'UK-6-5', label: 'UK 6.5' },
@@ -100,7 +100,7 @@ export const SIZE_LABELS = {
         { value: 'UK-11-5', label: 'UK 11.5' },
         { value: 'UK-12', label: 'UK 12' }
     ],
-    
+
     'PO-SHOES': [
         { value: 'UK-6', label: 'UK 6' },
         { value: 'UK-6-5', label: 'UK 6.5' },

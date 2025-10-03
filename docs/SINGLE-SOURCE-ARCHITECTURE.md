@@ -179,6 +179,7 @@ taxonomy.js (Source)
 ## Before vs After
 
 ### Before (Hardcoded Everywhere)
+
 ```
 products.js:     sizes = ['XS', 'S', 'M', 'L', 'XL']
 inventory.html:  sizes = ['XS', 'S', 'M', 'L', 'XL']
@@ -188,6 +189,7 @@ Problem: Change 1 thing = edit 3+ files = easy to miss one
 ```
 
 ### After (Single Source)
+
 ```
 taxonomy.js:     SIZES = { 'BN-CLOTHES': ['XS', 'S', 'M', 'L', 'XL'] }
                      │
@@ -264,6 +266,7 @@ System restored
 ---
 
 **Legend:**
+
 - ✅ = Automatic via ES6 import
 - ⚙️ = Requires sync script
 - 📦 = Static file/data

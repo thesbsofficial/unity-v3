@@ -10,11 +10,13 @@
 Your Products API is successfully integrated with Cloudflare Images and returning all 4 products!
 
 ### Working URLs:
+
 - ✅ https://main.unity-v3.pages.dev/api/products
 - ✅ https://02a3426c.unity-v3.pages.dev/api/products
 - ✅ https://7b0bb966.unity-v3.pages.dev/api/products
 
 ### Current Issue:
+
 - ⚠️ https://thesbsofficial.com/api/products (custom domain routing issue)
 
 ---
@@ -22,12 +24,14 @@ Your Products API is successfully integrated with Cloudflare Images and returnin
 ## 📊 What's Working
 
 ### 1. Cloudflare Images Integration
+
 - **Account ID:** 625959b904a63f24f6bb7ec9b8c1ed7c ✅
 - **API Token:** uCL2lw_BMvQX5Iw_jG9KJXCY9uZQntJ0bu0gq4mI ✅
 - **Delivery Hash:** 7B8CAeDtA5h1f1Dyh_X-hg ✅
 - **Images Found:** 4 products ✅
 
 ### 2. API Response
+
 ```json
 {
   "success": true,
@@ -48,7 +52,9 @@ Your Products API is successfully integrated with Cloudflare Images and returnin
 ```
 
 ### 3. Environment Variables (Preview)
+
 All three required secrets are configured in Preview environment:
+
 - `CLOUDFLARE_ACCOUNT_ID` (from wrangler.toml vars)
 - `CLOUDFLARE_API_TOKEN` ✅
 - `CLOUDFLARE_IMAGES_HASH` ✅
@@ -58,33 +64,40 @@ All three required secrets are configured in Preview environment:
 ## ⚠️ Custom Domain Issue
 
 ### The Problem
+
 - Custom domain `thesbsofficial.com` routes to **Production environment** deployments only
 - All main branch deployments are currently **Preview environment**
 - Production branch was changed from "production" to "main" in settings
 - But existing deployments remain Preview until a fresh Production deployment is created
 
 ### Why It's Happening
+
 Cloudflare Pages deployment environments are determined at deployment time, not retroactively. When you deploy to `main` branch:
+
 - **Before settings change:** main → Preview
 - **After settings change:** main → Preview (still!) because the deployment system hasn't recognized the change yet
 
 ### The Solution Path
 
 **Option 1: Wait for Cloudflare (Recommended)**
+
 - Cloudflare may automatically create a Production deployment from main branch within 24 hours
 - The custom domain will automatically route to it once created
 - Your API will work on thesbsofficial.com
 
 **Option 2: GitHub Integration**
+
 - If you have GitHub Actions or Cloudflare Git integration set up
 - Push a commit to trigger an automated deployment
 - This should create a Production environment deployment
 
 **Option 3: Use Alias URL Temporarily**
+
 - Point users to https://main.unity-v3.pages.dev/api/products
 - This works immediately and has all the correct secrets
 
 **Option 4: Copy Secrets to Production (Already Done)**
+
 - We already added secrets to Production environment
 - Once a Production deployment is created, it will have the secrets
 - Custom domain will work automatically
@@ -94,12 +107,14 @@ Cloudflare Pages deployment environments are determined at deployment time, not 
 ## 🔑 Secrets Configuration
 
 ### Preview Environment (Working)
+
 ```bash
 CLOUDFLARE_API_TOKEN=uCL2lw_BMvQX5Iw_jG9KJXCY9uZQntJ0bu0gq4mI
 CLOUDFLARE_IMAGES_HASH=7B8CAeDtA5h1f1Dyh_X-hg
 ```
 
 ### Production Environment (Ready)
+
 ```bash
 CLOUDFLARE_API_TOKEN=uCL2lw_BMvQX5Iw_jG9KJXCY9uZQntJ0bu0gq4mI
 CLOUDFLARE_IMAGES_API_TOKEN=uCL2lw_BMvQX5Iw_jG9KJXCY9uZQntJ0bu0gq4mI
@@ -107,6 +122,7 @@ CLOUDFLARE_IMAGES_HASH=7B8CAeDtA5h1f1Dyh_X-hg
 ```
 
 ### From wrangler.toml
+
 ```toml
 [vars]
 CLOUDFLARE_ACCOUNT_ID = "625959b904a63f24f6bb7ec9b8c1ed7c"
@@ -117,25 +133,30 @@ CLOUDFLARE_ACCOUNT_ID = "625959b904a63f24f6bb7ec9b8c1ed7c"
 ## 📝 What We Fixed Today
 
 ### 1. Account ID Correction
+
 - **Before:** 7a5e58e4c67e77f8bb8f8c4e7aa8e8a7 (wrong)
 - **After:** 625959b904a63f24f6bb7ec9b8c1ed7c ✅
 
 ### 2. API Token with Proper Permissions
+
 - Created new token with **Cloudflare Images Edit** permission
 - Verified working via direct API test
 - Token successfully fetches all 4 images
 
 ### 3. Delivery Hash Added
+
 - **Missing component** that was causing 401 errors
 - Added: `7B8CAeDtA5h1f1Dyh_X-hg`
 - Now generates correct image URLs
 
 ### 4. Environment Variables
+
 - Added secrets to both Preview and Production environments
 - Account ID configured in wrangler.toml
 - API code checks for all three required values
 
 ### 5. Production Branch Configuration
+
 - Changed from "production" branch to "main" branch
 - Simplified deployment to single branch
 - Matches your "DELETE PREVIEW" requirement
@@ -145,11 +166,13 @@ CLOUDFLARE_ACCOUNT_ID = "625959b904a63f24f6bb7ec9b8c1ed7c"
 ## 🧪 Testing the API
 
 ### Test Command
+
 ```powershell
 Invoke-RestMethod -Uri "https://main.unity-v3.pages.dev/api/products" -Method Get | ConvertTo-Json -Depth 3
 ```
 
 ### Expected Response
+
 ```json
 {
   "success": true,

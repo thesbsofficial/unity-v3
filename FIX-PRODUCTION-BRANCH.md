@@ -3,6 +3,7 @@
 ## The Problem
 
 Your deployments are split between two branches:
+
 - **`production` branch** = Has environment variables ✅
 - **`main` branch** = Treated as Preview, NO environment variables ❌
 
@@ -41,6 +42,7 @@ Your Cloudflare Pages project was configured with `production` as the production
 ## After the Fix
 
 Once you set `main` as the production branch:
+
 - All future deploys to `main` will be **Production** deployments ✅
 - They will have access to your environment variables ✅
 - Your API will work with Cloudflare Images ✅

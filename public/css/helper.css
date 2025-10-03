@@ -1,0 +1,48 @@
+/* 🆘 SBS HELPER BUTTON STYLES */
+
+.sbs-help-btn {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(212, 175, 55, 0.15);
+    border: 1.5px solid rgba(212, 175, 55, 0.4);
+    color: #d4af37;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    z-index: 10;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    line-height: 1;
+    padding: 0;
+}
+
+.sbs-help-btn:hover {
+    background: rgba(212, 175, 55, 0.25);
+    border-color: #d4af37;
+    transform: scale(1.1);
+}
+
+.sbs-help-btn:active {
+    transform: scale(0.95);
+}
+
+/* For sections that need relative positioning */
+.help-section {
+    position: relative;
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+    .sbs-help-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 18px;
+    }
+}

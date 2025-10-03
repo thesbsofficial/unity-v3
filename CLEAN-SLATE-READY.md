@@ -8,6 +8,7 @@
 ## **What Was Done**
 
 ### **1. Reverted Hero Image** ✅
+
 - Back to original styling
 - Normal padding (2rem on mobile)
 - No object-fit cover
@@ -15,11 +16,13 @@
 - Clean, simple responsive behavior
 
 ### **2. Deleted Old SBS Account** ✅
+
 - Removed from database completely
 - Deleted associated sessions
 - Username `SBS` is now available
 
 ### **3. Removed Special Login Code** ✅
+
 - Cleaned up the first-login password setup
 - Back to normal login flow
 - No more special cases
@@ -32,6 +35,7 @@
 
 1. Go to: https://00f9257a.unity-v3.pages.dev/register
 2. Fill in:
+
    - **Social Handle:** `SBS`
    - **Email:** `fredbademosi1@icloud.com`
    - **Password:** [Whatever you want]
@@ -49,7 +53,7 @@
 ## **Deployments**
 
 **Production:** https://00f9257a.unity-v3.pages.dev  
-**Main:** https://e08c203a.unity-v3.pages.dev  
+**Main:** https://e08c203a.unity-v3.pages.dev
 
 ---
 
@@ -57,24 +61,27 @@
 
 ✅ No SBS account exists  
 ✅ Username available for registration  
-✅ Clean slate ready  
+✅ Clean slate ready
 
 ---
 
 ## **Changes Made**
 
 ### `public/index.html`
+
 - Reverted mobile hero image styling
 - Removed `object-fit: cover`
 - Removed `min-height: 50vh`
 - Back to simple responsive design
 
 ### `functions/api/[[path]].js`
+
 - Removed special SBS first-login code
 - Back to standard login verification
 - Clean code, no special cases
 
 ### Database
+
 - Deleted sessions for SBS user
 - Deleted SBS user account
 - Ready for fresh signup
@@ -89,4 +96,3 @@
 ✅ **Ready:** Sign up fresh as SBS!
 
 Go ahead and register now! 🚀
-

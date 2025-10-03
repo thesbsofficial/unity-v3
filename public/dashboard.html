@@ -513,15 +513,18 @@
                 <ul class="sidebar-menu">
                     <li><a href="#" class="active" data-section="overview">Overview</a></li>
                     <li style="margin-top: 1rem; padding: 0.5rem 0; border-top: 1px solid var(--border-subtle);">
-                        <strong style="color: var(--primary-gold); font-size: 0.85rem; padding: 0 1rem; display: block; margin-bottom: 0.5rem;">BUY</strong>
+                        <strong
+                            style="color: var(--primary-gold); font-size: 0.85rem; padding: 0 1rem; display: block; margin-bottom: 0.5rem;">BUY</strong>
                     </li>
                     <li><a href="#" data-section="orders">My Orders</a></li>
                     <li style="margin-top: 1rem; padding: 0.5rem 0; border-top: 1px solid var(--border-subtle);">
-                        <strong style="color: var(--primary-gold); font-size: 0.85rem; padding: 0 1rem; display: block; margin-bottom: 0.5rem;">SELL</strong>
+                        <strong
+                            style="color: var(--primary-gold); font-size: 0.85rem; padding: 0 1rem; display: block; margin-bottom: 0.5rem;">SELL</strong>
                     </li>
                     <li><a href="#" data-section="submissions">My Sales</a></li>
                     <li style="margin-top: 1rem; padding: 0.5rem 0; border-top: 1px solid var(--border-subtle);">
-                        <strong style="color: var(--primary-gold); font-size: 0.85rem; padding: 0 1rem; display: block; margin-bottom: 0.5rem;">SETTINGS</strong>
+                        <strong
+                            style="color: var(--primary-gold); font-size: 0.85rem; padding: 0 1rem; display: block; margin-bottom: 0.5rem;">SETTINGS</strong>
                     </li>
                     <li><a href="#" data-section="profile">Edit Profile</a></li>
                     <li><a href="#" data-section="settings">Privacy & Data</a></li>
@@ -901,7 +904,7 @@
                 if (data.success) {
                     // Update session storage with new user data
                     sessionStorage.setItem('sbs_user', JSON.stringify(data.user));
-                    
+
                     messageDiv.innerHTML = '<strong style="color: var(--success-green);">✅ Profile updated successfully!</strong>';
                     messageDiv.style.display = 'block';
                     messageDiv.style.background = 'rgba(76, 175, 80, 0.1)';

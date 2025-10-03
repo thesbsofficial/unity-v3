@@ -689,7 +689,7 @@
                     }
                     // Save login time for session expiry check
                     sessionStorage.setItem('sbs_login_time', Date.now().toString());
-                    
+
                     const redirect = new URLSearchParams(window.location.search).get('redirect');
                     const defaultRedirect = data.user?.role === 'admin' ? '/admin/' : '/dashboard.html';
                     window.location.replace(redirect || defaultRedirect);
@@ -771,20 +771,20 @@
                             </button>
                         </div>
                     `;
-                    
+
                     // Add click handler for resend button
                     document.getElementById('resendVerification')?.addEventListener('click', async () => {
                         try {
                             const resendBtn = document.getElementById('resendVerification');
                             resendBtn.textContent = 'Sending...';
                             resendBtn.disabled = true;
-                            
+
                             const resendResponse = await fetch('/api/resend-verification', {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({ email: data.email })
                             });
-                            
+
                             const resendData = await resendResponse.json();
                             if (resendData.success) {
                                 messageContainer.innerHTML = '<div class="message success">✅ Verification email sent! Check your inbox.</div>';

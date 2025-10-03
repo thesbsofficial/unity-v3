@@ -9,7 +9,7 @@
 export async function sendBeautifulVerificationEmail(apiKey, email, name, token, siteUrl) {
     const verifyUrl = `${siteUrl}/verify-email.html?token=${token}`;
     const firstName = name ? name.split(' ')[0] : 'there';
-    
+
     const html = `
 <!DOCTYPE html>
 <html>

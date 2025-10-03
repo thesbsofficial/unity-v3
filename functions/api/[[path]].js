@@ -229,10 +229,10 @@ export async function onRequest(context) {
       if (exists) return json({ success: false, error: "User already exists" }, 409, headers);
 
       const { hash, salt, type, iterations } = await hashPassword(body.password);
-      
+
       // Email verification: 0 = not verified (if email provided), 1 = verified (if no email)
       const emailVerified = body.email ? 0 : 1;
-      
+
       const res = await env.DB.prepare(
         `INSERT INTO users
         (social_handle,email,phone,password_hash,password_salt,password_hash_type,password_iterations,
@@ -266,11 +266,11 @@ export async function onRequest(context) {
           const token = await createVerificationToken(env.DB, userId);
           const siteUrl = env.SITE_URL || 'https://thesbsofficial.com';
           await sendVerificationEmail(body.email, token, siteUrl);
-          
+
           return json(
-            { 
-              success: true, 
-              message: "Account created! Check your email to verify your account.", 
+            {
+              success: true,
+              message: "Account created! Check your email to verify your account.",
               user_id: userId,
               email_sent: true
             },
@@ -281,9 +281,9 @@ export async function onRequest(context) {
           console.error('Failed to send verification email:', emailError);
           // Account still created, just email failed
           return json(
-            { 
-              success: true, 
-              message: "Account created! Email verification will be sent shortly.", 
+            {
+              success: true,
+              message: "Account created! Email verification will be sent shortly.",
               user_id: userId,
               email_sent: false
             },
@@ -314,8 +314,8 @@ export async function onRequest(context) {
 
       // Check if email verification is required
       if (user.email && user.email_verified === 0) {
-        return json({ 
-          success: false, 
+        return json({
+          success: false,
           error: "Please verify your email before logging in. Check your inbox for the verification link.",
           email_verification_required: true,
           email: user.email
@@ -361,21 +361,21 @@ export async function onRequest(context) {
     if (path === "/api/verify-email" && method === "POST") {
       const body = await request.json();
       const { token } = body;
-      
+
       if (!token) {
         return json({ success: false, error: "Token required" }, 400, headers);
       }
-      
+
       try {
         const { verifyEmailToken } = await import('../lib/email.js');
         const result = await verifyEmailToken(env.DB, token);
-        
+
         if (!result.success) {
           return json({ success: false, error: result.error }, 400, headers);
         }
-        
-        return json({ 
-          success: true, 
+
+        return json({
+          success: true,
           message: "Email verified successfully! You can now log in.",
           user: result.user
         }, 200, headers);
@@ -388,39 +388,39 @@ export async function onRequest(context) {
     if (path === "/api/resend-verification" && method === "POST") {
       const body = await request.json();
       const { email } = body;
-      
+
       if (!email) {
         return json({ success: false, error: "Email required" }, 400, headers);
       }
-      
+
       // Find user by email
       const user = await env.DB.prepare(
         "SELECT id, email, email_verified, first_name FROM users WHERE email = ?"
       ).bind(email).first();
-      
+
       if (!user) {
         // Don't reveal if email exists or not (security)
-        return json({ 
-          success: true, 
+        return json({
+          success: true,
           message: "If that email exists, a verification link has been sent."
         }, 200, headers);
       }
-      
+
       if (user.email_verified === 1) {
-        return json({ 
-          success: false, 
+        return json({
+          success: false,
           error: "Email is already verified. You can log in now!"
         }, 400, headers);
       }
-      
+
       try {
         // Use Resend email system with beautiful templates
         const { createVerificationToken } = await import('../lib/email.js');
         const { sendBeautifulVerificationEmail } = await import('../lib/resend-wrapper.js');
-        
+
         const token = await createVerificationToken(env.DB, user.id);
         const siteUrl = env.SITE_URL || 'https://thesbsofficial.com';
-        
+
         await sendBeautifulVerificationEmail(
           env.RESEND_API_KEY,
           user.email,
@@ -428,15 +428,15 @@ export async function onRequest(context) {
           token,
           siteUrl
         );
-        
-        return json({ 
-          success: true, 
+
+        return json({
+          success: true,
           message: "Verification email sent! Check your inbox."
         }, 200, headers);
       } catch (error) {
         console.error('Resend verification error:', error);
-        return json({ 
-          success: false, 
+        return json({
+          success: false,
           error: "Failed to send verification email"
         }, 500, headers);
       }
@@ -446,20 +446,20 @@ export async function onRequest(context) {
     if (path === "/api/test-email" && method === "POST") {
       const body = await request.json();
       const { email } = body;
-      
+
       if (!email) {
         return json({ success: false, error: "Email required" }, 400, headers);
       }
-      
+
       try {
         const { sendVerificationEmail } = await import('../lib/email.js');
         const testToken = 'test-' + Math.random().toString(36).substring(2, 15);
         const siteUrl = env.SITE_URL || 'https://thesbsofficial.com';
-        
+
         const result = await sendVerificationEmail(email, testToken, siteUrl);
-        
-        return json({ 
-          success: true, 
+
+        return json({
+          success: true,
           message: `Test verification email sent to ${email}`,
           note: 'This is a test email with a dummy token',
           mailChannelsResponse: result
@@ -467,8 +467,8 @@ export async function onRequest(context) {
       } catch (error) {
         console.error('Test email error:', error);
         console.error('Error stack:', error.stack);
-        return json({ 
-          success: false, 
+        return json({
+          success: false,
           error: "Failed to send test email",
           details: error.message,
           errorType: error.name,
@@ -612,7 +612,7 @@ export async function onRequest(context) {
           // Create form data for CF Images API
           const cfFormData = new FormData();
           cfFormData.append('file', file);
-          
+
           // Set metadata if provided
           if (metadata) {
             const meta = JSON.parse(metadata);
@@ -628,7 +628,7 @@ export async function onRequest(context) {
             const cleanFilename = filename
               .replace(/\.(jpeg|jpg|png|webp)$/i, '') // Remove extension
               .toLowerCase(); // Convert to lowercase for CF Images compatibility
-            
+
             cfFormData.append('id', cleanFilename);
             console.log('Uploading with custom ID:', cleanFilename);
           }
@@ -648,8 +648,8 @@ export async function onRequest(context) {
           if (!uploadResponse.ok || !result.success) {
             console.error('CF Images upload failed:', result);
             console.error('Attempted filename:', filename);
-            return json({ 
-              success: false, 
+            return json({
+              success: false,
               error: result.errors?.[0]?.message || 'Upload failed',
               details: result,
               attemptedFilename: filename
@@ -657,7 +657,7 @@ export async function onRequest(context) {
           }
 
           console.log('✅ Image uploaded successfully:', result.result?.id);
-          
+
           return json({
             success: true,
             image: result.result,
@@ -668,10 +668,10 @@ export async function onRequest(context) {
 
         } catch (err) {
           console.error('Upload error:', err);
-          return json({ 
-            success: false, 
-            error: 'Upload failed', 
-            details: err.message 
+          return json({
+            success: false,
+            error: 'Upload failed',
+            details: err.message
           }, 500, headers);
         }
       }
@@ -715,8 +715,8 @@ export async function onRequest(context) {
 
           if (!updateResponse.ok || !result.success) {
             console.error('CF Images metadata update failed:', result);
-            return json({ 
-              success: false, 
+            return json({
+              success: false,
               error: result.errors?.[0]?.message || 'Metadata update failed',
               details: result
             }, updateResponse.status, headers);
@@ -731,10 +731,10 @@ export async function onRequest(context) {
 
         } catch (err) {
           console.error('Update metadata error:', err);
-          return json({ 
-            success: false, 
-            error: 'Metadata update failed', 
-            details: err.message 
+          return json({
+            success: false,
+            error: 'Metadata update failed',
+            details: err.message
           }, 500, headers);
         }
       }
@@ -782,8 +782,8 @@ export async function onRequest(context) {
 
           if (!deleteResponse.ok || !result.success) {
             console.error('CF Images delete failed:', result);
-            return json({ 
-              success: false, 
+            return json({
+              success: false,
               error: result.errors?.[0]?.message || 'Delete failed',
               details: result
             }, deleteResponse.status, headers);
@@ -797,10 +797,10 @@ export async function onRequest(context) {
 
         } catch (err) {
           console.error('Delete error:', err);
-          return json({ 
-            success: false, 
-            error: 'Delete failed', 
-            details: err.message 
+          return json({
+            success: false,
+            error: 'Delete failed',
+            details: err.message
           }, 500, headers);
         }
       }
@@ -848,7 +848,7 @@ export async function onRequest(context) {
     }
 
     // USER DATA & GDPR ENDPOINTS
-    
+
     // Get user's data (GDPR: Right to Access)
     if (path === "/api/users/me" && method === "GET") {
       const user = await env.DB.prepare(
@@ -857,9 +857,9 @@ export async function onRequest(context) {
       )
         .bind(session.user_id)
         .first();
-      
+
       if (!user) return json({ success: false, error: "User not found" }, 404, headers);
-      
+
       return json({ success: true, user }, 200, headers);
     }
 
@@ -871,25 +871,25 @@ export async function onRequest(context) {
       )
         .bind(session.user_id)
         .all();
-      
+
       return json({ success: true, orders: orders.results || [] }, 200, headers);
     }
 
     // EMAIL VERIFICATION ENDPOINTS
-    
+
     // Verify email token
     if (path === "/api/verify-email" && method === "POST") {
       const body = await request.json();
       const { token } = body;
-      
+
       if (!token) {
         return json({ success: false, error: "Token required" }, 400, headers);
       }
-      
+
       try {
         const { verifyEmailToken } = await import('../lib/email.js');
         const result = await verifyEmailToken(env.DB, token);
-        
+
         if (result.success) {
           return json({
             success: true,
@@ -910,36 +910,36 @@ export async function onRequest(context) {
         }, 500, headers);
       }
     }
-    
+
     // Resend verification email
     if (path === "/api/resend-verification" && method === "POST") {
       const body = await request.json();
       const { email } = body;
-      
+
       if (!email) {
         return json({ success: false, error: "Email required" }, 400, headers);
       }
-      
+
       // Find user
       const user = await env.DB.prepare(
         `SELECT id, email, email_verified_at FROM users WHERE email = ?`
       ).bind(email).first();
-      
+
       if (!user) {
         // Don't reveal if email exists
         return json({ success: true, message: "If that email is registered, a verification link has been sent." }, 200, headers);
       }
-      
+
       if (user.email_verified_at) {
         return json({ success: false, error: "Email already verified" }, 400, headers);
       }
-      
+
       try {
         const { createVerificationToken, sendVerificationEmail } = await import('../lib/email.js');
         const token = await createVerificationToken(env.DB, user.id);
         const siteUrl = env.SITE_URL || 'https://thesbsofficial.com';
         await sendVerificationEmail(email, token, siteUrl);
-        
+
         return json({
           success: true,
           message: "Verification email sent! Check your inbox."
@@ -961,7 +961,7 @@ export async function onRequest(context) {
       )
         .bind(session.user_id)
         .all();
-      
+
       return json({ success: true, cases: cases.results || [] }, 200, headers);
     }
 

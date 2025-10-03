@@ -2,7 +2,7 @@
 
 **Status**: 🟢 LIVE  
 **URL**: https://thesbsofficial.com/admin/inventory/  
-**Date**: 2025-10-02  
+**Date**: 2025-10-02
 
 ---
 
@@ -18,12 +18,15 @@
 ## 🚀 WHAT IT DOES
 
 ### View All Products
+
 - Shows **all products** from Cloudflare Images
 - Includes hidden and sold items (admin-only view)
 - Displays: name, price, category, brand, size, status, stock
 
 ### Edit Products
+
 **Click any product image** to edit:
+
 - ✏️ Product name
 - 💰 Price (in cents)
 - 📁 Category
@@ -34,6 +37,7 @@
 - 📝 Description
 
 ### Quick Actions
+
 - **🔄 Toggle Status** - Quick switch between active/hidden/sold
 - **🗑️ Delete** - Remove products from CF Images
 - **🔍 View** - Open full-size image
@@ -55,16 +59,16 @@
 
 Edit these fields for each product:
 
-| Field | Example | Note |
-|-------|---------|------|
-| Name | "Nike Air Max 90" | Product title |
-| Price | 8999 | In cents (= €89.99) |
-| Category | "BN-SHOES" | BN/PO + CLOTHES/SHOES |
-| Brand | "Nike" | Brand name |
-| Size | "UK-9" | Size (UK-6-11, XS-XXL, etc) |
-| Status | "active" | active, hidden, sold |
-| Stock | 5 | Quantity in stock |
-| Description | "Brand new..." | Product details |
+| Field       | Example           | Note                        |
+| ----------- | ----------------- | --------------------------- |
+| Name        | "Nike Air Max 90" | Product title               |
+| Price       | 8999              | In cents (= €89.99)         |
+| Category    | "BN-SHOES"        | BN/PO + CLOTHES/SHOES       |
+| Brand       | "Nike"            | Brand name                  |
+| Size        | "UK-9"            | Size (UK-6-11, XS-XXL, etc) |
+| Status      | "active"          | active, hidden, sold        |
+| Stock       | 5                 | Quantity in stock           |
+| Description | "Brand new..."    | Product details             |
 
 ---
 

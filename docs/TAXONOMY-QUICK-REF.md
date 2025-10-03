@@ -19,11 +19,13 @@ PO-SHOES    →  Pre-Owned Shoes
 ## Size Chart
 
 ### 👕 BN-CLOTHES (5 sizes)
+
 ```
 XS  S  M  L  XL
 ```
 
 ### 👔 PO-CLOTHES (13 sizes)
+
 ```
 Standard:
 XS  S  M  L  XL
@@ -36,6 +38,7 @@ L-TOP-XL-BOTTOM    XL-TOP-L-BOTTOM
 ```
 
 ### 👟 SHOES (13 sizes each)
+
 ```
 UK-6    UK-6-5
 UK-7    UK-7-5
@@ -62,6 +65,7 @@ UK-12
 ## Validation
 
 ### ✅ Valid Examples
+
 ```
 BN-CLOTHES + M
 PO-CLOTHES + S-TOP-M-BOTTOM
@@ -70,6 +74,7 @@ PO-SHOES + UK-11
 ```
 
 ### ❌ Invalid Examples
+
 ```
 BN-CLOTHES + XXL           (XXL not in BN-CLOTHES)
 PO-CLOTHES + XS-TOP-L-BOTTOM  (>1 size difference)
@@ -82,12 +87,14 @@ STREETWEAR + M             (STREETWEAR not a category)
 ## Quick Test
 
 **In browser console:**
+
 ```javascript
 // Load validator
-await import('/scripts/taxonomy-validator.js');
+await import("/scripts/taxonomy-validator.js");
 ```
 
 **Expected output:**
+
 - 4 categories ✅
 - No invalid patterns ✅
 - Mixed sizes in PO-CLOTHES only ✅
@@ -99,6 +106,7 @@ await import('/scripts/taxonomy-validator.js');
 ## Files to Update
 
 If taxonomy changes (RARE):
+
 1. `/docs/SBS-8UNITY-TAXONOMY.md` (source of truth)
 2. `/functions/api/products.js` (size assignment)
 3. `/public/admin/inventory/index.html` (dropdowns)
@@ -110,15 +118,18 @@ If taxonomy changes (RARE):
 ## Common Tasks
 
 ### Add New Size to Category
+
 1. Update `/docs/SBS-8UNITY-TAXONOMY.md`
 2. Update API files (3 files)
 3. Test upload + shop
 4. Deploy
 
 ### Add New Category
+
 ❌ **NOT ALLOWED** - System designed for 4 categories only
 
 ### Change Size Format
+
 1. Search codebase for old format
 2. Update all occurrences
 3. Test filename generation

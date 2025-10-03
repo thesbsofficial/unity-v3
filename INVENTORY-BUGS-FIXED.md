@@ -9,72 +9,86 @@
 ## **7 Critical Bugs Found & Fixed**
 
 ### **1. ❌ Search Function Completely Broken**
-**Problem:** 
+
+**Problem:**
+
 - Search box called `filterImages()` function that didn't exist
 - Typing in search box did nothing
 
 **Fix:**
+
 - Added `filterImages()` function that filters by filename and tags
 - Made function globally accessible via `window.filterImages`
 - Now searches work instantly as you type
 
 **Code Added:**
+
 ```javascript
 function filterImages() {
-    const searchTerm = document.getElementById('searchBox')?.value?.toLowerCase() || '';
-    if (!searchTerm) {
-        renderImages(allImages);
-        return;
-    }
-    const filtered = allImages.filter(img => 
-        img.filename.toLowerCase().includes(searchTerm) ||
-        img.metadata?.tags?.toLowerCase().includes(searchTerm)
-    );
-    renderImages(filtered);
+  const searchTerm =
+    document.getElementById("searchBox")?.value?.toLowerCase() || "";
+  if (!searchTerm) {
+    renderImages(allImages);
+    return;
+  }
+  const filtered = allImages.filter(
+    (img) =>
+      img.filename.toLowerCase().includes(searchTerm) ||
+      img.metadata?.tags?.toLowerCase().includes(searchTerm)
+  );
+  renderImages(filtered);
 }
 ```
 
 ---
 
 ### **2. ❌ Edit Tags Not Implemented**
+
 **Problem:**
+
 - `editImage()` function had TODO comment
 - Used `prompt()` but didn't actually update Cloudflare Images
 - Just logged to console and showed fake success message
 
 **Fix:**
+
 - Implemented actual API call to `/api/admin/update-image-metadata`
 - Added proper error handling
 - Shows real success/failure messages
 - Refreshes images after successful update
 
 **Code Fixed:**
+
 ```javascript
 async function editImage(id) {
-    // Now makes real API call to CF Images:
-    const response = await fetch('/api/admin/update-image-metadata', {
-        method: 'PATCH',
-        body: JSON.stringify({ imageId: id, metadata: { tags } })
-    });
-    // Proper error handling + real feedback
+  // Now makes real API call to CF Images:
+  const response = await fetch("/api/admin/update-image-metadata", {
+    method: "PATCH",
+    body: JSON.stringify({ imageId: id, metadata: { tags } }),
+  });
+  // Proper error handling + real feedback
 }
 ```
 
 ---
 
 ### **3. ❌ Bulk Edit Tags Not Implemented**
+
 **Problem:**
+
 - `saveBulkTags()` function had TODO comment
 - Didn't call any API - just showed fake alert
 - Multiple images couldn't actually be edited
 
 **Fix:**
+
 - Implemented bulk update loop with real API calls
 - Shows loading state on button ("⏳ Updating...")
 - Counts success/fail for each image
 - Shows detailed results: "✅ 5 succeeded, 2 failed"
 
 **Code Fixed:**
+
 ```javascript
 async function saveBulkTags() {
     for (const imageId of selectedImages) {
@@ -88,39 +102,46 @@ async function saveBulkTags() {
 ---
 
 ### **4. ❌ No Loading States for Delete Operations**
+
 **Problem:**
+
 - Single delete and bulk delete had no visual feedback
 - Users didn't know if delete was processing
 - Cards looked clickable during deletion
 
 **Fix:**
+
 - **Single Delete:** Card fades to 50% opacity during delete, disabled pointer events
 - **Bulk Delete:** Button shows "⏳ Deleting...", all selected cards fade out
 - Proper state restoration on error
 - Clear visual feedback throughout process
 
 **Code Added:**
+
 ```javascript
 // Single delete:
-card.style.opacity = '0.5';
-card.style.pointerEvents = 'none';
+card.style.opacity = "0.5";
+card.style.pointerEvents = "none";
 
 // Bulk delete:
-deleteBtn.innerHTML = '<span>⏳</span><span>Deleting...</span>';
+deleteBtn.innerHTML = "<span>⏳</span><span>Deleting...</span>";
 ```
 
 ---
 
 ### **5. ❌ Modal Doesn't Reset When Opened**
+
 **Problem:**
+
 - After uploading, if you opened modal again, old category/size/description were still there
 - Confused users - looked like old upload was still pending
 - Drop zone showed "✅ X files ready" even with no files selected
 
 **Fix:**
+
 - `openUploadModal()` now resets ALL form fields:
   - Category → blank
-  - Size → blank  
+  - Size → blank
   - Description → blank
   - File input → cleared
   - Drop zone → reset to "📤 Drop images here"
@@ -128,25 +149,29 @@ deleteBtn.innerHTML = '<span>⏳</span><span>Deleting...</span>';
   - Error messages → hidden
 
 **Code Added:**
+
 ```javascript
 function openUploadModal() {
-    // Reset everything:
-    document.getElementById('fileInput').value = '';
-    document.getElementById('uploadCategory').value = '';
-    document.getElementById('uploadSize').value = '';
-    // ... and more
+  // Reset everything:
+  document.getElementById("fileInput").value = "";
+  document.getElementById("uploadCategory").value = "";
+  document.getElementById("uploadSize").value = "";
+  // ... and more
 }
 ```
 
 ---
 
 ### **6. ❌ Drop Zone Doesn't Reset After Upload**
+
 **Problem:**
+
 - After successful upload, drop zone still showed "✅ 5 files ready to upload"
 - Made it look like files were still pending
 - Confusing user experience
 
 **Fix:**
+
 - Added drop zone reset to `closeUploadModal()`
 - Resets to initial state: "📤 Drop images here or click to browse"
 - Clean slate every time modal closes
@@ -154,11 +179,14 @@ function openUploadModal() {
 ---
 
 ### **7. ❌ Missing API Endpoint for Metadata Updates**
+
 **Problem:**
+
 - Frontend called `/api/admin/update-image-metadata` but endpoint didn't exist
 - All edit/bulk edit operations would fail with 404
 
 **Fix:**
+
 - Created new API endpoint in `functions/api/[[path]].js`
 - Endpoint: `PATCH /api/admin/update-image-metadata`
 - Takes: `{ imageId, metadata }`
@@ -166,15 +194,16 @@ function openUploadModal() {
 - Proper auth check + error handling
 
 **Code Added:**
+
 ```javascript
 if (path === "/api/admin/update-image-metadata" && method === "PATCH") {
-    const updateUrl = `https://api.cloudflare.com/client/v4/accounts/${accountId}/images/v1/${imageId}`;
-    const updateResponse = await fetch(updateUrl, {
-        method: 'PATCH',
-        headers: { 'Authorization': `Bearer ${apiToken}` },
-        body: JSON.stringify({ metadata: metadata })
-    });
-    // Full error handling
+  const updateUrl = `https://api.cloudflare.com/client/v4/accounts/${accountId}/images/v1/${imageId}`;
+  const updateResponse = await fetch(updateUrl, {
+    method: "PATCH",
+    headers: { Authorization: `Bearer ${apiToken}` },
+    body: JSON.stringify({ metadata: metadata }),
+  });
+  // Full error handling
 }
 ```
 
@@ -183,15 +212,17 @@ if (path === "/api/admin/update-image-metadata" && method === "PATCH") {
 ## **Files Modified**
 
 ### `public/admin/inventory/index.html`
+
 - Added `filterImages()` function (search functionality)
 - Fixed `editImage()` to make real API calls
-- Fixed `saveBulkTags()` to make real API calls  
+- Fixed `saveBulkTags()` to make real API calls
 - Added loading states to `deleteImage()` and `bulkDelete()`
 - Enhanced `openUploadModal()` to reset all form fields
 - Enhanced `closeUploadModal()` to reset drop zone
 - Made `filterImages` globally accessible via `window.filterImages`
 
 ### `functions/api/[[path]].js`
+
 - Added new endpoint: `PATCH /api/admin/update-image-metadata`
 - Full Cloudflare Images API integration
 - Auth checks + error handling
@@ -201,7 +232,7 @@ if (path === "/api/admin/update-image-metadata" && method === "PATCH") {
 ## **Testing Checklist** ✅
 
 - [x] Search box filters by filename
-- [x] Search box filters by tags  
+- [x] Search box filters by tags
 - [x] Single image edit updates tags
 - [x] Bulk edit updates multiple images
 - [x] Single delete shows loading state
@@ -235,13 +266,14 @@ if (path === "/api/admin/update-image-metadata" && method === "PATCH") {
 **URL:** https://1eec0b4e.unity-v3.pages.dev  
 **Alias:** https://main.unity-v3.pages.dev  
 **Status:** Live & Working  
-**Deployment ID:** 1eec0b4e  
+**Deployment ID:** 1eec0b4e
 
 ---
 
 ## **Summary**
 
 The inventory system is now **fully functional**:
+
 - ✅ Search works
 - ✅ Edit tags works (single + bulk)
 - ✅ Delete works (single + bulk)
@@ -251,4 +283,3 @@ The inventory system is now **fully functional**:
 - ✅ All bugs fixed and deployed
 
 **Next time you upload images, edit tags, search, or delete - everything should work smoothly!** 🚀
-

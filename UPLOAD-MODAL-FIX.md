@@ -9,12 +9,14 @@
 ## 🐛 Errors Fixed
 
 ### Error 1: `Cannot set properties of null (setting 'onchange')`
+
 ```
 inventory/:1078 Uncaught TypeError: Cannot set properties of null (setting 'onchange')
 at setupDropZone (inventory/:1078:32)
 ```
 
 ### Error 2: `Cannot read properties of null (reading 'click')`
+
 ```
 inventory/:1043 Uncaught TypeError: Cannot read properties of null (reading 'click')
 at zone.onclick (inventory/:1043:27)
@@ -27,34 +29,48 @@ at zone.onclick (inventory/:1043:27)
 ## 🔧 What Was Fixed
 
 ### 1. **Preserve File Input in DOM**
+
 When resetting the drop zone, now includes the file input:
+
 ```html
 zone.innerHTML = `
-    <div>Upload zone content...</div>
-    <input type="file" id="fileInput" multiple accept="image/*" style="display: none;">
+<div>Upload zone content...</div>
+<input
+  type="file"
+  id="fileInput"
+  multiple
+  accept="image/*"
+  style="display: none;"
+/>
 `;
 ```
 
 ### 2. **Added Safety Checks**
+
 `setupDropZone()` now checks if elements exist before accessing them:
+
 ```javascript
 if (!zone || !fileInput) {
-    console.warn('Upload zone or file input not found');
-    return;
+  console.warn("Upload zone or file input not found");
+  return;
 }
 ```
 
 ### 3. **Fixed Event Handlers**
+
 All event handlers now check for element existence:
+
 ```javascript
 zone.onclick = (e) => {
-    e.stopPropagation();
-    if (fileInput) fileInput.click(); // Safety check
+  e.stopPropagation();
+  if (fileInput) fileInput.click(); // Safety check
 };
 ```
 
 ### 4. **Auto Re-setup After innerHTML Changes**
+
 When zone content is replaced (file selection/drop), automatically re-attach handlers:
+
 ```javascript
 zone.innerHTML = `...new content...`;
 setTimeout(() => setupDropZone(), 0); // Re-attach handlers
@@ -65,12 +81,15 @@ setTimeout(() => setupDropZone(), 0); // Re-attach handlers
 ## ✅ Changes Made
 
 ### Functions Updated:
+
 1. **`openUploadModal()`**
+
    - Added null checks for all elements
    - Preserves file input when resetting zone
    - Better error handling
 
 2. **`closeUploadModal()`**
+
    - Preserves file input in reset
    - Added null check for modal
 
@@ -85,11 +104,13 @@ setTimeout(() => setupDropZone(), 0); // Re-attach handlers
 ## 🧪 Testing
 
 ### Before Fix:
+
 - ❌ Clicking upload zone → Console errors
 - ❌ Opening modal repeatedly → Crashes
 - ❌ Drag-drop files → Multiple errors
 
 ### After Fix:
+
 - ✅ Upload zone clickable
 - ✅ File browser opens correctly
 - ✅ Drag-drop works
@@ -101,6 +122,7 @@ setTimeout(() => setupDropZone(), 0); // Re-attach handlers
 ## 📦 Deployment
 
 **Commit**: 6cfb7ff
+
 ```
 Fix upload modal null reference errors - preserve file input in DOM
 ```

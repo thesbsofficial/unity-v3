@@ -1,6 +1,7 @@
 # 🎯 SINGLE SOURCE CHEAT SHEET
 
 ## The Magic File
+
 ```
 /public/js/taxonomy.js  ← Edit this ONLY
 ```
@@ -10,6 +11,7 @@
 ## Quick Edit Guide
 
 ### Add New Size
+
 ```javascript
 // Open /public/js/taxonomy.js
 export const SIZES = {
@@ -28,6 +30,7 @@ export const SIZE_LABELS = {
 ```
 
 Then:
+
 ```bash
 node scripts/sync-taxonomy.js
 npx wrangler pages deploy public
@@ -37,11 +40,11 @@ npx wrangler pages deploy public
 
 ## What Happens Automatically
 
-| File | Updates | How |
-|------|---------|-----|
-| `products.js` | ✅ Auto | ES6 import |
+| File                   | Updates | How        |
+| ---------------------- | ------- | ---------- |
+| `products.js`          | ✅ Auto | ES6 import |
 | `inventory/index.html` | ✅ Auto | ES6 import |
-| `sbs-products-api.js` | ⚙️ Sync | Run script |
+| `sbs-products-api.js`  | ⚙️ Sync | Run script |
 
 ---
 
@@ -64,11 +67,13 @@ import('/js/taxonomy.js').then(t => console.log(t.SIZES))
 ## Current Setup
 
 **Categories:** 4
+
 ```
 BN-CLOTHES  BN-SHOES  PO-CLOTHES  PO-SHOES
 ```
 
 **Sizes:**
+
 - BN-CLOTHES: 5 (XS-XL)
 - PO-CLOTHES: 13 (standard + mixed)
 - Shoes: 13 each (UK-6 to UK-12)

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -190,7 +191,9 @@
         }
 
         @keyframes spin {
-            to { transform: rotate(360deg); }
+            to {
+                transform: rotate(360deg);
+            }
         }
 
         .controls {
@@ -221,10 +224,21 @@
             margin-bottom: 5px;
         }
 
-        .summary-card.success .number { color: #10b981; }
-        .summary-card.error .number { color: #ef4444; }
-        .summary-card.warning .number { color: #f59e0b; }
-        .summary-card.info .number { color: #3b82f6; }
+        .summary-card.success .number {
+            color: #10b981;
+        }
+
+        .summary-card.error .number {
+            color: #ef4444;
+        }
+
+        .summary-card.warning .number {
+            color: #f59e0b;
+        }
+
+        .summary-card.info .number {
+            color: #3b82f6;
+        }
 
         .summary-card .label {
             color: #999;
@@ -245,6 +259,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="header">
@@ -484,7 +499,7 @@
                     description: 'Check /api/admin/upload-image endpoint exists',
                     test: async () => {
                         // Just check if endpoint responds (OPTIONS request)
-                        const res = await fetch('/api/admin/upload-image', { 
+                        const res = await fetch('/api/admin/upload-image', {
                             method: 'OPTIONS',
                             credentials: 'include'
                         });
@@ -501,13 +516,13 @@
                         const formData = new FormData();
                         formData.append('filename', 'test.jpg');
                         // Intentionally missing file
-                        
+
                         const res = await fetch('/api/admin/upload-image', {
                             method: 'POST',
                             credentials: 'include',
                             body: formData
                         });
-                        
+
                         const data = await res.json();
                         if (res.status === 400 && data.error && data.error.includes('file')) {
                             return { success: true, data: { message: 'Correctly rejects missing file', status: res.status } };
@@ -525,7 +540,7 @@
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ imageId: 'test-nonexistent' })
                         });
-                        
+
                         // Should respond (even if image doesn't exist, endpoint works)
                         if (res.status === 404 || res.status === 400 || res.status === 200) {
                             return { success: true, data: { status: res.status, note: 'Endpoint responding' } };
@@ -543,7 +558,7 @@
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({}) // Missing imageId
                         });
-                        
+
                         const data = await res.json();
                         if (res.status === 400 && data.error) {
                             return { success: true, data: { message: 'Correctly rejects missing ID', status: res.status } };
@@ -558,16 +573,18 @@
                         const res = await fetch('/admin/inventory/');
                         if (!res.ok) throw new Error(`Status: ${res.status}`);
                         const html = await res.text();
-                        
+
                         // Check for delete functionality
                         const hasDeleteBtn = html.includes('deleteImage') || html.includes('Delete');
                         const hasBulkDelete = html.includes('bulkDelete') || html.includes('Delete Selected');
-                        
-                        return { success: true, data: { 
-                            status: res.status, 
-                            hasDeleteButton: hasDeleteBtn,
-                            hasBulkDelete: hasBulkDelete
-                        }};
+
+                        return {
+                            success: true, data: {
+                                status: res.status,
+                                hasDeleteButton: hasDeleteBtn,
+                                hasBulkDelete: hasBulkDelete
+                            }
+                        };
                     }
                 },
                 {
@@ -577,23 +594,25 @@
                         const res = await fetch('/admin/inventory/');
                         if (!res.ok) throw new Error(`Status: ${res.status}`);
                         const html = await res.text();
-                        
+
                         // Check for required field indicators
                         const hasCategoryField = html.includes('uploadCategory');
                         const hasSizeField = html.includes('uploadSize');
                         const hasRequiredMarker = html.includes('REQUIRED') || html.includes('required');
                         const hasValidation = html.includes('if (!category') || html.includes('if (!size');
-                        
+
                         if (!hasCategoryField || !hasSizeField) {
                             throw new Error('Missing category or size fields');
                         }
-                        
-                        return { success: true, data: { 
-                            hasCategoryField,
-                            hasSizeField,
-                            hasRequiredMarker,
-                            hasValidation
-                        }};
+
+                        return {
+                            success: true, data: {
+                                hasCategoryField,
+                                hasSizeField,
+                                hasRequiredMarker,
+                                hasValidation
+                            }
+                        };
                     }
                 },
                 {
@@ -603,23 +622,25 @@
                         const res = await fetch('/admin/inventory/');
                         if (!res.ok) throw new Error(`Status: ${res.status}`);
                         const html = await res.text();
-                        
+
                         // Check for smart filename functionality
                         const hasSmartNaming = html.includes('Smart Naming') || html.includes('generateSmartFilename');
                         const hasPreview = html.includes('uploadFilenamePreview');
                         const hasCategoryOptions = html.includes('BN-CLOTHES') && html.includes('PO-SHOES');
                         const hasSizeOptions = html.includes('UK-') || html.includes('XS') || html.includes('XL');
-                        
+
                         if (!hasSmartNaming) {
                             throw new Error('Smart filename generator not found');
                         }
-                        
-                        return { success: true, data: { 
-                            hasSmartNaming,
-                            hasPreview,
-                            hasCategoryOptions,
-                            hasSizeOptions
-                        }};
+
+                        return {
+                            success: true, data: {
+                                hasSmartNaming,
+                                hasPreview,
+                                hasCategoryOptions,
+                                hasSizeOptions
+                            }
+                        };
                     }
                 },
                 {
@@ -629,22 +650,24 @@
                         const res = await fetch('/admin/inventory/');
                         if (!res.ok) throw new Error(`Status: ${res.status}`);
                         const html = await res.text();
-                        
+
                         // Check that handleFiles receives category/size parameters
                         const handleFilesHasParams = html.includes('handleFiles(files, category, size');
                         const processUploadValidates = html.includes('if (!category') && html.includes('if (!size');
                         const hasProcessUploadButton = html.includes('processUpload');
-                        
+
                         if (!handleFilesHasParams) {
                             throw new Error('handleFiles should require category/size parameters');
                         }
-                        
-                        return { success: true, data: { 
-                            handleFilesHasParams,
-                            processUploadValidates,
-                            hasProcessUploadButton,
-                            message: 'Files wait for category/size before upload'
-                        }};
+
+                        return {
+                            success: true, data: {
+                                handleFilesHasParams,
+                                processUploadValidates,
+                                hasProcessUploadButton,
+                                message: 'Files wait for category/size before upload'
+                            }
+                        };
                     }
                 }
             ],
@@ -669,7 +692,7 @@
                     description: 'Test that unauthorized API access returns proper error',
                     test: async () => {
                         // Test admin endpoint without auth
-                        const res = await fetch('/api/admin/upload-image', { 
+                        const res = await fetch('/api/admin/upload-image', {
                             method: 'POST',
                             credentials: 'omit'
                         });
@@ -792,10 +815,12 @@
                         if (!res.ok) throw new Error(`CF Images API error: ${res.status}`);
                         if (!data.success) throw new Error(data.error || 'API returned success: false');
                         if (!data.products) throw new Error('No products array in response');
-                        return { success: true, data: { 
-                            imageCount: data.products.length, 
-                            accountHash: data.products[0]?.image?.includes('imagedelivery.net') || false 
-                        }};
+                        return {
+                            success: true, data: {
+                                imageCount: data.products.length,
+                                accountHash: data.products[0]?.image?.includes('imagedelivery.net') || false
+                            }
+                        };
                     }
                 },
                 {
@@ -851,7 +876,7 @@
         async function runTest(test, category) {
             const testId = `test-${category}-${Date.now()}-${Math.random()}`;
             const container = document.getElementById(`${category}-tests`);
-            
+
             // Create test item
             const testItem = document.createElement('div');
             testItem.className = 'test-item running';
@@ -870,7 +895,7 @@
 
             try {
                 const result = await test.test();
-                
+
                 if (result.warning) {
                     testItem.className = 'test-item warning';
                     testItem.querySelector('.test-status').textContent = '⚠️';
@@ -908,7 +933,7 @@
         async function runSection(section) {
             const container = document.getElementById(`${section}-tests`);
             container.innerHTML = '';
-            
+
             const sectionTests = tests[section];
             for (const test of sectionTests) {
                 await runTest(test, section);
@@ -933,7 +958,7 @@
         function clearResults() {
             testResults = { total: 0, passed: 0, failed: 0, warnings: 0 };
             updateSummary();
-            
+
             for (const section of Object.keys(tests)) {
                 document.getElementById(`${section}-tests`).innerHTML = '';
             }
@@ -952,4 +977,5 @@
         });
     </script>
 </body>
+
 </html>

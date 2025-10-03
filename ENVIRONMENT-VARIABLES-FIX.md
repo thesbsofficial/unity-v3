@@ -9,11 +9,13 @@
 ## 🔍 THE PROBLEM
 
 ### Current Configuration (UPDATED):
+
 - **Production Branch**: `main`
 - **Deploying To**: `main`
 - **Secrets Location**: Production environment (main)
 
 ### What's Happening:
+
 Your secrets (CLOUDFLARE_IMAGES_API_TOKEN, CLOUDFLARE_IMAGES_HASH) live in the **Production** environment. Cloudflare Pages only makes those secrets available to the branch configured as **Production** (now `main`).
 
 ---
@@ -25,6 +27,7 @@ Your secrets (CLOUDFLARE_IMAGES_API_TOKEN, CLOUDFLARE_IMAGES_HASH) live in the *
 ### Optional: Add secrets to Preview environment (only if you re-enable it)
 
 **Steps**:
+
 ```bash
 # Open Cloudflare Dashboard
 # Navigate: Workers & Pages > unity-v3 > Settings > General
@@ -34,6 +37,7 @@ Your secrets (CLOUDFLARE_IMAGES_API_TOKEN, CLOUDFLARE_IMAGES_HASH) live in the *
 **Result**: Deployments triggered from `main` (including wrangler deploys with `--branch main`) have access to production secrets.
 
 **Steps**:
+
 1. In Cloudflare Dashboard
 2. **Variables and Secrets** page
 3. Click **Add variable** button
@@ -61,16 +65,19 @@ Your secrets (CLOUDFLARE_IMAGES_API_TOKEN, CLOUDFLARE_IMAGES_HASH) live in the *
 With production already set to `main`:
 
 1. **Redeploy** (or it may auto-redeploy):
+
 ```bash
 wrangler pages deploy public --branch main
 ```
 
 2. **Test Products API**:
+
 ```bash
 curl https://main.unity-v3.pages.dev/api/products
 ```
 
 3. **Expected Result**:
+
 ```json
 {
   "success": true,
@@ -81,7 +88,7 @@ curl https://main.unity-v3.pages.dev/api/products
 ```
 
 4. **Run Diagnostic**:
-https://main.unity-v3.pages.dev/diagnostic.html (or custom domain)
+   https://main.unity-v3.pages.dev/diagnostic.html (or custom domain)
 
 Should now pass CF Images tests! ✅
 
@@ -90,6 +97,7 @@ Should now pass CF Images tests! ✅
 ## 🔐 YOUR ENVIRONMENT VARIABLES
 
 All properly configured:
+
 - ✅ CLOUDFLARE_IMAGES_API_TOKEN (encrypted)
 - ✅ CLOUDFLARE_IMAGES_HASH (encrypted)
 - ✅ CLOUDFLARE_ACCOUNT_ID (plaintext)

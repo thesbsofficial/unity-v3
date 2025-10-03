@@ -9,6 +9,7 @@ This directory contains PowerShell scripts for Cloudflare infrastructure setup a
 Deploys to **production environment** (https://thesbsofficial.com)
 
 **Usage:**
+
 ```powershell
 .\scripts\deploy-production.ps1
 ```
@@ -31,12 +32,14 @@ Configures URL transform rules for the Cloudflare Pages deployment.
 ## 📝 Deployment Guide
 
 ### Quick Deploy to Production:
+
 ```powershell
 cd "C:\Users\fredb\Desktop\unity-v3\public (4)"
 .\scripts\deploy-production.ps1
 ```
 
 ### Test Changes Before Production:
+
 - Use your local tooling or staging workflow of choice.
 - When you're satisfied, run `deploy-production.ps1` to publish.
 

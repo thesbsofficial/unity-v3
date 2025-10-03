@@ -3,11 +3,13 @@
 ## Production Deployment (Updates thesbsofficial.com)
 
 **Simple One-Command Deploy:**
+
 ```powershell
 .\scripts\deploy-production.ps1
 ```
 
 That's it! This will:
+
 - ✅ Deploy to main branch (production)
 - ✅ Update https://thesbsofficial.com
 - ✅ Force upload all files (even if unchanged)
@@ -18,6 +20,7 @@ That's it! This will:
 ## 🔬 System Test Page
 
 After deploying, test everything at:
+
 - **https://thesbsofficial.com/debug.html** ← Easy to remember!
 - **https://thesbsofficial.com/test.html**
 - **https://thesbsofficial.com/admin/system-test.html**
@@ -50,6 +53,7 @@ cd "C:\Users\fredb\Desktop\unity-v3\public (4)"
 ## 🎯 What Gets Deployed
 
 When you run `deploy-production.ps1`, everything updates:
+
 - ✅ All HTML pages (shop, admin, etc.)
 - ✅ All API endpoints (/functions/api/)
 - ✅ Admin panels and tools
@@ -72,7 +76,7 @@ When you run `deploy-production.ps1`, everything updates:
 **Enable Development Mode in Cloudflare:**
 
 1. Go to: https://dash.cloudflare.com/
-2. Select **thesbsofficial.com** 
+2. Select **thesbsofficial.com**
 3. Click **Caching** → Toggle **Development Mode ON**
 4. Now when you deploy, changes appear instantly (no cache wait!)
 

@@ -10,7 +10,7 @@
     // ============================================================================
     // 🔐 AUTHENTICATION MODULE
     // ============================================================================
-    
+
     const Auth = {
         // Check if user is logged in
         isLoggedIn() {
@@ -74,7 +74,7 @@
     // ============================================================================
     // 🛒 CART MODULE
     // ============================================================================
-    
+
     const Cart = {
         // Accessibility and animation preferences
         prefersReducedMotion: window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : { matches: false },
@@ -121,7 +121,7 @@
     // ============================================================================
     // 🧭 NAVIGATION MODULE
     // ============================================================================
-    
+
     const Navigation = {
         // Update navigation based on login state
         updateNavigation() {
@@ -184,7 +184,7 @@
     // ============================================================================
     // 🚨 ERROR HANDLING MODULE
     // ============================================================================
-    
+
     const ErrorHandler = {
         errors: [],
         maxErrors: 50,
@@ -209,7 +209,7 @@
             };
 
             this.errors.push(error);
-            
+
             // Keep only recent errors
             if (this.errors.length > this.maxErrors) {
                 this.errors = this.errors.slice(-this.maxErrors);
@@ -249,7 +249,7 @@
     // ============================================================================
     // 🚀 MAIN APP INITIALIZATION
     // ============================================================================
-    
+
     function init() {
         // Initialize error handling first
         ErrorHandler.init();
@@ -276,11 +276,11 @@
         // Mobile menu event listeners
         const menuToggle = document.querySelector('.mobile-menu-toggle');
         const overlay = document.getElementById('mobile-menu-overlay');
-        
+
         if (menuToggle) {
             menuToggle.addEventListener('click', () => Navigation.toggleMobileMenu());
         }
-        
+
         if (overlay) {
             overlay.addEventListener('click', () => Navigation.toggleMobileMenu(false));
         }
@@ -291,7 +291,7 @@
     // ============================================================================
     // 📤 PUBLIC API EXPORT
     // ============================================================================
-    
+
     // Export unified API
     window.SBS = {
         auth: Auth,

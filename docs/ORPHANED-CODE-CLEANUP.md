@@ -16,6 +16,7 @@ After implementing the **Single Source of Truth** (`/public/js/taxonomy.js`), we
 ## 🗑️ Safe to Delete Entirely
 
 ### **1. "DELETE ME" Folder**
+
 ```
 /public/DELETE ME/
 ├── ADMIN-TERMINAL-INDEX.md
@@ -25,24 +26,28 @@ After implementing the **Single Source of Truth** (`/public/js/taxonomy.js`), we
 ├── IMPORTANT-SBS-TAXONOMY.md
 └── README-ADMIN.md
 ```
+
 **Action:** Delete entire folder  
 **Reason:** Old documentation, superseded by new docs
 
 ---
 
 ### **2. Archive Folders**
+
 ```
 /public/archive/
 ├── shop-backup-20251001-111736.html
 ├── TAG-TAXONOMY.md
 └── (other old backups)
 ```
+
 **Action:** Delete or move to git history  
 **Reason:** Old backups, no longer needed
 
 ---
 
 ### **3. Working Version Backups**
+
 ```
 /public/WORKING-VERSION/
 ├── backups/
@@ -52,15 +57,18 @@ After implementing the **Single Source of Truth** (`/public/js/taxonomy.js`), we
 └── docs/
     └── TECHNICAL-SPECS.md
 ```
+
 **Action:** Delete entire folder  
 **Reason:** Old versions, superseded by current system
 
 ---
 
 ### **4. Inventory Backup**
+
 ```
 /public/admin/inventory/index.html.backup
 ```
+
 **Action:** Delete  
 **Reason:** Old backup before taxonomy unification
 
@@ -69,25 +77,32 @@ After implementing the **Single Source of Truth** (`/public/js/taxonomy.js`), we
 ## ⚠️ Files to Update (Remove Hardcoded Taxonomy)
 
 ### **1. sell.html**
+
 **Location:** Lines 1653-1654  
 **Current:** Hardcoded size arrays
+
 ```javascript
 'Streetwear': ['XS', 'S', 'M', 'L', 'XL', ...],
 'Shoes': ['UK-6', 'UK-6-5', ...],
 ```
+
 **Action:** Import from taxonomy.js
+
 ```javascript
-import { SIZES } from '/js/taxonomy.js';
+import { SIZES } from "/js/taxonomy.js";
 ```
 
 ---
 
 ### **2. robust-shop.js**
+
 **Location:** Line 360  
 **Current:** Hardcoded size order
+
 ```javascript
-const sizeOrder = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+const sizeOrder = ["XS", "S", "M", "L", "XL", "XXL"];
 ```
+
 **Action:** Import from taxonomy or make dynamic
 
 ---
@@ -95,6 +110,7 @@ const sizeOrder = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
 ## ✅ Files That Are Correct (Keep)
 
 ### **Documentation (Reference Only)**
+
 - `/docs/SBS-8UNITY-TAXONOMY.md` ← Source spec
 - `/docs/TAXONOMY-QUICK-REF.md` ← Quick reference
 - `/docs/SINGLE-SOURCE-*.md` ← Guides
@@ -105,6 +121,7 @@ const sizeOrder = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
 ---
 
 ### **Validator (Intentional Copy)**
+
 - `/public/scripts/taxonomy-validator.js`
 
 **Why Keep:** Needs inline copy for validation tests. Should reference taxonomy.js eventually.
@@ -112,6 +129,7 @@ const sizeOrder = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
 ---
 
 ### **Worker (Semi-Auto)**
+
 - `/workers/sbs-products-api.js`
 
 **Why Keep:** Synced via script. Needs inline copy because workers can't import ES6.
@@ -121,17 +139,20 @@ const sizeOrder = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
 ## 📋 Cleanup Checklist
 
 ### Phase 1: Delete Dead Code
+
 - [ ] Delete `/public/DELETE ME/` folder
-- [ ] Delete `/public/archive/` folder  
+- [ ] Delete `/public/archive/` folder
 - [ ] Delete `/public/WORKING-VERSION/` folder
 - [ ] Delete `/public/admin/inventory/index.html.backup`
 
 ### Phase 2: Update Live Files
+
 - [ ] Update `sell.html` to import taxonomy
 - [ ] Update `robust-shop.js` to use taxonomy
 - [ ] Test all pages after changes
 
 ### Phase 3: Verify
+
 - [ ] Run `npm run test` (if exists)
 - [ ] Check shop loads
 - [ ] Check uploader works
@@ -163,6 +184,7 @@ git commit -m "🧹 Remove orphaned taxonomy code"
 ## 📊 Before vs After
 
 ### Before Cleanup
+
 ```
 Total files with taxonomy: 50+
 Single source?: No
@@ -171,6 +193,7 @@ Disk usage: ~20MB+ of duplicates
 ```
 
 ### After Cleanup
+
 ```
 Total files with taxonomy: 5 (1 source + 4 using it)
 Single source?: Yes ✅
@@ -183,6 +206,7 @@ Disk usage: ~2MB (90% reduction)
 ## 🚨 Safety Measures
 
 ### 1. Backup First
+
 ```bash
 git add -A
 git commit -m "Before taxonomy cleanup"
@@ -190,6 +214,7 @@ git tag before-cleanup
 ```
 
 ### 2. Test After
+
 ```bash
 # Test each page
 - Visit shop
@@ -199,6 +224,7 @@ git tag before-cleanup
 ```
 
 ### 3. Rollback if Needed
+
 ```bash
 git reset --hard before-cleanup
 ```
@@ -208,11 +234,13 @@ git reset --hard before-cleanup
 ## 📝 Files Using Taxonomy (Final State)
 
 ### Source
+
 ```
 /public/js/taxonomy.js  ← THE ONLY SOURCE
 ```
 
 ### Consumers
+
 ```
 /functions/api/products.js           ← import taxonomy
 /public/admin/inventory/index.html   ← import taxonomy
@@ -221,6 +249,7 @@ git reset --hard before-cleanup
 ```
 
 ### Documentation (Keep)
+
 ```
 /docs/SBS-8UNITY-TAXONOMY.md
 /docs/SINGLE-SOURCE-*.md

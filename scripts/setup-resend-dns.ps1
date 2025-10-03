@@ -11,7 +11,7 @@ $cfApiBase = "https://api.cloudflare.com/client/v4"
 
 $headers = @{
     "Authorization" = "Bearer $ApiToken"
-    "Content-Type" = "application/json"
+    "Content-Type"  = "application/json"
 }
 
 Write-Host "🌐 Setting up Resend DNS records for $domain..." -ForegroundColor Cyan
@@ -20,28 +20,28 @@ Write-Host ""
 # DNS Records to add
 $records = @(
     @{
-        type = "MX"
-        name = "send"
-        content = "feedback-smtp.eu-west-1.amazonses.com"
-        priority = 10
+        type        = "MX"
+        name        = "send"
+        content     = "feedback-smtp.eu-west-1.amazonses.com"
+        priority    = 10
         description = "Resend MX Record"
     },
     @{
-        type = "TXT"
-        name = "send"  
-        content = "v=spf1 include:amazonses.com ~all"
+        type        = "TXT"
+        name        = "send"  
+        content     = "v=spf1 include:amazonses.com ~all"
         description = "Resend SPF Record"
     },
     @{
-        type = "TXT"
-        name = "resend._domainkey"
-        content = "p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC0tcdRT38mIf4Z18Yq2Y5KubWs2wgvrVU6Egl387B2jpyIk2c/RmWAqnVWqkcC1IUb2LeCqqxLwk6O/LsysCAw2LZSt2ydvHzDrLKW8at2g7nwjZLxKyFIx2AP9odY+Qc7Pqpyy1FqNlqwUsIeaK+sMN6PtldByPE0M0p7XBgj+wIDAQAB"
+        type        = "TXT"
+        name        = "resend._domainkey"
+        content     = "p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC0tcdRT38mIf4Z18Yq2Y5KubWs2wgvrVU6Egl387B2jpyIk2c/RmWAqnVWqkcC1IUb2LeCqqxLwk6O/LsysCAw2LZSt2ydvHzDrLKW8at2g7nwjZLxKyFIx2AP9odY+Qc7Pqpyy1FqNlqwUsIeaK+sMN6PtldByPE0M0p7XBgj+wIDAQAB"
         description = "Resend DKIM Record"
     },
     @{
-        type = "TXT"
-        name = "_dmarc"
-        content = "v=DMARC1; p=none;"
+        type        = "TXT"
+        name        = "_dmarc"
+        content     = "v=DMARC1; p=none;"
         description = "Resend DMARC Record"
     }
 )
@@ -86,10 +86,10 @@ foreach ($record in $records) {
         Write-Host "📌 Adding $($record.description)..." -ForegroundColor Yellow
         
         $body = @{
-            type = $record.type
-            name = $record.name
+            type    = $record.type
+            name    = $record.name
             content = $record.content
-            ttl = 1 # Auto
+            ttl     = 1 # Auto
         }
         
         if ($record.priority) {
@@ -102,11 +102,13 @@ foreach ($record in $records) {
         
         if ($response.success) {
             Write-Host "✅ Added: $($record.name) ($($record.type))" -ForegroundColor Green
-        } else {
+        }
+        else {
             Write-Host "❌ Failed: $($record.name) - $($response.errors[0].message)" -ForegroundColor Red
         }
         
-    } catch {
+    }
+    catch {
         Write-Host "❌ Error adding $($record.name): $($_.Exception.Message)" -ForegroundColor Red
     }
 }

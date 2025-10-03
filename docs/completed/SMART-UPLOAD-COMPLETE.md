@@ -14,24 +14,25 @@ The inventory upload tool now **automatically extracts and stores metadata** fro
 
 When you upload with smart naming, the system automatically stores:
 
-| Field | Auto-Extracted From | Example |
-|-------|---------------------|---------|
-| **name** | Description or filename | "Nike Air Max 90" |
-| **category** | Upload form selection | "BN-SHOES" |
-| **size** | Upload form selection | "UK-9" |
-| **price** | Default to 0 | "0" (admin must set) |
-| **status** | Default to active | "active" |
-| **stock** | Default to 1 | "1" |
-| **description** | Cleaned filename | Auto-generated |
-| **batch** | Batch number | "B10030403" |
-| **uploadedBy** | Admin email | Your email |
-| **uploadedAt** | Timestamp | "2025-10-03T04:03:00Z" |
+| Field           | Auto-Extracted From     | Example                |
+| --------------- | ----------------------- | ---------------------- |
+| **name**        | Description or filename | "Nike Air Max 90"      |
+| **category**    | Upload form selection   | "BN-SHOES"             |
+| **size**        | Upload form selection   | "UK-9"                 |
+| **price**       | Default to 0            | "0" (admin must set)   |
+| **status**      | Default to active       | "active"               |
+| **stock**       | Default to 1            | "1"                    |
+| **description** | Cleaned filename        | Auto-generated         |
+| **batch**       | Batch number            | "B10030403"            |
+| **uploadedBy**  | Admin email             | Your email             |
+| **uploadedAt**  | Timestamp               | "2025-10-03T04:03:00Z" |
 
 ---
 
 ## 📋 HOW IT WORKS
 
 ### 1. **Upload with Smart Naming**
+
 ```
 Filename: CAT-BN-SHOES-SIZE-UK9-DATE-20251003-BATCH-B10030403-ITEM-001.jpeg
 Description: Nike Air Max 90
@@ -40,6 +41,7 @@ Description: Nike Air Max 90
 ```
 
 ### 2. **Metadata Stored in CF Images**
+
 ```json
 {
   "name": "Nike Air Max 90",
@@ -55,6 +57,7 @@ Description: Nike Air Max 90
 ```
 
 ### 3. **Shop Reads Metadata Automatically**
+
 ```
 /api/products → Returns products with all metadata
 Shop page → Displays products with correct names, sizes, categories
@@ -67,6 +70,7 @@ Shop page → Displays products with correct names, sizes, categories
 The system intelligently parses your filenames:
 
 **Example 1: With Description**
+
 ```
 Input: DESC-NIKE-AIR-MAX-CAT-BN-SHOES-SIZE-UK9-DATE-20251003...
 ↓
@@ -76,6 +80,7 @@ size: "UK-9"
 ```
 
 **Example 2: Without Description**
+
 ```
 Input: CAT-BN-CLOTHES-SIZE-M-DATE-20251003...
 ↓
@@ -85,6 +90,7 @@ size: "M"
 ```
 
 **Example 3: Using Upload Form Description**
+
 ```
 Upload form description: "Vintage Adidas Hoodie"
 ↓
@@ -96,6 +102,7 @@ name: "Vintage Adidas Hoodie" (uses your description)
 ## ✅ BENEFITS
 
 ### Before (Manual)
+
 1. ❌ Upload images
 2. ❌ Manually edit each one in CF Dashboard
 3. ❌ Set name, category, size individually
@@ -103,6 +110,7 @@ name: "Vintage Adidas Hoodie" (uses your description)
 5. ❌ Sizes default to "XS" everywhere
 
 ### After (Automatic) ✨
+
 1. ✅ Upload with smart naming + description
 2. ✅ **Metadata stored automatically**
 3. ✅ Shop reads correct names, sizes, categories
@@ -116,17 +124,20 @@ name: "Vintage Adidas Hoodie" (uses your description)
 ### Upload Endpoint: `POST /api/admin/upload-image`
 
 **Receives**:
+
 - File (image)
 - Filename (smart format)
 - Metadata JSON: `{ category, size, description, batch, item }`
 
 **Processes**:
+
 1. Extracts product name from filename or description
 2. Builds complete metadata object
 3. Uploads to Cloudflare Images with metadata
 4. Returns success with image ID
 
 **Stores in CF Images**:
+
 ```javascript
 metadata: {
   name: "Nike Air Max 90",
@@ -149,19 +160,23 @@ metadata: {
 ### Step-by-Step Upload Process
 
 1. **Open Inventory Manager**
+
    - Go to `/admin/inventory/`
    - Click **⬆️ Upload** button
 
 2. **Select Files**
+
    - Choose images or drag & drop
 
 3. **Fill Smart Naming Form**
+
    - ✅ Category (REQUIRED): BN-CLOTHES, BN-SHOES, etc.
    - ✅ Size (REQUIRED): M, L, UK-9, etc.
    - Optional: Description (becomes product name)
    - Optional: Filename format
 
 4. **Click START UPLOAD**
+
    - ✅ System uploads to CF Images
    - ✅ **Automatically stores ALL metadata**
    - ✅ Product name extracted/generated
@@ -181,6 +196,7 @@ metadata: {
 After upload, only **one field** needs manual editing:
 
 ### Set Price (Required)
+
 1. Go to `/admin/inventory/`
 2. Click product image to edit
 3. Set price in cents (e.g., 4599 for €45.99)
@@ -192,18 +208,18 @@ After upload, only **one field** needs manual editing:
 
 ## 🔍 METADATA FIELDS REFERENCE
 
-| Field | Auto-Set | Manual Edit Needed | Notes |
-|-------|----------|-------------------|-------|
-| name | ✅ Auto | Optional | From description or filename |
-| category | ✅ Auto | No | From upload form |
-| size | ✅ Auto | No | From upload form |
-| status | ✅ Auto (active) | Optional | Change if needed |
-| stock | ✅ Auto (1) | Optional | Adjust quantity |
-| **price** | ❌ (defaults to 0) | **YES** | **Must set manually** |
-| description | ✅ Auto | Optional | From filename |
-| batch | ✅ Auto | No | Tracking only |
-| uploadedBy | ✅ Auto | No | Your email |
-| uploadedAt | ✅ Auto | No | Timestamp |
+| Field       | Auto-Set           | Manual Edit Needed | Notes                        |
+| ----------- | ------------------ | ------------------ | ---------------------------- |
+| name        | ✅ Auto            | Optional           | From description or filename |
+| category    | ✅ Auto            | No                 | From upload form             |
+| size        | ✅ Auto            | No                 | From upload form             |
+| status      | ✅ Auto (active)   | Optional           | Change if needed             |
+| stock       | ✅ Auto (1)        | Optional           | Adjust quantity              |
+| **price**   | ❌ (defaults to 0) | **YES**            | **Must set manually**        |
+| description | ✅ Auto            | Optional           | From filename                |
+| batch       | ✅ Auto            | No                 | Tracking only                |
+| uploadedBy  | ✅ Auto            | No                 | Your email                   |
+| uploadedAt  | ✅ Auto            | No                 | Timestamp                    |
 
 ---
 
@@ -212,20 +228,24 @@ After upload, only **one field** needs manual editing:
 ### Test the Auto-Metadata
 
 1. Upload a test image:
+
    - Category: BN-SHOES
    - Size: UK-9
    - Description: "Test Nike Shoes"
 
 2. Check CF Images Dashboard:
+
    - ✅ Image has metadata
    - ✅ name = "Test Nike Shoes"
    - ✅ category = "BN-SHOES"
    - ✅ size = "UK-9"
 
 3. Check Products API:
+
    ```
    GET /api/products?debug=true
    ```
+
    - ✅ Product appears with correct name
    - ✅ Size shows "UK-9"
    - ✅ Category correct
@@ -240,6 +260,7 @@ After upload, only **one field** needs manual editing:
 ## 📦 FILES CREATED
 
 **New Endpoint**: `functions/api/admin/upload-image.js`
+
 - Handles file uploads
 - Extracts metadata from filenames
 - Stores in Cloudflare Images
@@ -258,11 +279,13 @@ After upload, only **one field** needs manual editing:
 ## 🎉 RESULTS
 
 ### Before
+
 - Upload → Products show as "XS" everywhere
 - Manual metadata entry required
 - Shop displays generic names
 
 ### After ✨
+
 - Upload → **Metadata stored automatically**
 - Only price needs editing
 - Shop displays **actual product names and sizes**

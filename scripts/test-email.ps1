@@ -15,7 +15,7 @@ while ($attempt -le $maxAttempts) {
     Write-Host "[$attempt/$maxAttempts] Testing..." -ForegroundColor Cyan -NoNewline
     
     try {
-        $response = Invoke-WebRequest -Uri "https://thesbsofficial.com/api/test-email" -Method POST -Headers @{"Content-Type"="application/json"} -Body '{"email":"fredbademosi1@icloud.com"}' -ErrorAction Stop
+        $response = Invoke-WebRequest -Uri "https://thesbsofficial.com/api/test-email" -Method POST -Headers @{"Content-Type" = "application/json" } -Body '{"email":"fredbademosi1@icloud.com"}' -ErrorAction Stop
         
         Write-Host " SUCCESS!" -ForegroundColor Green
         Write-Host "`n========================================" -ForegroundColor Green

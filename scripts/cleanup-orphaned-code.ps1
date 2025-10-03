@@ -61,11 +61,13 @@ foreach ($folder in $foldersToDelete) {
             Remove-Item -Path $folder -Recurse -Force
             $deleted += $folder
             Write-Host "   ✅ Deleted: $folder" -ForegroundColor Green
-        } catch {
+        }
+        catch {
             Write-Host "   ❌ Failed: $folder - $($_.Exception.Message)" -ForegroundColor Red
             $errors += $folder
         }
-    } else {
+    }
+    else {
         Write-Host "   ⏭️  Skipped: $folder (not found)" -ForegroundColor Gray
     }
 }
@@ -82,11 +84,13 @@ foreach ($file in $filesToDelete) {
             Remove-Item -Path $file -Force
             $deleted += $file
             Write-Host "   ✅ Deleted: $file" -ForegroundColor Green
-        } catch {
+        }
+        catch {
             Write-Host "   ❌ Failed: $file - $($_.Exception.Message)" -ForegroundColor Red
             $errors += $file
         }
-    } else {
+    }
+    else {
         Write-Host "   ⏭️  Skipped: $file (not found)" -ForegroundColor Gray
     }
 }
@@ -112,7 +116,8 @@ try {
     # Rough estimate based on typical sizes
     $savedSpace = ($deleted.Count * 1.5) # MB
     Write-Host "`n💾 Estimated space saved: ~$($savedSpace)MB" -ForegroundColor Cyan
-} catch {
+}
+catch {
     # Ignore errors
 }
 

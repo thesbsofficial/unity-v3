@@ -2,10 +2,10 @@
 # Updates SPF record to include MailChannels
 
 param(
-    [Parameter(Mandatory=$true)]
+    [Parameter(Mandatory = $true)]
     [string]$ApiToken,
     
-    [Parameter(Mandatory=$false)]
+    [Parameter(Mandatory = $false)]
     [string]$ZoneId = ""
 )
 
@@ -15,7 +15,7 @@ Write-Host "========================================" -ForegroundColor Cyan
 
 $headers = @{
     "Authorization" = "Bearer $ApiToken"
-    "Content-Type" = "application/json"
+    "Content-Type"  = "application/json"
 }
 
 try {
@@ -27,7 +27,8 @@ try {
         if ($zonesResponse.success -and $zonesResponse.result.Count -gt 0) {
             $ZoneId = $zonesResponse.result[0].id
             Write-Host "✓ Found Zone ID: $ZoneId" -ForegroundColor Green
-        } else {
+        }
+        else {
             Write-Host "✗ Could not find zone for thesbsofficial.com" -ForegroundColor Red
             exit 1
         }
@@ -51,7 +52,8 @@ try {
             if ($spfRecord.content -like "*relay.mailchannels.net*") {
                 Write-Host "`n✓ MailChannels already included in SPF!" -ForegroundColor Green
                 Write-Host "DNS is correct. Testing email..." -ForegroundColor Cyan
-            } else {
+            }
+            else {
                 # Update SPF record to include MailChannels
                 $newSpfContent = "v=spf1 include:_spf.mx.cloudflare.net include:relay.mailchannels.net ~all"
                 
@@ -60,10 +62,10 @@ try {
                 Write-Host "  $newSpfContent" -ForegroundColor Green
                 
                 $updateBody = @{
-                    type = "TXT"
-                    name = "@"
+                    type    = "TXT"
+                    name    = "@"
                     content = $newSpfContent
-                    ttl = 1
+                    ttl     = 1
                     proxied = $false
                 } | ConvertTo-Json
                 
@@ -74,23 +76,25 @@ try {
                     Write-Host "✓ MailChannels is now enabled!" -ForegroundColor Green
                     Write-Host "`nWaiting 30 seconds for DNS propagation..." -ForegroundColor Yellow
                     Start-Sleep -Seconds 30
-                } else {
+                }
+                else {
                     Write-Host "`n✗ Failed to update record" -ForegroundColor Red
                     Write-Host "Error: $($updateResponse.errors)" -ForegroundColor Red
                     exit 1
                 }
             }
-        } else {
+        }
+        else {
             Write-Host "`n✗ No SPF record found!" -ForegroundColor Red
             Write-Host "Creating new SPF record..." -ForegroundColor Yellow
             
             $newSpfContent = "v=spf1 include:_spf.mx.cloudflare.net include:relay.mailchannels.net ~all"
             
             $createBody = @{
-                type = "TXT"
-                name = "@"
+                type    = "TXT"
+                name    = "@"
                 content = $newSpfContent
-                ttl = 1
+                ttl     = 1
                 proxied = $false
             } | ConvertTo-Json
             
@@ -98,7 +102,8 @@ try {
             
             if ($createResponse.success) {
                 Write-Host "✓ SPF RECORD CREATED!" -ForegroundColor Green
-            } else {
+            }
+            else {
                 Write-Host "✗ Failed to create record" -ForegroundColor Red
                 exit 1
             }
@@ -111,14 +116,15 @@ try {
     Write-Host "========================================" -ForegroundColor Cyan
     
     Write-Host "`nSending test email..." -ForegroundColor Yellow
-    $emailResponse = Invoke-RestMethod -Uri "https://thesbsofficial.com/api/test-email" -Method POST -Headers @{"Content-Type"="application/json"} -Body '{"email":"fredbademosi1@icloud.com"}'
+    $emailResponse = Invoke-RestMethod -Uri "https://thesbsofficial.com/api/test-email" -Method POST -Headers @{"Content-Type" = "application/json" } -Body '{"email":"fredbademosi1@icloud.com"}'
     
     Write-Host "`n✓ SUCCESS!" -ForegroundColor Green
     Write-Host $emailResponse -ForegroundColor Cyan
     Write-Host "`n📧 CHECK YOUR INBOX: fredbademosi1@icloud.com" -ForegroundColor Yellow
     Write-Host "(Also check spam/junk folder)" -ForegroundColor Gray
     
-} catch {
+}
+catch {
     Write-Host "`n✗ ERROR:" -ForegroundColor Red
     Write-Host $_.Exception.Message -ForegroundColor Red
     

@@ -1,12 +1,14 @@
 # ✅ SIZE SYNC FIX COMPLETE
 
 ## Problem
+
 Category syncing worked fine between shop and admin, but **size information wasn't synced properly**. The two systems were using different size sources:
 
 - **Admin/Sell Forms**: ✅ Used taxonomy.js (single source)
 - **Shop**: ❌ Built size filters from product data (dynamic, inconsistent)
 
 ## Solution
+
 Redesigned the **shop** to use the same database source as admin systems.
 
 ---
@@ -16,6 +18,7 @@ Redesigned the **shop** to use the same database source as admin systems.
 ### **1. `/public/shop.html`** (Lines 723-725, 820-842)
 
 **Before:**
+
 ```javascript
 <script>
 // No taxonomy import
@@ -31,6 +34,7 @@ allProducts.forEach(product => {
 ```
 
 **After:**
+
 ```javascript
 <script type="module">
 // 🎯 IMPORT TAXONOMY FROM SINGLE SOURCE
@@ -49,7 +53,7 @@ const sizeLabels = getSizeLabelsForCategory(category);
 /public/js/taxonomy.js (SINGLE SOURCE)
     ↓
     ├── functions/api/products.js (API) ✅
-    ├── public/admin/inventory/index.html (Admin) ✅  
+    ├── public/admin/inventory/index.html (Admin) ✅
     ├── public/sell.html (Sell Form) ✅
     └── public/shop.html (Shop) ✅ FIXED
 ```
@@ -59,11 +63,13 @@ const sizeLabels = getSizeLabelsForCategory(category);
 ## Verification
 
 Run in browser console on shop page:
+
 ```javascript
-await import('/scripts/size-sync-validator.js');
+await import("/scripts/size-sync-validator.js");
 ```
 
 **Expected Results:**
+
 - ✅ Shop uses taxonomy for size filters
 - ✅ Admin uses taxonomy for size dropdowns
 - ✅ API uses taxonomy for product sizes
