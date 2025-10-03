@@ -39,25 +39,18 @@ export async function onRequestPost(context) {
         const insertPromises = events.map(event => {
             return env.DB.prepare(`
                 INSERT INTO analytics_events 
-                (event_type, event_category, session_id, user_id, product_id, 
-                 category, brand, page_url, referrer, metadata, value, quantity, 
-                 user_agent, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                (event_type, session_id, user_id, product_id, category, brand, metadata, value, user_agent, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
             `).bind(
                 event.event_type,
-                event.event_category || null,
                 event.session_id,
                 event.user_id || null,
                 event.product_id || null,
                 event.category || null,
                 event.brand || null,
-                event.page_url || null,
-                event.referrer || null,
                 JSON.stringify(event), // Store full event as JSON in metadata
                 event.value || 0,
-                event.quantity || 1,
-                event.user_agent || null,
-                event.timestamp || new Date().toISOString()
+                event.user_agent || event.userAgent || null
             ).run();
         });
 
