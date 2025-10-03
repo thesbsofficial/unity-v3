@@ -1506,7 +1506,7 @@
             document.body.style.overflow = isOpen ? '' : 'hidden';
         }
 
-        // CHECKOUT FUNCTION - Opens checkout modal
+        // CHECKOUT FUNCTION - Redirects to checkout page
         function checkout() {
             const cart = JSON.parse(localStorage.getItem('sbs-basket') || '[]');
             
@@ -1515,37 +1515,8 @@
                 return;
             }
 
-            // Calculate total
-            const total = cart.reduce((sum, item) => sum + (item.price || 0), 0);
-
-            // Populate order summary
-            const checkoutItemsList = document.getElementById('checkout-items-list');
-            checkoutItemsList.innerHTML = cart.map(item => `
-                <div class="checkout-item">
-                    <img src="${item.imageUrl}" alt="${item.category}">
-                    <div class="checkout-item-details">
-                        <strong>${item.category}</strong>
-                        <p>Size: ${item.size}</p>
-                        ${item.price ? `<p style="color: #ffd700;">€${item.price.toFixed(2)}</p>` : ''}
-                    </div>
-                </div>
-            `).join('');
-
-            // Set total
-            document.getElementById('checkout-total-amount').textContent = `€${total.toFixed(2)}`;
-
-            // Close cart modal
-            toggleCart();
-
-            // Open checkout modal
-            document.getElementById('checkout-modal').style.display = 'flex';
-            document.body.style.overflow = 'hidden';
-
-            // Track checkout start
-            analytics.track('checkout_start', {
-                item_count: cart.length,
-                total: total
-            });
+            // Redirect to checkout page
+            window.location.href = '/checkout.html';
         }
 
         function closeCheckout() {
