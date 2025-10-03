@@ -12,7 +12,10 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     
     <!-- Analytics Tracker -->
-    <script src="/js/analytics-tracker.js"></script>
+    <script src="/js/analytics-t                    <div class="form-group">
+                        <label>Address <span class="required">*</span></label>
+                        <input type="text" name="address" id="address-input" required placeholder="123 Main Street">
+                    </div>er.js"></script>
     
     <!-- Helper System -->
     <link rel="stylesheet" href="/css/helper.css">
@@ -451,12 +454,19 @@
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label>City <span class="required">*</span></label>
-                            <input type="text" name="city" required placeholder="Dublin">
+                            <label>Eircode <span class="required">*</span></label>
+                            <div style="position: relative;">
+                                <input type="text" name="eircode" id="eircode-input" required placeholder="D02 XY45" style="text-transform: uppercase;">
+                                <button type="button" id="lookup-btn" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: var(--primary-gold); color: var(--primary-black); border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer;">
+                                    <i data-lucide="search" style="width: 14px; height: 14px;"></i>
+                                    LOOKUP
+                                </button>
+                            </div>
+                            <div id="eircode-status" style="font-size: 12px; margin-top: 5px;"></div>
                         </div>
                         <div class="form-group">
-                            <label>Eircode</label>
-                            <input type="text" name="eircode" placeholder="D02 XY45">
+                            <label>City <span class="required">*</span></label>
+                            <input type="text" name="city" id="city-input" required placeholder="Dublin">
                         </div>
                     </div>
 

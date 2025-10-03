@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Postcoder API Test - K67W838</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #1a1a1a;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        h1 {
+            color: #ffd700;
+            margin-bottom: 10px;
+            font-size: 32px;
+        }
+
+        .api-key {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 30px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .test-section {
+            background: #0a0a0a;
+            border: 2px solid #333;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+
+        .test-section h2 {
+            color: #ffd700;
+            font-size: 20px;
+            margin-bottom: 15px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            color: #999;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 16px;
+            background: #000;
+            border: 2px solid #333;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #ffd700;
+            box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
+        }
+
+        button {
+            background: #ffd700;
+            color: #000;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+        }
+
+        button:hover {
+            background: #ffed4e;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(255, 215, 0, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .results {
+            margin-top: 20px;
+            padding: 20px;
+            background: #000;
+            border: 2px solid #333;
+            border-radius: 8px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .results h3 {
+            color: #ffd700;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .result-item {
+            background: #1a1a1a;
+            border-left: 3px solid #ffd700;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+
+        .result-item:hover {
+            background: #222;
+            cursor: pointer;
+        }
+
+        .address-line {
+            color: #fff;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .eircode {
+            color: #ffd700;
+            font-weight: 600;
+            font-family: 'Courier New', monospace;
+        }
+
+        .error {
+            background: #2a0a0a;
+            border-left: 3px solid #ff4444;
+            padding: 12px;
+            border-radius: 4px;
+            color: #ff6666;
+        }
+
+        .success {
+            background: #0a2a0a;
+            border-left: 3px solid #44ff44;
+            padding: 12px;
+            border-radius: 4px;
+            color: #66ff66;
+        }
+
+        .loading {
+            text-align: center;
+            color: #ffd700;
+            padding: 20px;
+            font-style: italic;
+        }
+
+        pre {
+            color: #999;
+            font-size: 12px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-box {
+            background: #0a0a0a;
+            border: 2px solid #333;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .stat-value {
+            color: #ffd700;
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #999;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🗺️ Postcoder API Test</h1>
+        <div class="api-key">API Key: PCWK7-LY7KM-NKNXC-L8U7K</div>
+        <div class="api-key">Testing valid Eircode: D02X285 (Dublin)</div>
+
+        <!-- Test 1: Eircode Lookup -->
+        <div class="test-section">
+            <h2>Test 1: Eircode Lookup</h2>
+            <div class="input-group">
+                <label for="eircode">Enter Eircode:</label>
+                <input type="text" id="eircode" placeholder="D02X285" value="D02X285">
+            </div>
+            <button onclick="testEircodeLookup()">🔍 Lookup Eircode</button>
+            <div style="margin-top: 10px; color: #999; font-size: 13px;">
+                ℹ️ Try these valid Eircodes: D02X285, A65F4E2, T12AB34
+            </div>
+            <div id="eircode-results" class="results" style="display: none;"></div>
+        </div>
+
+        <!-- Test 2: Address Autocomplete -->
+        <div class="test-section">
+            <h2>Test 2: Address Autocomplete</h2>
+            <div class="input-group">
+                <label for="address-search">Start typing an address:</label>
+                <input type="text" id="address-search" placeholder="Start typing... (e.g., 'Main Street, Dublin')">
+            </div>
+            <div id="autocomplete-results" class="results" style="display: none;"></div>
+        </div>
+
+        <!-- Test 3: Postcode Search -->
+        <div class="test-section">
+            <h2>Test 3: Address by Location</h2>
+            <div class="input-group">
+                <label for="location">Enter City/Town:</label>
+                <input type="text" id="location" placeholder="Dublin" value="Dublin">
+            </div>
+            <button onclick="testLocationSearch()">📍 Search Location</button>
+            <div id="location-results" class="results" style="display: none;"></div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats">
+            <div class="stat-box">
+                <div class="stat-value" id="total-requests">0</div>
+                <div class="stat-label">Total Requests</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="successful-requests">0</div>
+                <div class="stat-label">Successful</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="failed-requests">0</div>
+                <div class="stat-label">Failed</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_KEY = 'PCWK7-LY7KM-NKNXC-L8U7K';
+        const BASE_URL = 'https://ws.postcoder.com/pcw';
+        
+        let stats = {
+            total: 0,
+            successful: 0,
+            failed: 0
+        };
+
+        function updateStats() {
+            document.getElementById('total-requests').textContent = stats.total;
+            document.getElementById('successful-requests').textContent = stats.successful;
+            document.getElementById('failed-requests').textContent = stats.failed;
+        }
+
+        // Test 1: Eircode Lookup
+        async function testEircodeLookup() {
+            const eircode = document.getElementById('eircode').value.trim().toUpperCase();
+            const resultsDiv = document.getElementById('eircode-results');
+            
+            if (!eircode) {
+                resultsDiv.style.display = 'block';
+                resultsDiv.innerHTML = '<div class="error">❌ Please enter an Eircode</div>';
+                return;
+            }
+
+            resultsDiv.style.display = 'block';
+            resultsDiv.innerHTML = '<div class="loading">⏳ Looking up Eircode...</div>';
+            
+            stats.total++;
+            updateStats();
+
+            try {
+                const response = await fetch(`${BASE_URL}/${API_KEY}/address/ie/${eircode}?format=json`);
+                const data = await response.json();
+
+                if (data && data.length > 0) {
+                    stats.successful++;
+                    updateStats();
+                    
+                    let html = `<h3>✅ Found ${data.length} address${data.length > 1 ? 'es' : ''}</h3>`;
+                    data.forEach((addr, index) => {
+                        html += `
+                            <div class="result-item">
+                                <div class="address-line"><strong>${addr.summaryline || addr.addressline1 || 'N/A'}</strong></div>
+                                ${addr.addressline1 ? `<div class="address-line">${addr.addressline1}</div>` : ''}
+                                ${addr.addressline2 ? `<div class="address-line">${addr.addressline2}</div>` : ''}
+                                ${addr.county ? `<div class="address-line">${addr.county}</div>` : ''}
+                                <div class="address-line">Eircode: <span class="eircode">${addr.postcode || eircode}</span></div>
+                            </div>
+                        `;
+                    });
+                    resultsDiv.innerHTML = html;
+                } else {
+                    stats.failed++;
+                    updateStats();
+                    resultsDiv.innerHTML = '<div class="error">❌ No addresses found for this Eircode. Try: K67W838, D02X285, or T12AB34</div>';
+                }
+            } catch (error) {
+                stats.failed++;
+                updateStats();
+                resultsDiv.innerHTML = `<div class="error">❌ Error: ${error.message}<br><pre>${error.stack}</pre></div>`;
+            }
+        }
+
+        // Test 2: Address Autocomplete (live search with longer delay to avoid rate limits)
+        let autocompleteTimeout;
+        document.getElementById('address-search').addEventListener('input', function(e) {
+            clearTimeout(autocompleteTimeout);
+            const query = e.target.value.trim();
+            
+            if (query.length < 5) {
+                document.getElementById('autocomplete-results').style.display = 'none';
+                return;
+            }
+
+            // Longer delay to avoid rate limits
+            autocompleteTimeout = setTimeout(() => testAutocomplete(query), 1500);
+        });
+
+        async function testAutocomplete(query) {
+            const resultsDiv = document.getElementById('autocomplete-results');
+            resultsDiv.style.display = 'block';
+            resultsDiv.innerHTML = '<div class="loading">⏳ Searching addresses...</div>';
+            
+            stats.total++;
+            updateStats();
+
+            try {
+                const response = await fetch(`${BASE_URL}/${API_KEY}/autocomplete/ie/${encodeURIComponent(query)}?format=json`);
+                const data = await response.json();
+
+                if (data && data.predictions && data.predictions.length > 0) {
+                    stats.successful++;
+                    updateStats();
+                    
+                    let html = `<h3>✅ Found ${data.predictions.length} suggestions</h3>`;
+                    data.predictions.forEach((pred) => {
+                        html += `
+                            <div class="result-item" onclick="selectAddress('${pred.refs}')">
+                                <div class="address-line">${pred.prediction}</div>
+                            </div>
+                        `;
+                    });
+                    resultsDiv.innerHTML = html;
+                } else {
+                    stats.failed++;
+                    updateStats();
+                    resultsDiv.innerHTML = '<div class="error">❌ No suggestions found</div>';
+                }
+            } catch (error) {
+                stats.failed++;
+                updateStats();
+                resultsDiv.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        async function selectAddress(refs) {
+            const resultsDiv = document.getElementById('autocomplete-results');
+            resultsDiv.innerHTML = '<div class="loading">⏳ Getting full address details...</div>';
+            
+            stats.total++;
+            updateStats();
+
+            try {
+                const response = await fetch(`${BASE_URL}/${API_KEY}/address/ie/${refs}?format=json`);
+                const data = await response.json();
+
+                if (data && data.length > 0) {
+                    stats.successful++;
+                    updateStats();
+                    
+                    const addr = data[0];
+                    resultsDiv.innerHTML = `
+                        <div class="success">
+                            <h3>✅ Address Details</h3>
+                            <div class="address-line"><strong>${addr.summaryline || addr.addressline1}</strong></div>
+                            ${addr.addressline1 ? `<div class="address-line">${addr.addressline1}</div>` : ''}
+                            ${addr.addressline2 ? `<div class="address-line">${addr.addressline2}</div>` : ''}
+                            ${addr.posttown ? `<div class="address-line">${addr.posttown}</div>` : ''}
+                            ${addr.county ? `<div class="address-line">${addr.county}</div>` : ''}
+                            ${addr.postcode ? `<div class="address-line">Eircode: <span class="eircode">${addr.postcode}</span></div>` : ''}
+                        </div>
+                    `;
+                } else {
+                    stats.failed++;
+                    updateStats();
+                    resultsDiv.innerHTML = '<div class="error">❌ Could not get address details</div>';
+                }
+            } catch (error) {
+                stats.failed++;
+                updateStats();
+                resultsDiv.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        // Test 3: Location Search
+        async function testLocationSearch() {
+            const location = document.getElementById('location').value.trim();
+            const resultsDiv = document.getElementById('location-results');
+            
+            if (!location) {
+                resultsDiv.style.display = 'block';
+                resultsDiv.innerHTML = '<div class="error">❌ Please enter a location</div>';
+                return;
+            }
+
+            resultsDiv.style.display = 'block';
+            resultsDiv.innerHTML = '<div class="loading">⏳ Searching location...</div>';
+            
+            stats.total++;
+            updateStats();
+
+            try {
+                // Try autocomplete for the location
+                const response = await fetch(`${BASE_URL}/${API_KEY}/autocomplete/ie/${encodeURIComponent(location)}?format=json`);
+                const data = await response.json();
+
+                if (data && data.predictions && data.predictions.length > 0) {
+                    stats.successful++;
+                    updateStats();
+                    
+                    let html = `<h3>✅ Found ${data.predictions.length} locations</h3>`;
+                    data.predictions.slice(0, 10).forEach((pred) => {
+                        html += `
+                            <div class="result-item">
+                                <div class="address-line">${pred.prediction}</div>
+                            </div>
+                        `;
+                    });
+                    resultsDiv.innerHTML = html;
+                } else {
+                    stats.failed++;
+                    updateStats();
+                    resultsDiv.innerHTML = '<div class="error">❌ No locations found</div>';
+                }
+            } catch (error) {
+                stats.failed++;
+                updateStats();
+                resultsDiv.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        // Don't auto-test on page load to avoid rate limits
+        window.addEventListener('load', () => {
+            const resultsDiv = document.getElementById('eircode-results');
+            resultsDiv.style.display = 'block';
+            resultsDiv.innerHTML = `
+                <div style="background: #0a2a2a; border-left: 3px solid #4499ff; padding: 12px; border-radius: 4px; color: #99ccff;">
+                    <strong>ℹ️ Rate Limit Info:</strong><br>
+                    The API has a request limit. Wait 5-10 minutes if you see 429 errors.<br><br>
+                    <strong>Best Test:</strong> Use Test 2 (Address Autocomplete) - type slowly and wait 1 second between characters.
+                </div>
+            `;
+        });
+    </script>
+</body>
+</html>
