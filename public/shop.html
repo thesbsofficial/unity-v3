@@ -994,6 +994,11 @@
             <div class="cart-items" id="cart-items">
                 <div class="cart-empty">Your basket is empty</div>
             </div>
+            <div class="cart-footer" style="padding: 16px; border-top: 1px solid #333; display: none;" id="cart-footer">
+                <button onclick="checkout()" class="btn-checkout" style="width: 100%;">
+                    Proceed to Checkout
+                </button>
+            </div>
         </div>
     </div>
 
@@ -1360,9 +1365,11 @@
 
         function renderCart() {
             const cartItems = document.getElementById('cart-items');
+            const cartFooter = document.getElementById('cart-footer');
 
             if (basket.length === 0) {
                 cartItems.innerHTML = '<div class="cart-empty">Your basket is empty</div>';
+                if (cartFooter) cartFooter.style.display = 'none';
                 return;
             }
 
@@ -1376,6 +1383,9 @@
                     <button class="remove-btn" onclick="removeFromCart(${index})">Remove</button>
                 </div>
             `).join('');
+            
+            // Show checkout button when items exist
+            if (cartFooter) cartFooter.style.display = 'block';
         }
 
         function toggleCart() {

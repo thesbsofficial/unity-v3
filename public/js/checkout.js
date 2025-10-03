@@ -8,7 +8,12 @@ function checkout() {
     const basket = JSON.parse(localStorage.getItem('sbs-basket')) || [];
     
     if (basket.length === 0) {
-        showToast('Your basket is empty!');
+        // Use showToast if available, otherwise alert
+        if (typeof showToast === 'function') {
+            showToast('Your basket is empty!');
+        } else {
+            alert('Your basket is empty!');
+        }
         return;
     }
     
