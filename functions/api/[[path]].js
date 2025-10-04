@@ -579,6 +579,166 @@ export async function onRequest(context) {
         );
       }
 
+      // Admin Health Check - comprehensive configuration verification
+      if (path === "/api/admin/health-check" && method === "GET") {
+        const checks = [];
+        let totalChecks = 0;
+        let passedChecks = 0;
+
+        // 1. Database check
+        totalChecks++;
+        try {
+          const tables = await env.DB.prepare(
+            "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name"
+          ).all();
+          const requiredTables = ['users', 'sessions', 'session_tokens', 'orders', 'products', 'sell_cases'];
+          const foundTables = tables.results?.map(r => r.name) || [];
+          const missingTables = requiredTables.filter(t => !foundTables.includes(t));
+          
+          if (missingTables.length === 0) {
+            passedChecks++;
+            checks.push({
+              name: "D1 Database",
+              status: "✓ PASS",
+              details: `All ${requiredTables.length} required tables present`,
+              tables: foundTables
+            });
+          } else {
+            checks.push({
+              name: "D1 Database",
+              status: "✗ FAIL",
+              details: `Missing tables: ${missingTables.join(', ')}`,
+              tables: foundTables
+            });
+          }
+        } catch (dbError) {
+          checks.push({
+            name: "D1 Database",
+            status: "✗ FAIL",
+            error: dbError.message
+          });
+        }
+
+        // 2. Environment variables check
+        const envChecks = [
+          { name: "CLOUDFLARE_ACCOUNT_ID", value: env.CLOUDFLARE_ACCOUNT_ID },
+          { name: "SITE_URL", value: env.SITE_URL },
+          { name: "ADMIN_ALLOWLIST_HANDLES", value: env.ADMIN_ALLOWLIST_HANDLES }
+        ];
+
+        envChecks.forEach(check => {
+          totalChecks++;
+          if (check.value) {
+            passedChecks++;
+            checks.push({
+              name: check.name,
+              status: "✓ PASS",
+              details: "Configured",
+              value: check.value
+            });
+          } else {
+            checks.push({
+              name: check.name,
+              status: "✗ FAIL",
+              details: "Not configured"
+            });
+          }
+        });
+
+        // 3. Secrets check (without revealing values)
+        const secretChecks = [
+          { name: "CLOUDFLARE_API_TOKEN", value: env.CLOUDFLARE_API_TOKEN },
+          { name: "CLOUDFLARE_IMAGES_API_TOKEN", value: env.CLOUDFLARE_IMAGES_API_TOKEN },
+          { name: "CLOUDFLARE_IMAGES_HASH", value: env.CLOUDFLARE_IMAGES_HASH }
+        ];
+
+        secretChecks.forEach(check => {
+          totalChecks++;
+          if (check.value) {
+            passedChecks++;
+            checks.push({
+              name: check.name,
+              status: "✓ PASS",
+              details: "Secret configured (encrypted)"
+            });
+          } else {
+            checks.push({
+              name: check.name,
+              status: "⚠ WARN",
+              details: "Not configured (optional)"
+            });
+          }
+        });
+
+        // 4. Bindings check
+        const bindingChecks = [
+          { name: "DB (D1)", binding: env.DB, type: "D1 Database" },
+          { name: "PRODUCT_IMAGES (R2)", binding: env.PRODUCT_IMAGES, type: "R2 Bucket" },
+          { name: "USER_UPLOADS (R2)", binding: env.USER_UPLOADS, type: "R2 Bucket" }
+        ];
+
+        bindingChecks.forEach(check => {
+          totalChecks++;
+          if (check.binding) {
+            passedChecks++;
+            checks.push({
+              name: check.name,
+              status: "✓ PASS",
+              details: `${check.type} bound`,
+              type: check.type
+            });
+          } else {
+            checks.push({
+              name: check.name,
+              status: "✗ FAIL",
+              details: `${check.type} not bound`
+            });
+          }
+        });
+
+        // 5. Cloudflare Images API check
+        totalChecks++;
+        const hasImagesConfig = env.CLOUDFLARE_ACCOUNT_ID && 
+                                (env.CLOUDFLARE_API_TOKEN || env.CLOUDFLARE_IMAGES_API_TOKEN);
+        if (hasImagesConfig) {
+          passedChecks++;
+          checks.push({
+            name: "Cloudflare Images API",
+            status: "✓ PASS",
+            details: "Account ID and API token configured",
+            ready: true
+          });
+        } else {
+          checks.push({
+            name: "Cloudflare Images API",
+            status: "✗ FAIL",
+            details: "Missing account ID or API token"
+          });
+        }
+
+        const successRate = ((passedChecks / totalChecks) * 100).toFixed(1);
+        const overallStatus = passedChecks === totalChecks ? "HEALTHY" : 
+                             passedChecks >= totalChecks * 0.8 ? "DEGRADED" : "UNHEALTHY";
+
+        return json({
+          success: true,
+          status: overallStatus,
+          summary: {
+            total_checks: totalChecks,
+            passed: passedChecks,
+            failed: totalChecks - passedChecks,
+            success_rate: `${successRate}%`
+          },
+          checks: checks,
+          environment: {
+            production_branch: "MAIN",
+            compatibility_date: "2024-09-30",
+            project: "unity-v3"
+          },
+          timestamp: new Date().toISOString()
+        }, 200, headers);
+      }
+
       // Upload image to Cloudflare Images
       if (path === "/api/admin/upload-image" && method === "POST") {
         try {
