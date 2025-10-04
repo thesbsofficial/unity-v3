@@ -89,7 +89,7 @@ POST /api/resend-verification  → Resends verification email
 - **Cost:** FREE (100 emails/day)
 - **From:** SBS Unity V3 <noreply@thesbsofficial.com> ✅
 - **Domain:** thesbsofficial.com (VERIFIED)
-- **API Key:** re_Fh2qGiv2_4p65paDSf1YqrDFjaz4Cv566
+- **API Key:** `re_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx`
 
 ### Security
 

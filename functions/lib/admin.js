@@ -3,7 +3,7 @@
  * Handles admin role checking, action logging, and system health checks
  */
 
-import { generateTotpSecret, generateRecoveryCodes, verifyTotp } from './security.js';
+import { generateTotpSecret, generateRecoveryCodes, verifyTotp, hashToken } from './security.js';
 
 // ==================== Admin Role Checking ====================
 
@@ -31,11 +31,7 @@ export async function verifyAdminAuth(request, env) {
     const token = authHeader.substring(7);
 
     // Hash token for database lookup
-    const encoder = new TextEncoder();
-    const data = encoder.encode(token);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    const tokenHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    const tokenHash = await hashToken(token);
 
     // Verify admin session using unified sessions table
     const session = await env.DB.prepare(`

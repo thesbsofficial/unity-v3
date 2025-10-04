@@ -23,7 +23,7 @@ export async function onRequest(context) {
     }
 
     try {
-        console.log('🚀 SBS API: Fetching products from Cloudflare Images...');
+        // Fetching products from Cloudflare Images API
 
         // Get environment variables
         const accountId = env.CLOUDFLARE_ACCOUNT_ID;
@@ -65,7 +65,7 @@ export async function onRequest(context) {
         }
 
         const data = await response.json();
-        console.log(`📦 API Response Success: ${data.success}`);
+        // API response received
 
         if (!data.success || !data.result) {
             throw new Error('Cloudflare API error');
@@ -79,7 +79,7 @@ export async function onRequest(context) {
             images = data.result.images;
         }
 
-        console.log(`✅ Found ${images.length} images`);
+        // Process images data
 
         // � FETCH STATUS FROM DATABASE
         // The reservation system updates product status in D1 database
@@ -94,7 +94,7 @@ export async function onRequest(context) {
                             dbStatusMap[p.cloudflare_image_id] = p.status;
                         }
                     });
-                    console.log(`✅ Loaded ${Object.keys(dbStatusMap).length} product statuses from D1`);
+                    // Product statuses loaded from database
                 }
             }
         } catch (dbError) {
@@ -200,7 +200,7 @@ export async function onRequest(context) {
             })
             .filter(p => p !== null); // Remove hidden/sold/error items
 
-        console.log(`✅ Transformed ${products.length} products`);
+        // Products transformed successfully
 
         const result = {
             success: true,
@@ -238,14 +238,13 @@ export async function onRequest(context) {
         console.error('❌ Error stack:', error.stack);
 
         return new Response(JSON.stringify({
-            success: true,
-            products: [],
-            message: `Products temporarily unavailable: ${error.message}`,
-            total: 0,
+            success: false,
+            error: 'Products temporarily unavailable',
+            message: error.message,
             timestamp: new Date().toISOString()
         }), {
             headers: corsHeaders,
-            status: 200
+            status: 500
         });
     }
 }

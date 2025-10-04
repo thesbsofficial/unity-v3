@@ -12,11 +12,35 @@
     // ============================================================================
 
     const Auth = {
-        // Check if user is logged in
+        // Check if user is logged in (client-side check)
         isLoggedIn() {
             const user = sessionStorage.getItem('sbs_user');
             const token = sessionStorage.getItem('sbs_csrf_token');
             return !!(user && token);
+        },
+
+        // Verify session with server
+        async verifySession() {
+            try {
+                const response = await fetch('/api/users/me');
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success && data.user) {
+                        // Update session storage with fresh data
+                        sessionStorage.setItem('sbs_user', JSON.stringify(data.user));
+                        if (data.csrfToken) {
+                            sessionStorage.setItem('sbs_csrf_token', data.csrfToken);
+                        }
+                        return true;
+                    }
+                }
+                // Session invalid, clear storage
+                sessionStorage.clear();
+                return false;
+            } catch (error) {
+                console.error('Session verification failed:', error);
+                return false;
+            }
         },
 
         // Get current user
@@ -177,11 +201,6 @@
         maxErrors: 50,
         sessionId: 'SBS_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
 
-        // Generate session ID
-        generateSessionId() {
-            return 'SBS_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-        },
-
         // Log error
         logError(type, details, severity = 'ERROR') {
             const error = {
@@ -237,9 +256,17 @@
     // 🚀 MAIN APP INITIALIZATION
     // ============================================================================
 
-    function init() {
+    async function init() {
         // Initialize error handling first
         ErrorHandler.init();
+
+        // Verify session with server if user appears logged in
+        if (Auth.isLoggedIn()) {
+            const sessionValid = await Auth.verifySession();
+            if (!sessionValid) {
+                console.log('Session expired, clearing local state');
+            }
+        }
 
         // Check session expiry
         Auth.checkSessionExpiry();
@@ -260,7 +287,7 @@
             }
         });
 
-        console.log('🚀 SBS App initialized');
+        // SBS App initialization complete
     }
 
     // ============================================================================

@@ -7,6 +7,7 @@ pages_build_output_dir = "./public"
 binding = "DB"
 database_name = "unity-v3"
 database_id = "1235f2c7-7b73-44b7-95c2-b44260e51179"
+migrations_dir = "./database/migrations"
 
 # R2 Bucket for official product/marketing images (admin-controlled)
 [[r2_buckets]]

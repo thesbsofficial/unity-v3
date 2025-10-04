@@ -106,6 +106,7 @@ CREATE TABLE IF NOT EXISTS products (
     
     -- Media
     image_url TEXT,
+    image_id TEXT,  -- For products-smart API compatibility
     cloudflare_image_id TEXT,
     additional_images TEXT, -- JSON array of URLs
     
@@ -113,9 +114,16 @@ CREATE TABLE IF NOT EXISTS products (
     status TEXT DEFAULT 'available' CHECK(status IN ('available', 'reserved', 'sold', 'removed')),
     featured INTEGER DEFAULT 0,
     
+    -- Analytics
+    views_count INTEGER DEFAULT 0,
+    quantity_available INTEGER DEFAULT 1,
+    quantity_sold INTEGER DEFAULT 0,
+    days_to_sell INTEGER,
+    
     -- Metadata
     sku TEXT UNIQUE,
     tags TEXT, -- JSON array for search
+    notes TEXT,
     
     -- Timestamps
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,

@@ -1,3 +1,10 @@
-# Redirect all pages.dev URLs to custom domain
+# Redirect all pages.dev URLs to custom domain (production only)
 https://unity-v3.pages.dev/* https://thesbsofficial.com/:splat 301!
 https://*.unity-v3.pages.dev/* https://thesbsofficial.com/:splat 301!
+
+# Clean extensionless routes for primary pages - internal rewrites (200 = no redirect)
+/shop   /shop.html   200
+/sell   /sell.html   200
+/login  /login.html  200
+/register /register.html 200
+/dashboard /dashboard.html 200

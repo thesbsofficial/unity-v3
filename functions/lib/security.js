@@ -133,6 +133,18 @@ export async function verifyPasswordAgainstUser(password, user) {
 }
 
 /**
+ * Backward-compatible password verification helper
+ * @deprecated Prefer calling verifyPasswordAgainstUser directly for clarity
+ * @param {string} password
+ * @param {Object} user
+ * @returns {Promise<boolean>}
+ */
+export async function verifyPassword(password, user) {
+    if (!user) return false;
+    return verifyPasswordAgainstUser(password, user);
+}
+
+/**
  * Legacy SHA-256 password hashing (INSECURE - backward compatibility only)
  * @param {string} password
  * @returns {Promise<string>} Hex-encoded SHA-256 hash

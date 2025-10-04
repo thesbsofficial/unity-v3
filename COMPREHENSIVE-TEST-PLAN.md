@@ -10,6 +10,7 @@
 ## 📋 TEST INVENTORY
 
 ### Customer Pages (5)
+
 - [ ] `/index.html` - Homepage
 - [ ] `/shop.html` - Product catalog
 - [ ] `/about.html` - About page
@@ -17,12 +18,14 @@
 - [ ] `/checkout.html` - Checkout flow
 
 ### Admin Pages (4)
+
 - [ ] `/admin/login.html` - Admin login
 - [ ] `/admin/dashboard.html` - Admin dashboard
 - [ ] `/admin/orders/index.html` - Order management
 - [ ] `/admin/sell-requests/index.html` - Sell request management
 
 ### API Endpoints (27)
+
 - [ ] 6 Customer APIs (products, cart, checkout, sell, orders, analytics)
 - [ ] 21 Admin APIs (auth, products CRUD, orders, sell-requests, activity)
 
@@ -31,6 +34,7 @@
 ## 🧪 PHASE 1: NAVIGATION REDIRECTS
 
 ### Homepage (`/index.html`)
+
 - [ ] Test: Click "Shop Now" button → Should redirect to `/shop.html`
 - [ ] Test: Click "Shop" nav link → Should redirect to `/shop.html`
 - [ ] Test: Click "About" nav link → Should redirect to `/about.html`
@@ -40,6 +44,7 @@
 - [ ] Test: Mobile menu hamburger → Should open mobile menu
 
 ### Shop Page (`/shop.html`)
+
 - [ ] Test: Click product card → Should redirect to `/shop.html?product={id}`
 - [ ] Test: "Add to Cart" button → Should update cart overlay
 - [ ] Test: Category filter → Should filter products (AJAX, no redirect)
@@ -50,11 +55,13 @@
 - [ ] Test: Nav links → Should redirect to respective pages
 
 ### About Page (`/about.html`)
+
 - [ ] Test: All nav links → Should redirect correctly
 - [ ] Test: CTA buttons (if any) → Should redirect correctly
 - [ ] Test: External links → Should open in new tab
 
 ### Sell Page (`/sell.html`)
+
 - [ ] Test: Form submission → Should call API and show success
 - [ ] Test: Quick Builder checkbox → Should toggle field visibility
 - [ ] Test: Form validation → Should block invalid submissions
@@ -62,6 +69,7 @@
 - [ ] Test: localStorage → Should auto-fill contact info
 
 ### Checkout Page (`/checkout.html`)
+
 - [ ] Test: Empty cart → Should redirect to `/shop.html`
 - [ ] Test: Form submission → Should call API and create order
 - [ ] Test: Password validation → Should show real-time feedback
@@ -70,12 +78,14 @@
 - [ ] Test: Cart error handling → Should alert user
 
 ### Admin Login (`/admin/login.html`)
+
 - [ ] Test: Valid login → Should redirect to `/admin/dashboard.html`
 - [ ] Test: Invalid login → Should show error (no redirect)
 - [ ] Test: Unauthenticated access to dashboard → Should redirect to `/admin/login.html`
 - [ ] Test: Already logged in → Should redirect to dashboard
 
 ### Admin Dashboard (`/admin/dashboard.html`)
+
 - [ ] Test: "Manage Products" link → Should redirect to `/admin/products/` (if exists)
 - [ ] Test: "View Orders" link → Should redirect to `/admin/orders/index.html`
 - [ ] Test: "Sell Requests" link → Should redirect to `/admin/sell-requests/index.html`
@@ -83,6 +93,7 @@
 - [ ] Test: Unauthenticated access → Should redirect to login
 
 ### Admin Orders (`/admin/orders/index.html`)
+
 - [ ] Test: Order row click → Should open order details modal (no redirect)
 - [ ] Test: Status update → Should call API (AJAX, no redirect)
 - [ ] Test: Delete order → Should call API and refresh list
@@ -90,6 +101,7 @@
 - [ ] Test: Unauthenticated access → Should redirect to login
 
 ### Admin Sell Requests (`/admin/sell-requests/index.html`)
+
 - [ ] Test: Request row click → Should open details modal (no redirect)
 - [ ] Test: Status update → Should call API (AJAX, no redirect)
 - [ ] Test: Pricing update → Should call API and refresh
@@ -102,6 +114,7 @@
 ## 🧪 PHASE 2: FUNCTION TESTING
 
 ### Customer Functions
+
 - [ ] `loadProducts()` - Shop page product loading
 - [ ] `filterProducts()` - Category/size filtering
 - [ ] `searchProducts()` - Search functionality
@@ -115,6 +128,7 @@
 - [ ] `trackAnalytics()` - Event tracking (6 events)
 
 ### Admin Functions
+
 - [ ] `login()` - Admin authentication
 - [ ] `logout()` - Session termination
 - [ ] `verifyAuth()` - Token verification
@@ -137,6 +151,7 @@
 ## 🧪 PHASE 3: USER FLOW TESTING
 
 ### Customer Journey: Browse → Purchase
+
 1. [ ] Land on homepage
 2. [ ] Click "Shop Now"
 3. [ ] Browse products (scroll, filter, search)
@@ -151,6 +166,7 @@
 12. [ ] Verify analytics tracked all events
 
 ### Customer Journey: Sell Submission
+
 1. [ ] Navigate to `/sell.html`
 2. [ ] Enable Quick Builder
 3. [ ] Fill form with details
@@ -162,6 +178,7 @@
 9. [ ] Verify analytics tracked page_view
 
 ### Admin Journey: Complete Management
+
 1. [ ] Navigate to `/admin/login.html`
 2. [ ] Login with credentials
 3. [ ] Verify dashboard redirect
@@ -186,6 +203,7 @@
 ## 🧪 PHASE 4: ERROR HANDLING
 
 ### Customer Error Scenarios
+
 - [ ] Empty cart checkout → Should redirect to shop
 - [ ] Invalid product ID → Should handle gracefully
 - [ ] Cart corruption → Should alert user
@@ -194,6 +212,7 @@
 - [ ] Network errors → Should notify user
 
 ### Admin Error Scenarios
+
 - [ ] Invalid credentials → Should show error
 - [ ] Expired token → Should redirect to login
 - [ ] Unauthorized access → Should block and redirect
@@ -206,8 +225,11 @@
 ## 📊 TEST RESULTS
 
 ### Redirect Tests: 0/45 completed
+
 ### Function Tests: 0/27 completed
+
 ### User Flow Tests: 0/3 completed
+
 ### Error Handling Tests: 0/12 completed
 
 **Overall Progress: 0/87 tests (0%)**
@@ -216,7 +238,7 @@
 
 ## 🐛 ISSUES FOUND
 
-*None yet - testing in progress*
+_None yet - testing in progress_
 
 ---
 

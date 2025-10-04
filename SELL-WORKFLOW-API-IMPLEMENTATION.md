@@ -9,13 +9,16 @@
 ## 📋 API ENDPOINTS TO CREATE/UPDATE
 
 ### 1. GET `/api/admin/sell-requests` (ENHANCE EXISTING)
+
 **Add filters:**
+
 - `?status=offer_sent` - Filter by workflow status
 - `?seller_response=pending` - Filter by seller response
 - `?inspection_needed=true` - Items awaiting inspection
 - `?payment_needed=true` - Items awaiting payment
 
 **Response enhancement:**
+
 ```javascript
 {
   "success": true,
@@ -50,9 +53,11 @@
 ---
 
 ### 2. PUT `/api/admin/sell-requests/:id/review` (NEW)
+
 **Purpose:** Admin reviews submission and decides what to buy
 
 **Request Body:**
+
 ```javascript
 {
   "review_decision": "want_some",  // want_all, want_some, decline_all
@@ -62,6 +67,7 @@
 ```
 
 **Response:**
+
 ```javascript
 {
   "success": true,
@@ -80,9 +86,11 @@
 ---
 
 ### 3. POST `/api/admin/sell-requests/:id/offer` (NEW)
+
 **Purpose:** Create and send offer to seller
 
 **Request Body:**
+
 ```javascript
 {
   "offer_amount": 150.00,
@@ -107,6 +115,7 @@
 ```
 
 **Response:**
+
 ```javascript
 {
   "success": true,
@@ -122,6 +131,7 @@
 ```
 
 **Database Updates:**
+
 ```sql
 UPDATE sell_submissions SET
   status = 'offer_sent',
@@ -133,7 +143,7 @@ UPDATE sell_submissions SET
 WHERE id = 1;
 
 INSERT INTO sell_offer_history (
-  submission_id, offer_type, offered_by, offer_amount, 
+  submission_id, offer_type, offered_by, offer_amount,
   offer_details_json, offer_message
 ) VALUES (1, 'initial_offer', 'admin', 150.00, '[...]', '...');
 
@@ -145,9 +155,11 @@ INSERT INTO sell_communication_log (
 ---
 
 ### 4. POST `/api/admin/sell-requests/:id/seller-response` (NEW)
+
 **Purpose:** Record seller's response to offer (can be called by seller via magic link, or admin manually)
 
 **Request Body:**
+
 ```javascript
 {
   "response": "accepted",  // accepted, rejected, counter_offered
@@ -158,6 +170,7 @@ INSERT INTO sell_communication_log (
 ```
 
 **Response:**
+
 ```javascript
 {
   "success": true,
@@ -175,9 +188,11 @@ INSERT INTO sell_communication_log (
 ---
 
 ### 5. POST `/api/admin/sell-requests/:id/counter-offer` (NEW)
+
 **Purpose:** Admin responds to seller's counter-offer
 
 **Request Body:**
+
 ```javascript
 {
   "counter_amount": 165.00,
@@ -187,6 +202,7 @@ INSERT INTO sell_communication_log (
 ```
 
 **Response:**
+
 ```javascript
 {
   "success": true,
@@ -203,9 +219,11 @@ INSERT INTO sell_communication_log (
 ---
 
 ### 6. POST `/api/admin/sell-requests/:id/items-received` (NEW)
+
 **Purpose:** Mark items as physically received
 
 **Request Body:**
+
 ```javascript
 {
   "tracking_number": "IE123456789",
@@ -216,6 +234,7 @@ INSERT INTO sell_communication_log (
 ```
 
 **Response:**
+
 ```javascript
 {
   "success": true,
@@ -232,9 +251,11 @@ INSERT INTO sell_communication_log (
 ---
 
 ### 7. POST `/api/admin/sell-requests/:id/inspect` (NEW)
+
 **Purpose:** Record inspection results for each item
 
 **Request Body:**
+
 ```javascript
 {
   "inspections": [
@@ -266,6 +287,7 @@ INSERT INTO sell_communication_log (
 ```
 
 **Response:**
+
 ```javascript
 {
   "success": true,
@@ -285,6 +307,7 @@ INSERT INTO sell_communication_log (
 ```
 
 **Database:**
+
 ```sql
 UPDATE sell_submissions SET
   status = 'inspected',
@@ -300,9 +323,11 @@ INSERT INTO sell_item_inspections (...) VALUES (...);
 ---
 
 ### 8. POST `/api/admin/sell-requests/:id/payment` (NEW)
+
 **Purpose:** Process and record payment
 
 **Request Body:**
+
 ```javascript
 {
   "payment_method": "bank_transfer",  // bank_transfer, revolut, cash
@@ -318,6 +343,7 @@ INSERT INTO sell_item_inspections (...) VALUES (...);
 ```
 
 **Response:**
+
 ```javascript
 {
   "success": true,
@@ -335,6 +361,7 @@ INSERT INTO sell_item_inspections (...) VALUES (...);
 ```
 
 **Database:**
+
 ```sql
 UPDATE sell_submissions SET
   status = 'completed',
@@ -362,6 +389,7 @@ WHERE contact_phone = '+353871234567';
 ## 🎨 ADMIN UI COMPONENTS
 
 ### 1. **Submission Review Modal**
+
 ```
 ┌─────────────────────────────────────────┐
 │ Review Submission: BATCH-20251004-00001 │
@@ -397,6 +425,7 @@ WHERE contact_phone = '+353871234567';
 ```
 
 ### 2. **Offer Creation Modal**
+
 ```
 ┌─────────────────────────────────────────┐
 │ Create Offer: BATCH-20251004-00001      │
@@ -429,6 +458,7 @@ WHERE contact_phone = '+353871234567';
 ```
 
 ### 3. **Negotiation Interface**
+
 ```
 ┌─────────────────────────────────────────┐
 │ Negotiation: BATCH-20251004-00001       │
@@ -459,6 +489,7 @@ WHERE contact_phone = '+353871234567';
 ```
 
 ### 4. **Inspection Form**
+
 ```
 ┌─────────────────────────────────────────┐
 │ Item Inspection: BATCH-20251004-00001   │
@@ -504,16 +535,16 @@ WHERE contact_phone = '+353871234567';
 
 ```javascript
 const statusColors = {
-  'pending': 'gray',           // ⚪ Awaiting review
-  'under_review': 'blue',      // 🔵 Being reviewed
-  'offer_sent': 'yellow',      // 🟡 Awaiting seller response
-  'offer_accepted': 'green',   // 🟢 Accepted, awaiting items
-  'offer_rejected': 'red',     // 🔴 Rejected by seller
-  'items_received': 'purple',  // 🟣 Items received, inspection pending
-  'inspected': 'orange',       // 🟠 Inspected, payment pending
-  'payment_processing': 'teal',// 🔷 Payment being processed
-  'completed': 'success',      // ✅ Transaction complete
-  'cancelled': 'gray'          // ⚫ Cancelled/declined
+  pending: "gray", // ⚪ Awaiting review
+  under_review: "blue", // 🔵 Being reviewed
+  offer_sent: "yellow", // 🟡 Awaiting seller response
+  offer_accepted: "green", // 🟢 Accepted, awaiting items
+  offer_rejected: "red", // 🔴 Rejected by seller
+  items_received: "purple", // 🟣 Items received, inspection pending
+  inspected: "orange", // 🟠 Inspected, payment pending
+  payment_processing: "teal", // 🔷 Payment being processed
+  completed: "success", // ✅ Transaction complete
+  cancelled: "gray", // ⚫ Cancelled/declined
 };
 ```
 
@@ -522,6 +553,7 @@ const statusColors = {
 ## 🚀 IMPLEMENTATION ORDER
 
 ### Day 1: Database & Core API
+
 1. ✅ Create enhanced schema
 2. Run migration on D1
 3. Create PUT `/review` endpoint
@@ -529,18 +561,21 @@ const statusColors = {
 5. Test offer creation flow
 
 ### Day 2: Negotiation & Response
+
 6. Create POST `/seller-response` endpoint
 7. Create POST `/counter-offer` endpoint
 8. Test negotiation flow
 9. Add seller notification system
 
 ### Day 3: Inspection & Payment
+
 10. Create POST `/items-received` endpoint
 11. Create POST `/inspect` endpoint
 12. Create POST `/payment` endpoint
 13. Test complete workflow
 
 ### Day 4: Admin UI
+
 14. Build review modal
 15. Build offer creation modal
 16. Build negotiation interface
@@ -548,6 +583,7 @@ const statusColors = {
 18. Build payment form
 
 ### Day 5: Polish & Test
+
 19. Add email templates
 20. Test end-to-end workflow
 21. Add error handling

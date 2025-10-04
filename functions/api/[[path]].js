@@ -3,6 +3,8 @@
 // Paste this file as-is. Requires env.DB (D1) + ALLOWED_ORIGINS.
 // Oct 2, 2025
 
+import NotificationService from '../lib/notification-service.js';
+
 // ---- Util ----
 const enc = new TextEncoder();
 const json = (data, status = 200, headers = {}) =>
@@ -630,7 +632,7 @@ export async function onRequest(context) {
               .toLowerCase(); // Convert to lowercase for CF Images compatibility
 
             cfFormData.append('id', cleanFilename);
-            console.log('Uploading with custom ID:', cleanFilename);
+            // Upload image with custom filename
           }
 
           // Upload to Cloudflare Images
@@ -656,7 +658,7 @@ export async function onRequest(context) {
             }, uploadResponse.status, headers);
           }
 
-          console.log('✅ Image uploaded successfully:', result.result?.id);
+          // Image upload completed
 
           return json({
             success: true,
@@ -831,8 +833,37 @@ export async function onRequest(context) {
         )
         .run();
 
+      // Get user email for order confirmation
+      const user = await env.DB.prepare(
+        `SELECT email, first_name, last_name FROM users WHERE id=?`
+      ).bind(session.user_id).first();
+
+      const newOrder = {
+        id: res.meta?.last_row_id ?? null,
+        order_number: orderNo,
+        status: "pending",
+        total_amount: body.total_amount || 0,
+        user_email: user?.email,
+        user_name: user ? `${user.first_name || ''} ${user.last_name || ''}`.trim() : null
+      };
+
+      // Send order confirmation notification
+      try {
+        const notificationService = new NotificationService(env);
+        const notificationResult = await notificationService.sendOrderConfirmation(newOrder, body.items);
+
+        if (notificationResult.success) {
+          console.log(`✅ Order confirmation sent for ${orderNo}`);
+        } else {
+          console.warn(`⚠️  Order confirmation failed for ${orderNo}: ${notificationResult.reason}`);
+        }
+      } catch (notificationError) {
+        console.error('❌ Order confirmation error:', notificationError);
+        // Don't fail the order creation if notification fails
+      }
+
       return json(
-        { success: true, order: { id: res.meta?.last_row_id ?? null, order_number: orderNo, status: "pending" } },
+        { success: true, order: newOrder },
         201,
         headers
       );

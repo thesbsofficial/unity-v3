@@ -58,7 +58,7 @@ You need to set the Resend API key as a Cloudflare secret:
 5. Go to "Settings" > "Environment variables"
 6. Add new variable:
    - **Name**: `RESEND_API_KEY`
-   - **Value**: `re_Fh2qGiv2_4p65paDSf1YqrDFjaz4Cv566`
+   - **Value**: `re_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx`
    - **Type**: Secret (encrypted)
    - **Environment**: Production
 7. Save and redeploy
@@ -67,7 +67,7 @@ You need to set the Resend API key as a Cloudflare secret:
 
 ```bash
 npx wrangler pages secret put RESEND_API_KEY --project-name=unity-v3
-# When prompted, paste: re_Fh2qGiv2_4p65paDSf1YqrDFjaz4Cv566
+# When prompted, paste: re_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ```
 
 ---

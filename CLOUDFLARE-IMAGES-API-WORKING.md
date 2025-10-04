@@ -109,15 +109,15 @@ Cloudflare Pages deployment environments are determined at deployment time, not 
 ### Preview Environment (Working)
 
 ```bash
-CLOUDFLARE_API_TOKEN=uCL2lw_BMvQX5Iw_jG9KJXCY9uZQntJ0bu0gq4mI
+CLOUDFLARE_API_TOKEN=cf_example_token_preview
 CLOUDFLARE_IMAGES_HASH=7B8CAeDtA5h1f1Dyh_X-hg
 ```
 
 ### Production Environment (Ready)
 
 ```bash
-CLOUDFLARE_API_TOKEN=uCL2lw_BMvQX5Iw_jG9KJXCY9uZQntJ0bu0gq4mI
-CLOUDFLARE_IMAGES_API_TOKEN=uCL2lw_BMvQX5Iw_jG9KJXCY9uZQntJ0bu0gq4mI
+CLOUDFLARE_API_TOKEN=cf_example_token_prod
+CLOUDFLARE_IMAGES_API_TOKEN=cf_example_token_prod
 CLOUDFLARE_IMAGES_HASH=7B8CAeDtA5h1f1Dyh_X-hg
 ```
 
