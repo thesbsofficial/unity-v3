@@ -301,6 +301,7 @@
         <div class="tab active" data-view="overview">📊 Overview</div>
         <div class="tab" data-view="products">📦 Products</div>
         <div class="tab" data-view="customers">👥 Customers</div>
+        <div class="tab" data-view="events">⚡ Events</div>
         <div class="tab" data-view="sellers">📤 Sellers</div>
     </div>
 
@@ -352,6 +353,16 @@
         </div>
     </div>
 
+    <!-- EVENTS SECTION -->
+    <div id="events-section" class="content-section">
+        <div class="metrics-grid" id="event-metrics"></div>
+
+        <div class="data-table">
+            <div class="table-header">⚡ Recent Events</div>
+            <div id="recent-events"></div>
+        </div>
+    </div>
+
     <!-- SELLERS SECTION -->
     <div id="sellers-section" class="content-section">
         <div class="empty-state">
@@ -396,7 +407,11 @@
             document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
 
             try {
-                const response = await fetch(`/api/analytics-v2?view=${currentView}&period=${currentPeriod}`);
+                // Use special endpoint for events
+                const endpoint = currentView === 'events' 
+                    ? '/api/admin/analytics-events' 
+                    : `/api/analytics-v2?view=${currentView}&period=${currentPeriod}`;
+                const response = await fetch(endpoint);
                 const data = await response.json();
 
                 if (!data.success) {
@@ -415,6 +430,8 @@
                     renderProducts(data);
                 } else if (currentView === 'customers') {
                     renderCustomers(data);
+                } else if (currentView === 'events') {
+                    renderEvents(data);
                 }
 
             } catch (err) {
@@ -538,6 +555,73 @@
                 </div>
             `).join('') : '<div class="empty-state"><p>No location data yet</p></div>';
             document.getElementById('customer-locations').innerHTML = locationHtml;
+        }
+
+        // RENDER EVENTS
+        function renderEvents(data) {
+            if (!data.events || data.events.length === 0) {
+                document.getElementById('event-metrics').innerHTML = `
+                    <div class="metric-card">
+                        <div class="metric-icon">⚡</div>
+                        <div class="metric-label">Total Events</div>
+                        <div class="metric-value">0</div>
+                    </div>
+                `;
+                document.getElementById('recent-events').innerHTML = '<div class="empty-state"><p>No events tracked yet</p></div>';
+                return;
+            }
+
+            // Event type counts
+            const eventTypes = {};
+            data.events.forEach(e => {
+                eventTypes[e.event_type] = (eventTypes[e.event_type] || 0) + 1;
+            });
+
+            const metricsHtml = `
+                <div class="metric-card">
+                    <div class="metric-icon">⚡</div>
+                    <div class="metric-label">Total Events</div>
+                    <div class="metric-value">${data.events.length}</div>
+                </div>
+                ${Object.entries(eventTypes).slice(0, 3).map(([type, count]) => `
+                    <div class="metric-card">
+                        <div class="metric-icon">${type === 'page_view' ? '👁️' : type === 'add_to_cart' ? '🛒' : type === 'checkout_start' ? '💳' : '📊'}</div>
+                        <div class="metric-label">${type.replace(/_/g, ' ').toUpperCase()}</div>
+                        <div class="metric-value">${count}</div>
+                    </div>
+                `).join('')}
+            `;
+            document.getElementById('event-metrics').innerHTML = metricsHtml;
+
+            // Recent events table
+            const eventsHtml = data.events.map(event => {
+                let eventData = {};
+                try {
+                    eventData = JSON.parse(event.event_data);
+                } catch (e) {
+                    eventData = {};
+                }
+
+                const icon = event.event_type === 'page_view' ? '👁️' : 
+                             event.event_type === 'add_to_cart' ? '🛒' : 
+                             event.event_type === 'checkout_start' ? '💳' : 
+                             event.event_type === 'click' ? '🖱️' : '📊';
+
+                return `
+                    <div class="table-row" style="grid-template-columns: 0.5fr 1.5fr 1fr 1fr 2fr;">
+                        <div>${icon}</div>
+                        <div><strong>${event.event_type}</strong></div>
+                        <div>${event.path || 'N/A'}</div>
+                        <div>${event.user_id ? `User ${event.user_id}` : '👤 Anonymous'}</div>
+                        <div style="font-size: 12px; color: var(--text-secondary);">
+                            ${new Date(event.timestamp).toLocaleString()}
+                            ${eventData.page_title ? `<br><span style="opacity: 0.7;">📄 ${eventData.page_title}</span>` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById('recent-events').innerHTML = eventsHtml;
         }
 
         // INIT

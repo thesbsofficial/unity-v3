@@ -507,6 +507,47 @@ export async function onRequest(context) {
       }
     }
 
+    // ANALYTICS TRACKING - PUBLIC
+    if (path === "/api/analytics/track" && method === "POST") {
+      try {
+        const body = await request.json();
+        const events = body.events;
+
+        if (!Array.isArray(events) || events.length === 0) {
+          return json({ success: false, error: "No events to track" }, 400, headers);
+        }
+
+        const ip = ipOf(request);
+        const ua = request.headers.get("User-Agent") || "unknown";
+        const userId = session?.user_id || null;
+        const sessionId = session?.session_id || body.sessionId || null; // Allow client to send session ID
+
+        const stmt = env.DB.prepare(
+          `INSERT INTO analytics_events (event_type, event_data, user_id, session_id, ip_address, user_agent, path)
+           VALUES (?, ?, ?, ?, ?, ?, ?)`
+        );
+
+        const batch = events.map(event =>
+          stmt.bind(
+            event.type,
+            JSON.stringify(event.data || {}),
+            userId,
+            sessionId,
+            ip,
+            ua,
+            event.path || null
+          )
+        );
+
+        await env.DB.batch(batch);
+
+        return json({ success: true, tracked: events.length }, 200, headers);
+      } catch (error) {
+        console.error('Analytics tracking error:', error);
+        return json({ success: false, error: "Failed to track analytics", details: error.message }, 500, headers);
+      }
+    }
+
     // AUTH REQUIRED
     if (!session) return json({ success: false, error: "Unauthorized" }, 401, headers);
 
@@ -577,6 +618,13 @@ export async function onRequest(context) {
           200,
           headers
         );
+      }
+
+      if (path === "/api/admin/analytics-events" && method === "GET") {
+        const { results } = await env.DB.prepare(
+          "SELECT id, event_type, path, user_id, timestamp, event_data FROM analytics_events ORDER BY timestamp DESC LIMIT 100"
+        ).all();
+        return json({ success: true, events: results || [] }, 200, headers);
       }
 
       // Admin Health Check - comprehensive configuration verification
