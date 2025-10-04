@@ -1,0 +1,213 @@
+SBS Unity V3 Code Audit Report
+1. 🐞 Bugs & Malfunctions
+
+Inconsistent Success Flags on Errors: Certain API endpoints return a success status even when an error occurs. For example, the products API onRequest catch block always returns { success: true, products: [] } with a message, even on failure
+GitHub
+. This could mislead clients into treating error responses as successes (e.g. empty product list vs. actual error). It’s recommended to return a proper error status (e.g. success: false with HTTP 500) so the front-end can distinguish real empty results from backend faults.
+
+Unimplemented Features (Marked TODO): There are places where functionality is intended but not implemented, which may lead to silent failures or missing behavior. For instance, after an admin updates an order status, the code notes a TODO to send a customer notification (WhatsApp/Email) but it’s commented out
+GitHub
+. Similarly, after creating a new order, a TODO suggests sending a confirmation to the customer
+GitHub
+. These mean users won’t receive expected alerts. Before final deployment, either implement these notifications or remove the references to avoid confusion.
+
+Session Persistence Edge Case: The front-end relies on sessionStorage for login state, which is cleared on browser close. On a fresh visit with a valid session cookie, some pages might not automatically detect the logged-in state (unless they explicitly call the /api/users/me check like the login page does
+GitHub
+). This can cause a logged-in user to appear logged-out until a refresh or redirect occurs. Ensuring every protected page performs an on-load session check (or using SameSite=Strict cookies with backend session validation on page load) would smooth out the UX.
+
+Potential Legacy Login Mismatch: The repository recently migrated to a new auth system. If any user accounts were created with the older auth.ts logic (which stored a session_token in the user record on login
+GitHub
+ and hashed passwords differently), they may not seamlessly work with the new system. The new centralized auth uses a separate sessions table and PBKDF2-hashed passwords with salt, while the old method used an unsalted SHA-256 hash
+GitHub
+. If any data from the old system persists (e.g. users with password_hash but no password_salt), those users would fail the new login verification (the new verifyPassword returns false when no salt is present
+GitHub
+). It’s important to migrate or update any such records to the new format, or add compatibility handling, to prevent login failures.
+
+Minor Logic Errors: The unified front-end script shows a minor leftover in the error handler. A function generateSessionId() is defined but the sessionId is set directly on initialization instead
+GitHub
+GitHub
+. This doesn’t break functionality (since it uses a static session identifier for error logging), but the unused function is dead code and could be removed or used consistently. No user-facing bug here, just an opportunity to clean up.
+
+2. 🗑️ Orphaned & Unused Code
+
+Removed Files Still Referenced in Docs: The project went through a cleanup that eliminated many obsolete files. According to the internal audit
+GitHub
+GitHub
+, scripts like shop-clean.js, robust-shop.js, verify-robust.js, nav-debug.js, navigation.js, as well as old test HTML files, were removed and consolidated into the new app.js. Ensure these files are indeed deleted from the deployed build. The presence of references in docs suggests they were identified as dead code; any remaining stubs should be purged to avoid confusion.
+
+Legacy Auth Code: The file functions/api/auth.ts appears to be a vestige of an earlier authentication implementation. The live code now uses the catch-all [[path]].js handler under /api/users/* routes for login/registration
+GitHub
+, rendering auth.ts unused. This orphan could confuse future maintainers. Removing auth.ts (and any similar outdated files) will prevent someone from mistakenly updating or invoking the wrong auth logic.
+
+Development/Test Endpoints: There are endpoints and scripts meant only for development or testing that should be removed or disabled in production. For example, functions/api/test-beautiful-email.ts is a helper to test the “beautiful verification email” template and will send an email to any provided address without authentication
+GitHub
+GitHub
+. Such code is not needed in production and could pose a security risk or allow misuse (e.g. spamming via your email API). Similarly, utility scripts like password generators or validators in the repo should not be included in the deployed bundle. Audit the deployment pipeline to exclude these files.
+
+Archived Backups: The public/archive/ directory contains backups/old versions (e.g. an old shop-backup-*.html). These are not used by the live site. While it’s fine to keep them in source for reference, ensure they aren’t accidentally accessible in production (they should not be exposed or linked). If they are accessible via URL, consider removing them or restricting access to avoid serving outdated content.
+
+3. 🔒 Security Assessment
+
+Password Hashing Strength: The current implementation follows security best practices by using PBKDF2-HMAC-SHA256 with a salt and 100k iterations for hashing passwords
+GitHub
+, and verifies passwords in a timing-safe manner
+GitHub
+. This is a significant improvement over the older approach (plain SHA-256 with no salt
+GitHub
+). Ensure all user passwords are using the new scheme. If any accounts were created with the old hashing method, update them by re-hashing the password with salt or forcing a password reset. Consistency here is critical to avoid weaker points in your auth.
+
+Session Security: Session tokens are now stored hashed in the database (with a separate session_tokens lookup table) and the raw token is only set as an HttpOnly cookie
+GitHub
+GitHub
+. This is good for preventing token leakage via XSS. The cookie is set with Secure and SameSite=Lax attributes
+GitHub
+, which strikes a balance allowing form POSTs from your site while mitigating CSRF from external contexts. You’ve also implemented explicit CSRF token validation for state-changing requests (checking X-CSRF-Token header against the session’s secret)
+GitHub
+GitHub
+. These measures greatly enhance security. Be sure to consistently enforce CSRF checks on all modifying actions (the catch-all handler does check on certain routes, e.g. update profile or order actions – it returns 403 on token mismatch
+GitHub
+).
+
+Authentication & RBAC: Admin login is properly segregated under /api/admin/* endpoints with additional checks – requiring the account to have role “admin” and be explicitly allow-listed
+GitHub
+GitHub
+. Regular user login is under /api/users/login. This separation, plus the isAdminSession verification before sensitive operations
+GitHub
+, helps prevent privilege escalation. Just ensure that allow-list promotion of handles is handled carefully: the code auto-upgrades a normal user to admin if their social handle matches an allowlist and they log in
+GitHub
+. This is convenient for admin onboarding, but keep the allowlist value secret to avoid malicious use (though your registration check prevents duplicate handles
+GitHub
+, so an attacker cannot just register as the founder handle).
+
+Input Validation: The registration flow validates required fields and basic password complexity (min length 6, at least one digit)
+GitHub
+. Common fields are whitelisted (allowed keys) and any unknown fields in the payload are rejected
+GitHub
+GitHub
+ – a good safeguard against unexpected input. On the client side, form inputs also have patterns (e.g. 6-digit OTP code)
+GitHub
+. These validations mitigate malformed data and some injection vectors. Also, all database queries use parameter binding (no string concatenation), protecting against SQL injection
+GitHub
+GitHub
+.
+
+Exposure of Sensitive Data: The API responses generally return minimal user info. For example, upon login it returns user ID, handle, email, role, names, and a CSRF token
+GitHub
+ – no raw passwords or overly sensitive data. The system logs (like system_logs table and ErrorHandler.errors) capture errors and user agent, which is fine. Just be mindful that the client-side error logger stores errors in memory and not yet sent to the server (since there’s no network send in the code shown). If you plan to transmit those logs, ensure no sensitive PII is included.
+
+CSP & XSS: The Content Security Policy in headers is strict (default-src 'self'; script-src 'self'; ... frame-ancestors 'none' etc.)
+GitHub
+, which helps prevent external scripts. The front-end avoids inserting user-generated HTML; most dynamic content (e.g. product names, user first names) are either text content or sanitized. The one area to watch is that you store the logged-in user info in sessionStorage and use it to update the DOM (e.g. inserting first_name in the nav greeting
+GitHub
+). If an attacker ever manipulated that sbs_user data (unlikely, since it’s only set via your controlled API responses), it could inject HTML. But currently it’s just used in template literals and not as raw HTML, so it’s safe. Overall, the XSS risk appears low given the CSP and lack of obvious injection points.
+
+Miscellaneous: Ensure environment secrets (API tokens, DB IDs, etc.) are kept out of the repo. The README and .gitignore indicate secrets are not committed
+GitHub
+, which is good. Double-check that no secret values accidentally slipped into any config or test files (for example, the test email function uses context.env.RESEND_API_KEY
+GitHub
+ – as long as that’s provided via environment and not hardcoded, you’re fine). Rate limiting is mentioned in docs as implemented, but I didn’t see a specific rate-limit middleware in code – possibly it's configured externally or via Cloudflare settings. If not, consider adding basic rate limiting on auth endpoints to slow brute-force attempts (Cloudflare’s network-level features could handle this too).
+
+4. ♻️ Code Refinement & Optimization
+
+Eliminate Redundant Code Paths: Having one unified API handler is excellent for consistency. To fully embrace this, remove any parallel code that does similar work. For example, the standalone auth.ts (if still present) should be deleted in favor of the unified [[path]].js. This prevents divergence where one path might not get a bug fix or update applied to the other. It will also reduce bundle size and confusion.
+
+Consolidate Session Logic: There is some duplication in how session tokens are handled between admin and user flows. The admin auth code manually generates and hashes a token and inserts into the sessions and session_tokens tables
+GitHub
+GitHub
+, while the user flow calls a shared createSession() that does the same
+GitHub
+GitHub
+. Both achieve similar results, but using the shared library function everywhere would reduce code repetition. Likewise, admin order routes manually hash the Authorization Bearer token to verify session
+GitHub
+ instead of using the existing readSession helper. Refactoring these to use common utilities (e.g. move hashToken/sha256b64 to security.js and reuse) would improve maintainability and ensure consistency in session validation.
+
+Optimize Database Queries: Most database interactions are fine and likely low-volume (SQLite via Cloudflare D1 can handle the current queries). However, there are a few spots where performance can be improved:
+
+In fetching admin orders, after getting the list of orders, the code runs a separate query to collect items for each order in a loop
+GitHub
+. This is potentially N+1 queries. Since you already use a join for a single order (with GROUP_CONCAT in onRequestGet for one order
+GitHub
+GitHub
+), you could apply a similar technique to fetch all orders with items in one query (e.g. using a join and group concat or JSON aggregation). Given the limit of 100 orders it’s not critical, but it would be a cleaner solution.
+
+Similarly, when verifying sessions in admin auth, you insert into two tables (sessions and session_tokens) for each login
+GitHub
+GitHub
+. If that becomes a bottleneck, consider if the session_tokens table is needed or if an index on sessions.token (hashed) could replace it. The session_tokens table seems to exist for quick token lookups without joining users, which is fine for now.
+
+The product fetch from Cloudflare Images pulls all images then filters in JS for status/metadata
+GitHub
+GitHub
+. If the image count grows large, this in-memory filtering might strain the worker. Cloudflare’s API doesn’t support complex queries on metadata, so this might be unavoidable. Just keep an eye on performance; perhaps caching the product list or adding query params for filtering (like ?status=active) could avoid sending hidden/sold items over the wire at all. For now, the approach is acceptable for moderate image counts.
+
+Front-End Improvements: The new unified app.js significantly simplifies the front-end. A couple of suggestions:
+
+The navigation update logic directly sets innerHTML for the nav bar
+GitHub
+GitHub
+. This is fine given the content, but if this ever becomes dynamic based on user input, building DOM elements or using safer templating would be preferable to concatenating strings. Currently, the content is controlled (first name and role are from the database and presumably sanitized), so this is a minor point.
+
+After unification, double-check that all event handlers (e.g. for the mobile menu, cart modal toggle) are properly re-bound since the code that was in separate files is now in modules within app.js. The init() at the bottom of app.js sets up some of these on DOMContentLoaded
+GitHub
+. It appears all essential ones are covered, but a quick QA on navigation (desktop vs mobile) and cart operations on various pages is warranted to ensure nothing was lost in the merge.
+
+Remove Leftover Dev Hooks: In app.js and other code, scan for any console logs or debug flags intended for development. For example, the products function has debugMode support (URL param ?debug) that includes raw metadata in the response
+GitHub
+. That can be useful for admins but should likely be stripped or secured (maybe only allow it for admins or local testing). Also, calls like console.log('🚀 SBS App initialized')
+GitHub
+ are harmless, but you might want to remove or minimize console output in production for cleanliness (keeping error logs is fine). These refinements make the production console output cleaner for any power users or developers inspecting the site.
+
+5. 🔄 Redundant or Repetitive Logic
+
+Duplicate Functions for Similar Tasks: There are instances of similar logic implemented in multiple places. For example, token hashing is done via a utility in admin auth (hashToken() in admin/auth.js
+GitHub
+) and also manually in the admin orders PUT logic
+GitHub
+. Likewise, generating random tokens appears in multiple forms (generateSessionToken() in admin auth
+GitHub
+ vs. randB32() in the unified API
+GitHub
+). Consolidating these into one module (e.g. a cryptoUtil.js) that all parts of the code use would reduce repetition. It ensures that if you ever need to change the token format or hashing method, you do it in one place.
+
+Session Storage vs Cookie Redundancy: The client stores session info in two ways – cookie (for server auth) and sessionStorage (for quick client-side checks). The dual system means there are two sources of truth that must remain in sync. Currently, this is handled by setting both: the server sets the cookie and the client stores the user & CSRF token in sessionStorage via applySessionData()
+GitHub
+GitHub
+. It works, but consider if this is truly needed. An alternative is to rely solely on the cookie + a lightweight /api/users/me call on page load (as done on the login page) to populate client state. That would eliminate storing the CSRF token client-side (you could issue a new token on each response or have the server track it). This is more of an architectural choice – the current setup is functional, but simplifying state management could reduce potential for bugs (e.g. mismatched login state if sessionStorage is cleared but cookie remains, as noted earlier).
+
+Reusing Components: The project is fairly DRY (Don't Repeat Yourself) overall. One spot to improve might be combining similar HTML components into single sources. For example, the header/nav markup is duplicated across pages (each HTML file has a <header> block with nav links). If any change occurs (like adding a nav item), it has to be edited in multiple files. Using a templating mechanism or server-side include for the header and footer could avoid this repetition. Since this is a static site on Cloudflare Pages, you might consider at least scripting the generation of these pages from a template, or using Cloudflare Pages Functions to serve a common layout. This is a refinement to consider post-MVP to ease maintenance.
+
+Commented-Out Legacy Code: Be mindful of leaving large blocks of commented code in the repository. The audit docs show many removed files, and the code itself has sections commented out (like the entire service worker sw.js was noted as outdated). If you decided not to use a service worker, remove it entirely rather than keeping it commented or disabled. Dead code (even in comments) can confuse future developers and clutter the codebase. Since you have version control, you can always retrieve old code from history if needed. Keeping the working tree clean will make the remaining issues more visible.
+
+📋 Summary of Key Issues and Recommendations
+Issue	Severity	Location	Recommended Fix
+Error response marked as success – APIs returning success:true even on failure, which can mislead client logic.	Low	functions/api/products.js catch block
+GitHub
+	Return success:false and appropriate HTTP status on errors to clearly signal failure to clients.
+Incomplete features (TODOs) – e.g. customer notifications on order status change not implemented, no confirmation email on order creation.	Low	functions/api/admin/orders.js
+GitHub
+GitHub
+	Implement these features or remove the placeholders. If postponed, clearly document that these will be added later to set correct expectations.
+Legacy auth code present – Old auth route (auth.ts) and methods (session_token in users) potentially still in code, causing confusion or inconsistency.	Low	functions/api/auth.ts
+GitHub
+ (not actively used in new flow)	Remove or disable legacy auth code. Ensure all parts of the app use the new unified auth system to avoid divergence.
+Unsalted password hashing (legacy) – Older accounts or code used unsalted SHA-256, weaker security and incompatible with new login verification.	High	functions/api/auth.ts (hashPassword)
+GitHub
+	Migrate all users to salted PBKDF2 hashes. Enforce the new password_hash + salt + iterations scheme
+GitHub
+ and deprecate any plaintext SHA-256 usage.
+Dev/test endpoints exposed – e.g. /api/test-beautiful-email allows sending emails without auth, could be abused if left deployed.	Medium	functions/api/test-beautiful-email.ts
+GitHub
+	Remove or secure test endpoints. They should not be accessible in production. Use them only in dev or behind admin authentication.
+Redundant session logic – Duplication in token hashing and session verification across admin/user paths.	Low	e.g. token hash in admin/orders.js
+GitHub
+ vs. security.js	Refactor to use shared utilities for hashing and session checks (centralize in functions/lib/security.js). This prevents mistakes and eases updates.
+N+1 query pattern – Loading order items in a loop for each order.	Low	functions/api/admin/orders.js
+GitHub
+	Optimize by using a JOIN or batch query to fetch all order items at once. Improves efficiency for many orders.
+Session storage vs cookie sync – Logged-in state not persisted across sessions unless /api/users/me is called. Possible confusion if cookie valid but sessionStorage empty.	Low	Client-side (multiple pages)	Consider auto-checking session on page load (as done in login) globally, or storing needed info in cookie to fully rely on server session. Ensure protected pages call Auth.requireAuth() or similar early.
+Console debug logs in production – Various console.log in client and server (initialization messages, etc.).	Low	Throughout JS (e.g. app.js init
+GitHub
+, products API)	Remove or minimize debug logging in production code for cleanliness and slight performance gain. Retain error logs as needed.
+Duplicate HTML fragments – Repeated nav/footer HTML in multiple files.	Low	public/*.html (header/nav in each)	In the long run, use a templating system or server include to avoid updating the same snippet in many places. Not urgent, but improves maintainability.
+
+Each of the above issues should be addressed before final deployment to ensure a robust, secure, and clean codebase. Overall, SBS Unity V3 is well-structured and nearly production-ready – most findings are minor tweaks or final polish. Addressing the noted bugs, removing dead code, and tightening any remaining security loose ends will put the project in excellent shape for a successful launch. 🚀
