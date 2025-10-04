@@ -8,11 +8,16 @@
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     
+    <!-- Google Fonts - Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
     <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/lucide@latest" defer></script>
     
     <!-- Analytics Tracker -->
-    <script src="/js/analytics-tracker.js"></script>
+    <script src="/js/analytics-tracker.js" defer></script>
     
     <!-- Helper System -->
     <link rel="stylesheet" href="/css/helper.css">
@@ -613,6 +618,25 @@
                     <div id="order-items">
                         <!-- Items will be loaded here -->
                     </div>
+
+                    <!-- Total Cost Summary -->
+                    <div id="cost-summary" style="margin-top: 20px; padding: 20px; background: rgba(255, 215, 0, 0.05); border: 2px solid var(--primary-gold); border-radius: 8px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px; color: #fff;">
+                            <span>Items (<span id="item-count">0</span>):</span>
+                            <span style="color: #ffd700;">Payment on delivery</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #333; color: #fff;">
+                            <span>Delivery Zone:</span>
+                            <span id="delivery-zone-name" style="color: #ffd700;">Will be calculated</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 18px; font-weight: 700;">
+                            <span style="color: var(--primary-gold);">Total Due on Delivery:</span>
+                            <span id="total-amount" style="color: var(--primary-gold); font-size: 22px;">Calculating...</span>
+                        </div>
+                        <p style="color: #999; font-size: 13px; margin-top: 12px; margin-bottom: 0;">
+                            💡 Final amount includes delivery cost based on your address
+                        </p>
+                    </div>
                 </div>
 
                 <div class="section" style="margin-top: 20px;">
@@ -758,11 +782,51 @@
                 </div>
             `).join('');
 
+            // Update item count
+            document.getElementById('item-count').textContent = cart.length;
+            updateTotalDisplay();
+
             // Track checkout start
             analytics.track('checkout_start', {
                 item_count: cart.length
             });
         }
+
+        // Update total cost display
+        function updateTotalDisplay() {
+            const deliveryZoneInput = document.getElementById('delivery-zone-input');
+            const deliveryPriceInput = document.getElementById('delivery-price-input');
+            const deliveryPrice = parseInt(deliveryPriceInput.value) || 0;
+            
+            // Get zone name mapping
+            const zoneNames = {
+                'north-dublin': 'North Dublin (€15)',
+                'south-dublin': 'South Dublin (€20)',
+                'dublin-county': 'Bordering Cities (€25)',
+                'surrounding': 'Further Counties (€35)',
+                'postage': 'National Post (€10)'
+            };
+            
+            const zoneName = zoneNames[deliveryZoneInput.value] || 'To be determined';
+            document.getElementById('delivery-zone-name').textContent = zoneName;
+            
+            if (deliveryPrice > 0) {
+                document.getElementById('total-amount').textContent = `€${deliveryPrice}`;
+            } else {
+                document.getElementById('total-amount').textContent = 'Enter address';
+            }
+        }
+
+        // Watch for address changes to update delivery zone display
+        ['house_number', 'street', 'city', 'county', 'eircode'].forEach(fieldName => {
+            const field = document.querySelector(`[name="${fieldName}"]`);
+            if (field) {
+                field.addEventListener('input', () => {
+                    // Give a brief delay for zone detection logic to run
+                    setTimeout(updateTotalDisplay, 100);
+                });
+            }
+        });
 
         // Handle form submission
         document.getElementById('checkout-form').addEventListener('submit', async (e) => {
