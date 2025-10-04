@@ -603,7 +603,7 @@
         let currentSubmission = null;
 
         // Check auth
-        const token = sessionStorage.getItem('admin-token');
+        const token = localStorage.getItem('admin_token');
         if (!token) {
             window.location.href = '/admin/dashboard.html';
         }

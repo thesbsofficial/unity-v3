@@ -184,7 +184,7 @@
                     }
 
                     // Redirect to dashboard
-                    window.location.href = '/admin/';
+                    window.location.href = '/admin/dashboard.html';
                 } else {
                     // Show error
                     errorText.textContent = data.error || 'Invalid email or password';
@@ -216,7 +216,7 @@
                 .then(res => res.json())
                 .then(data => {
                     if (data.valid) {
-                        window.location.href = '/admin/';
+                        window.location.href = '/admin/dashboard.html';
                     }
                 });
         }
