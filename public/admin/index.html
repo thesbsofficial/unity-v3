@@ -410,21 +410,59 @@
 
         // Load Dashboard Stats
         async function loadDashboardData() {
-            try {
-                // TODO: Replace with real API calls
-                // For now, show placeholder data
-                document.getElementById('statInventory').textContent = '78';
-                document.getElementById('statRequests').textContent = '12';
-                document.getElementById('statCustomers').textContent = '45';
-                document.getElementById('statSales').textContent = '€0';
+            const session = sessionStorage.getItem('sbs_admin_session') || localStorage.getItem('sbs_admin_session');
+            const authHeaders = session ? { 'Authorization': `Bearer ${session}` } : {};
 
-                // Update trends
-                document.querySelectorAll('.stat-trend').forEach(el => {
-                    el.textContent = 'Live data coming soon';
-                    el.style.color = '#999';
-                });
+            const updateTrend = (elementId, text, color = '#999') => {
+                const trendEl = document.getElementById(elementId)?.nextElementSibling;
+                if (trendEl) {
+                    trendEl.textContent = text;
+                    trendEl.style.color = color;
+                }
+            };
+
+            try {
+                const [inventoryRes, requestsRes, customersRes, ordersRes] = await Promise.all([
+                    fetch('/api/products-smart?smart'),
+                    fetch('/api/sell-submissions?status=pending'),
+                    fetch('/api/analytics-v2?view=customers&period=month'),
+                    fetch('/api/admin/orders', { headers: authHeaders })
+                ]);
+
+                const inventoryData = await inventoryRes.json().catch(() => ({}));
+                const requestsData = await requestsRes.json().catch(() => ({}));
+                const customersData = await customersRes.json().catch(() => ({}));
+                let ordersData = { stats: { revenue: 0 }, orders: [] };
+
+                if (ordersRes.ok) {
+                    ordersData = await ordersRes.json();
+                } else {
+                    console.warn('Orders endpoint unavailable for dashboard summary.');
+                }
+
+                const liveInventory = inventoryData.total || inventoryData.products?.length || 0;
+                const pendingSubmissions = requestsData.count ?? 0;
+                const activeCustomers = customersData.summary?.total_active ?? 0;
+                const todaysRevenue = ordersData.stats?.revenue ?? 0;
+
+                document.getElementById('statInventory').textContent = liveInventory;
+                updateTrend('statInventory', `${inventoryData.d1_sync?.upserted || 0} new items auto-synced`, '#22c55e');
+
+                document.getElementById('statRequests').textContent = pendingSubmissions;
+                updateTrend('statRequests', pendingSubmissions === 0 ? 'All caught up 🎉' : 'Awaiting review', pendingSubmissions === 0 ? '#22c55e' : '#f97316');
+
+                document.getElementById('statCustomers').textContent = activeCustomers;
+                updateTrend('statCustomers', 'Top advocates highlighted in analytics', '#60a5fa');
+
+                document.getElementById('statSales').textContent = `£${Number(todaysRevenue).toFixed(2)}`;
+                updateTrend('statSales', 'Today’s completed order value', '#a855f7');
+
             } catch (error) {
                 console.error('Failed to load dashboard data:', error);
+                document.querySelectorAll('.stat-trend').forEach(el => {
+                    el.textContent = 'Data unavailable';
+                    el.style.color = '#ef4444';
+                });
             }
         }
 

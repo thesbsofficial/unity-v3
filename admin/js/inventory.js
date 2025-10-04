@@ -128,14 +128,14 @@ function renderProducts() {
 
                 <!-- Actions -->
                 <div class="flex space-x-2">
-                    <button 
+                    <button
                         onclick="editProduct(${product.id})"
                         class="flex-1 bg-blue-50 text-blue-600 hover:bg-blue-100 px-4 py-2 rounded-lg font-medium transition-colors flex items-center justify-center"
                     >
                         <i data-lucide="edit" class="w-4 h-4 mr-2"></i>
                         Edit
                     </button>
-                    <button 
+                    <button
                         onclick="deleteProduct(${product.id}, '${product.name}')"
                         class="bg-red-50 text-red-600 hover:bg-red-100 px-4 py-2 rounded-lg font-medium transition-colors"
                     >
@@ -361,11 +361,17 @@ function logout() {
 }
 
 function showSuccess(message) {
-    // TODO: Implement toast notification
-    alert(message);
+    if (window.adminToast) {
+        window.adminToast.success(message, { description: 'Inventory updated successfully.' });
+    } else {
+        alert(message);
+    }
 }
 
 function showError(message) {
-    // TODO: Implement toast notification
-    alert(message);
+    if (window.adminToast) {
+        window.adminToast.error(message, { description: 'Please review and try again.' });
+    } else {
+        alert(message);
+    }
 }

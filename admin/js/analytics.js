@@ -352,11 +352,17 @@ function logout() {
 }
 
 function showSuccess(message) {
-    // TODO: Implement toast notification
-    alert(message);
+    if (window.adminToast) {
+        window.adminToast.success(message, { description: 'Analytics data refreshed.' });
+    } else {
+        alert(message);
+    }
 }
 
 function showError(message) {
-    // TODO: Implement toast notification
-    alert(message);
+    if (window.adminToast) {
+        window.adminToast.error(message, { description: 'Analytics fetch failed. Please retry.' });
+    } else {
+        alert(message);
+    }
 }

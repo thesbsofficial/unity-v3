@@ -33,24 +33,45 @@ const SBSCart = {
     // Add item to cart
     addItem(item) {
         const cart = this.getItems();
-        cart.push({
+        const enrichedItem = {
             ...item,
             timestamp: Date.now()
-        });
-        return this.setItems(cart);
+        };
+
+        cart.push(enrichedItem);
+        const success = this.setItems(cart);
+
+        if (success) {
+            window.dispatchEvent(new CustomEvent('cart-item-added', {
+                detail: { item: enrichedItem, count: cart.length }
+            }));
+        }
+
+        return success;
     },
 
     // Remove item by index
     removeItem(index) {
         const cart = this.getItems();
-        cart.splice(index, 1);
-        return this.setItems(cart);
+        if (index < 0 || index >= cart.length) return false;
+
+        const [removedItem] = cart.splice(index, 1);
+        const success = this.setItems(cart);
+
+        if (success) {
+            window.dispatchEvent(new CustomEvent('cart-item-removed', {
+                detail: { item: removedItem, count: cart.length }
+            }));
+        }
+
+        return success;
     },
 
     // Clear entire cart
     clear() {
         localStorage.removeItem(this.storageKey);
         this.updateAllCounters();
+        window.dispatchEvent(new CustomEvent('cart-cleared'));
     },
 
     // Get cart count
@@ -58,26 +79,40 @@ const SBSCart = {
         return this.getItems().length;
     },
 
+    formatCartCount(count) {
+        if (count > 99) {
+            return '99+';
+        }
+        if (count > 9) {
+            return '9+';
+        }
+        return String(count);
+    },
+
     // Update all cart counters on page
     updateAllCounters() {
         const count = this.getCount();
+        const displayValue = this.formatCartCount(count);
 
-        // Try all possible counter IDs
         const counterIds = ['cart-count', 'basket-count', 'nav-cart-count', 'mobile-cart-count'];
 
         counterIds.forEach(id => {
             const element = document.getElementById(id);
-            if (element) {
-                element.textContent = count;
+            if (!element) {
+                return;
+            }
 
-                // Show/hide badge based on count
-                if (count > 0) {
-                    element.style.display = 'block';
-                    element.classList.add('has-items');
-                } else {
-                    element.style.display = 'none';
-                    element.classList.remove('has-items');
-                }
+            element.textContent = displayValue;
+            element.dataset.count = String(count);
+
+            if (count > 0) {
+                element.style.visibility = 'visible';
+                element.style.opacity = '1';
+                element.classList.add('has-items');
+            } else {
+                element.style.visibility = 'hidden';
+                element.style.opacity = '0';
+                element.classList.remove('has-items');
             }
         });
 

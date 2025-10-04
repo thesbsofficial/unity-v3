@@ -4,7 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign In - SBS</title>
+    <title>Sign In | SBS · King of Pre-Owned Fashion</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Gagalin&family=Inter:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
 
     <style>
         /* CSS RESET & VARIABLES */
@@ -571,6 +576,12 @@
             transform: translateY(-2px);
         }
     </style>
+    <link rel="stylesheet" href="/css/mobile-menu.css">
+    <link rel="stylesheet" href="/css/cart-overlay.css">
+    <script src="/js/analytics-tracker.js" defer></script>
+    <script src="/js/cart-manager.js" defer></script>
+    <script src="/js/cart-ui.js" defer></script>
+    <script src="/js/mobile-menu.js" defer></script>
     <script src="/js/app.js" defer></script>
 </head>
 
@@ -591,13 +602,32 @@
                 <!-- Auth state dynamically updates this section -->
                 <a href="/login" class="nav-link">Sign In</a>
                 <a href="/register" class="btn-gold">Sign Up</a>
-                <button class="cart-toggle" onclick="toggleCart()">
+                <button class="cart-toggle" type="button">
                     Basket
                     <span class="cart-count" id="cart-count">0</span>
+                </button>
+                <!-- Hamburger Menu Button (Mobile Only) -->
+                <button class="hamburger" aria-label="Menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
                 </button>
             </div>
         </nav>
     </header>
+    <!-- Mobile Menu -->
+    <div class="mobile-menu-backdrop"></div>
+    <div class="mobile-menu" aria-hidden="true">
+        <div class="mobile-menu-header">
+            <a href="/" class="logo">SBS</a>
+        </div>
+        <div class="mobile-menu-items">
+            <a href="/shop" class="mobile-menu-item">🛍️ Shop</a>
+            <a href="/sell" class="mobile-menu-item">💰 Sell</a>
+            <a href="/login" class="mobile-menu-item">🔐 Sign In</a>
+            <a href="/register" class="mobile-menu-item btn-style">✨ Sign Up</a>
+        </div>
+    </div>
 
     <main class="main">
         <div class="container">
@@ -659,14 +689,65 @@
     </main>
 
     <script>
-        function toggleCart() {
-            window.location.href = '/shop#cart';
-        }
-
         const messageContainer = document.getElementById('messageContainer');
         const loginBtn = document.getElementById('loginBtn');
         const totpGroup = document.getElementById('totpGroup');
         const totpInput = document.getElementById('totp_code');
+        const ACTION_BUTTON_STYLE = 'display: block; margin-top: 10px; background: var(--primary-gold); color: var(--primary-black); border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 600;';
+
+        function clearMessages() {
+            if (messageContainer) {
+                messageContainer.textContent = '';
+            }
+        }
+
+        function renderMessage(type, text, options = {}) {
+            clearMessages();
+            if (!messageContainer) return null;
+
+            const wrapper = document.createElement('div');
+            wrapper.className = `message ${type}`;
+
+            const textNode = document.createElement('span');
+            textNode.textContent = text ?? '';
+            wrapper.appendChild(textNode);
+
+            let actionButton = null;
+            if (options.action) {
+                actionButton = document.createElement('button');
+                actionButton.type = 'button';
+                actionButton.textContent = options.action.label;
+                actionButton.style.cssText = ACTION_BUTTON_STYLE;
+                actionButton.addEventListener('click', options.action.onClick);
+                wrapper.appendChild(actionButton);
+            }
+
+            messageContainer.appendChild(wrapper);
+            return actionButton;
+        }
+
+        function getSafeRedirect(raw) {
+            if (!raw) return null;
+            try {
+                const url = new URL(raw, window.location.origin);
+                if (url.origin !== window.location.origin) return null;
+                if (!url.pathname.startsWith('/')) return null;
+                return `${url.pathname}${url.search}${url.hash}`;
+            } catch (error) {
+                console.warn('Invalid redirect parameter ignored:', error);
+                return null;
+            }
+        }
+
+        function applySessionData(data) {
+            if (data?.csrf_token) {
+                sessionStorage.setItem('sbs_csrf_token', data.csrf_token);
+            }
+            if (data?.user) {
+                sessionStorage.setItem('sbs_user', JSON.stringify(data.user));
+            }
+            sessionStorage.setItem('sbs_login_time', Date.now().toString());
+        }
 
         async function checkExistingSession() {
             try {
@@ -679,16 +760,9 @@
                 const data = await response.json();
 
                 if (data.success) {
-                    if (data.csrf_token) {
-                        sessionStorage.setItem('sbs_csrf_token', data.csrf_token);
-                    }
-                    if (data.user) {
-                        sessionStorage.setItem('sbs_user', JSON.stringify(data.user));
-                    }
-                    // Save login time for session expiry check
-                    sessionStorage.setItem('sbs_login_time', Date.now().toString());
-
-                    const redirect = new URLSearchParams(window.location.search).get('redirect');
+                    applySessionData(data);
+                    const redirectParam = new URLSearchParams(window.location.search).get('redirect');
+                    const redirect = getSafeRedirect(redirectParam);
                     const defaultRedirect = data.user?.role === 'admin' ? '/admin/' : '/dashboard.html';
                     window.location.replace(redirect || defaultRedirect);
                 }
@@ -703,9 +777,11 @@
             e.preventDefault();
 
             const formData = new FormData(this);
+            const socialHandle = (formData.get('social_handle') || '').trim();
+            const password = formData.get('password') || '';
             const payload = {
-                social_handle: formData.get('social_handle'),
-                password: formData.get('password')
+                social_handle: socialHandle,
+                password
             };
 
             const totpValue = (totpInput?.value || '').trim();
@@ -713,7 +789,7 @@
                 payload.totp_code = totpValue;
             }
 
-            messageContainer.innerHTML = '';
+            clearMessages();
             loginBtn.textContent = 'Signing in...';
             loginBtn.disabled = true;
             loginBtn.style.opacity = '0.7';
@@ -731,25 +807,14 @@
                 const data = await response.json();
 
                 if (data.success) {
-                    if (data.csrf_token) {
-                        sessionStorage.setItem('sbs_csrf_token', data.csrf_token);
-                    }
-                    if (data.user) {
-                        sessionStorage.setItem('sbs_user', JSON.stringify(data.user));
-                    }
-                    // Save login time for session expiry check
-                    sessionStorage.setItem('sbs_login_time', Date.now().toString());
+                    applySessionData(data);
 
-                    messageContainer.innerHTML = '<div class="message success">Welcome back! Redirecting...</div>';
+                    renderMessage('success', 'Welcome back! Redirecting...');
                     setTimeout(() => {
-                        const redirect = new URLSearchParams(window.location.search).get('redirect');
-                        if (!redirect) {
-                            // Redirect based on role
-                            const defaultRedirect = data.user?.role === 'admin' ? '/admin/' : '/dashboard.html';
-                            window.location.replace(defaultRedirect);
-                        } else {
-                            window.location.replace(redirect);
-                        }
+                        const redirectParam = new URLSearchParams(window.location.search).get('redirect');
+                        const redirect = getSafeRedirect(redirectParam);
+                        const defaultRedirect = data.user?.role === 'admin' ? '/admin/' : '/dashboard.html';
+                        window.location.replace(redirect || defaultRedirect);
                     }, 800);
                     return;
                 }
@@ -757,50 +822,52 @@
                 if (data.totp_required) {
                     totpGroup.style.display = 'block';
                     totpInput?.focus();
+                    if (data.error) {
+                        renderMessage('error', data.error);
+                        return;
+                    }
                 }
 
-                // Show email verification error with resend option
                 if (data.email_verification_required && data.email) {
-                    messageContainer.innerHTML = `
-                        <div class="message error">
-                            ${data.error || 'Email verification required'}
-                            <button id="resendVerification" style="display: block; margin-top: 10px; background: var(--primary-gold); color: var(--primary-black); border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 600;">
-                                📧 Resend Verification Email
-                            </button>
-                        </div>
-                    `;
+                    renderMessage('error', data.error || 'Email verification required', {
+                        action: {
+                            label: '📧 Resend Verification Email',
+                            onClick: async (event) => {
+                                const button = event.currentTarget;
+                                const originalLabel = button.textContent;
+                                button.textContent = 'Sending...';
+                                button.disabled = true;
 
-                    // Add click handler for resend button
-                    document.getElementById('resendVerification')?.addEventListener('click', async () => {
-                        try {
-                            const resendBtn = document.getElementById('resendVerification');
-                            resendBtn.textContent = 'Sending...';
-                            resendBtn.disabled = true;
+                                try {
+                                    const resendResponse = await fetch('/api/resend-verification', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ email: data.email })
+                                    });
 
-                            const resendResponse = await fetch('/api/resend-verification', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ email: data.email })
-                            });
-
-                            const resendData = await resendResponse.json();
-                            if (resendData.success) {
-                                messageContainer.innerHTML = '<div class="message success">✅ Verification email sent! Check your inbox.</div>';
-                            } else {
-                                messageContainer.innerHTML = `<div class="message error">${resendData.error}</div>`;
+                                    const resendData = await resendResponse.json();
+                                    if (resendData.success) {
+                                        renderMessage('success', '✅ Verification email sent! Check your inbox.');
+                                    } else {
+                                        renderMessage('error', resendData.error || 'Failed to resend email.');
+                                    }
+                                } catch (error) {
+                                    console.error('Resend error:', error);
+                                    renderMessage('error', 'Failed to resend email. Please try again.');
+                                } finally {
+                                    button.textContent = originalLabel;
+                                    button.disabled = false;
+                                }
                             }
-                        } catch (error) {
-                            console.error('Resend error:', error);
-                            messageContainer.innerHTML = '<div class="message error">Failed to resend email. Please try again.</div>';
                         }
                     });
                     return;
                 }
 
-                messageContainer.innerHTML = `<div class="message error">${data.error || 'Login failed. Please check your credentials.'}</div>`;
+                renderMessage('error', data.error || 'Login failed. Please check your credentials.');
             } catch (error) {
                 console.error('Login error:', error);
-                messageContainer.innerHTML = '<div class="message error">Network error. Please try again.</div>';
+                renderMessage('error', 'Network error. Please try again.');
             } finally {
                 loginBtn.textContent = 'Sign In';
                 loginBtn.disabled = false;

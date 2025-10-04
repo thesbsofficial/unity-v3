@@ -20,7 +20,7 @@ export async function onRequestGet(context) {
         // Get specific order
         if (orderNumber) {
             const order = await DB.prepare(`
-                SELECT 
+                SELECT
                     o.*,
                     GROUP_CONCAT(
                         json_object(
@@ -44,13 +44,13 @@ export async function onRequestGet(context) {
             }
 
             // Parse items JSON
-            order.items = order.items_json ? 
+            order.items = order.items_json ?
                 JSON.parse(`[${order.items_json}]`) : [];
             delete order.items_json;
 
             return new Response(JSON.stringify({ order }), {
                 status: 200,
-                headers: { 
+                headers: {
                     'Content-Type': 'application/json',
                     'Cache-Control': 'no-cache'
                 }
@@ -59,7 +59,7 @@ export async function onRequestGet(context) {
 
         // Get all orders with optional status filter
         let query = `
-            SELECT 
+            SELECT
                 o.*,
                 COUNT(oi.product_id) as item_count
             FROM orders o
@@ -67,7 +67,7 @@ export async function onRequestGet(context) {
         `;
 
         const params = [];
-        
+
         if (status && status !== 'all') {
             query += ' WHERE o.status = ?';
             params.push(status);
@@ -75,8 +75,8 @@ export async function onRequestGet(context) {
 
         query += ' GROUP BY o.order_number ORDER BY o.created_at DESC LIMIT 100';
 
-        const stmt = params.length > 0 ? 
-            DB.prepare(query).bind(...params) : 
+        const stmt = params.length > 0 ?
+            DB.prepare(query).bind(...params) :
             DB.prepare(query);
 
         const { results: orders } = await stmt.all();
@@ -88,7 +88,7 @@ export async function onRequestGet(context) {
                 FROM order_items
                 WHERE order_number = ?
             `).bind(order.order_number).all();
-            
+
             order.items = items;
         }
 
@@ -99,26 +99,26 @@ export async function onRequestGet(context) {
             completed: orders.filter(o => {
                 const orderDate = new Date(o.created_at);
                 const today = new Date();
-                return o.status === 'completed' && 
-                       orderDate.toDateString() === today.toDateString();
+                return o.status === 'completed' &&
+                    orderDate.toDateString() === today.toDateString();
             }).length,
             revenue: orders
                 .filter(o => {
                     const orderDate = new Date(o.created_at);
                     const today = new Date();
-                    return o.status === 'completed' && 
-                           orderDate.toDateString() === today.toDateString();
+                    return o.status === 'completed' &&
+                        orderDate.toDateString() === today.toDateString();
                 })
                 .reduce((sum, o) => sum + (o.total_amount || 0), 0)
         };
 
-        return new Response(JSON.stringify({ 
+        return new Response(JSON.stringify({
             orders,
             stats,
-            total: orders.length 
+            total: orders.length
         }), {
             status: 200,
-            headers: { 
+            headers: {
                 'Content-Type': 'application/json',
                 'Cache-Control': 'no-cache'
             }
@@ -126,9 +126,9 @@ export async function onRequestGet(context) {
 
     } catch (error) {
         console.error('Orders GET Error:', error);
-        return new Response(JSON.stringify({ 
+        return new Response(JSON.stringify({
             error: 'Failed to fetch orders',
-            message: error.message 
+            message: error.message
         }), {
             status: 500,
             headers: { 'Content-Type': 'application/json' }
@@ -153,9 +153,9 @@ export async function onRequestPut(context) {
         // Validate status
         const validStatuses = ['pending', 'ready', 'completed', 'cancelled'];
         if (!validStatuses.includes(status)) {
-            return new Response(JSON.stringify({ 
+            return new Response(JSON.stringify({
                 error: 'Invalid status',
-                valid_statuses: validStatuses 
+                valid_statuses: validStatuses
             }), {
                 status: 400,
                 headers: { 'Content-Type': 'application/json' }
@@ -164,7 +164,7 @@ export async function onRequestPut(context) {
 
         // Update order status
         const result = await DB.prepare(`
-            UPDATE orders 
+            UPDATE orders
             SET status = ?,
                 updated_at = datetime('now')
             WHERE order_number = ?
@@ -187,7 +187,7 @@ export async function onRequestPut(context) {
         //     await sendOrderReadyNotification(order);
         // }
 
-        return new Response(JSON.stringify({ 
+        return new Response(JSON.stringify({
             success: true,
             order,
             message: `Order ${order_number} status updated to ${status}`
@@ -198,9 +198,9 @@ export async function onRequestPut(context) {
 
     } catch (error) {
         console.error('Orders PUT Error:', error);
-        return new Response(JSON.stringify({ 
+        return new Response(JSON.stringify({
             error: 'Failed to update order',
-            message: error.message 
+            message: error.message
         }), {
             status: 500,
             headers: { 'Content-Type': 'application/json' }
@@ -215,16 +215,16 @@ export async function onRequestPost(context) {
 
         // Validate required fields
         const required = [
-            'customer_name', 
-            'customer_phone', 
-            'delivery_method', 
+            'customer_name',
+            'customer_phone',
+            'delivery_method',
             'items'
         ];
 
         for (const field of required) {
             if (!orderData[field]) {
-                return new Response(JSON.stringify({ 
-                    error: `Missing required field: ${field}` 
+                return new Response(JSON.stringify({
+                    error: `Missing required field: ${field}`
                 }), {
                     status: 400,
                     headers: { 'Content-Type': 'application/json' }
@@ -290,7 +290,7 @@ export async function onRequestPost(context) {
         // TODO: Send confirmation to customer
         // await sendOrderConfirmation(orderData);
 
-        return new Response(JSON.stringify({ 
+        return new Response(JSON.stringify({
             success: true,
             order_number: orderNumber,
             message: 'Order created successfully'
@@ -301,9 +301,9 @@ export async function onRequestPost(context) {
 
     } catch (error) {
         console.error('Orders POST Error:', error);
-        return new Response(JSON.stringify({ 
+        return new Response(JSON.stringify({
             error: 'Failed to create order',
-            message: error.message 
+            message: error.message
         }), {
             status: 500,
             headers: { 'Content-Type': 'application/json' }
@@ -327,8 +327,8 @@ export async function onRequestDelete(context) {
         }
 
         if (!orderNumber) {
-            return new Response(JSON.stringify({ 
-                error: 'Missing order_number parameter' 
+            return new Response(JSON.stringify({
+                error: 'Missing order_number parameter'
             }), {
                 status: 400,
                 headers: { 'Content-Type': 'application/json' }
@@ -352,7 +352,7 @@ export async function onRequestDelete(context) {
             });
         }
 
-        return new Response(JSON.stringify({ 
+        return new Response(JSON.stringify({
             success: true,
             message: `Order ${orderNumber} deleted successfully`
         }), {
@@ -362,9 +362,154 @@ export async function onRequestDelete(context) {
 
     } catch (error) {
         console.error('Orders DELETE Error:', error);
-        return new Response(JSON.stringify({ 
+        return new Response(JSON.stringify({
             error: 'Failed to delete order',
-            message: error.message 
+            message: error.message
+        }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json' }
+        });
+    }
+}
+
+// PUT - Update order status
+export async function onRequestPut(context) {
+    try {
+        const { DB } = context.env;
+        const url = new URL(context.request.url);
+
+        // Check admin authentication
+        const authHeader = context.request.headers.get('Authorization');
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+                status: 401,
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
+
+        const token = authHeader.substring(7);
+
+        // Hash token and verify admin session
+        const encoder = new TextEncoder();
+        const data = encoder.encode(token);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const tokenHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+        const session = await DB.prepare(`
+            SELECT s.user_id, u.role, u.is_allowlisted
+            FROM sessions s
+            JOIN users u ON s.user_id = u.id
+            WHERE s.token_hash = ? AND s.expires_at > datetime('now')
+            AND u.role = 'admin' AND u.is_allowlisted = 1
+        `).bind(tokenHash).first();
+
+        if (!session) {
+            return new Response(JSON.stringify({ error: 'Invalid session or insufficient privileges' }), {
+                status: 401,
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
+
+        // Get order ID from URL
+        const pathParts = url.pathname.split('/');
+        const orderIdentifier = pathParts[pathParts.length - 1];
+
+        // Get request body
+        const body = await context.request.json();
+        const { status: newStatus, admin_notes } = body;
+
+        if (!newStatus) {
+            return new Response(JSON.stringify({ error: 'Status is required' }), {
+                status: 400,
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
+
+        // Validate status
+        const validStatuses = ['pending', 'confirmed', 'processing', 'shipped', 'completed', 'cancelled'];
+        if (!validStatuses.includes(newStatus)) {
+            return new Response(JSON.stringify({
+                error: 'Invalid status. Must be one of: ' + validStatuses.join(', ')
+            }), {
+                status: 400,
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
+
+        // Check if order exists
+        const existingOrder = await DB.prepare(`
+            SELECT * FROM orders WHERE order_number = ?
+        `).bind(orderIdentifier).first();
+
+        if (!existingOrder) {
+            return new Response(JSON.stringify({ error: 'Order not found' }), {
+                status: 404,
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
+
+        // Build update query
+        let updateQuery = 'UPDATE orders SET status = ?, updated_at = datetime("now")';
+        const updateParams = [newStatus];
+
+        if (admin_notes !== undefined) {
+            updateQuery += ', admin_notes = ?';
+            updateParams.push(admin_notes);
+        }
+
+        if (newStatus === 'completed' && existingOrder.status !== 'completed') {
+            updateQuery += ', completed_at = datetime("now")';
+        }
+
+        updateQuery += ' WHERE order_number = ?';
+        updateParams.push(orderIdentifier);
+
+        // Update order
+        await DB.prepare(updateQuery).bind(...updateParams).run();
+
+        // Log admin action
+        try {
+            await DB.prepare(`
+                INSERT INTO admin_audit_logs (
+                    user_id, action, resource, metadata_json
+                ) VALUES (?, ?, ?, ?)
+            `).bind(
+                session.user_id,
+                'order_status_update',
+                `order_${orderIdentifier}`,
+                JSON.stringify({
+                    order_number: orderIdentifier,
+                    old_status: existingOrder.status,
+                    new_status: newStatus
+                })
+            ).run();
+        } catch (logError) {
+            console.warn('Failed to log admin action:', logError);
+        }
+
+        // Fetch updated order
+        const updatedOrder = await DB.prepare(`
+            SELECT * FROM orders WHERE order_number = ?
+        `).bind(orderIdentifier).first();
+
+        return new Response(JSON.stringify({
+            success: true,
+            message: 'Order status updated successfully',
+            order: updatedOrder
+        }), {
+            status: 200,
+            headers: {
+                'Content-Type': 'application/json',
+                'Cache-Control': 'no-cache'
+            }
+        });
+
+    } catch (error) {
+        console.error('Update order error:', error);
+        return new Response(JSON.stringify({
+            error: 'Failed to update order',
+            details: error.message
         }), {
             status: 500,
             headers: { 'Content-Type': 'application/json' }

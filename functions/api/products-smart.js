@@ -30,7 +30,7 @@ export async function onRequest(context) {
         const statusFilter = includeHidden ? "status IN ('active', 'hidden')" : "status = 'active'";
 
         const dbProducts = await db.prepare(`
-            SELECT 
+            SELECT
                 id,
                 image_id,
                 category,
@@ -219,13 +219,67 @@ async function discoverFromCloudflare(env, corsHeaders, includeHidden) {
         } : null;
     }).filter(Boolean);
 
-    // TODO: Auto-sync discovered products to D1
+    let syncSummary = {
+        upserted: 0,
+        skipped: 0,
+        errors: 0
+    };
+
+    if (products.length > 0 && env.DB) {
+        const db = env.DB;
+
+        for (const product of products) {
+            try {
+                const result = await db.prepare(`
+                    INSERT INTO products (
+                        image_id,
+                        category,
+                        size,
+                        condition,
+                        status,
+                        quantity_total,
+                        quantity_available,
+                        created_at,
+                        updated_at
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
+                    ON CONFLICT(image_id) DO UPDATE SET
+                        category = excluded.category,
+                        size = excluded.size,
+                        condition = excluded.condition,
+                        status = excluded.status,
+                        quantity_total = excluded.quantity_total,
+                        quantity_available = excluded.quantity_available,
+                        updated_at = datetime('now')
+                `).bind(
+                    product.id,
+                    product.category,
+                    product.size,
+                    product.condition,
+                    product.status,
+                    product.stock || 1,
+                    product.inStock ? (product.stock || 1) : 0
+                ).run();
+
+                if (result.meta.changes > 0) {
+                    syncSummary.upserted += 1;
+                } else {
+                    syncSummary.skipped += 1;
+                }
+            } catch (syncError) {
+                syncSummary.errors += 1;
+                console.warn(`⚠️ Failed to sync product ${product.id} to D1:`, syncError.message);
+            }
+        }
+    }
 
     return new Response(JSON.stringify({
         success: true,
         products: products,
         total: products.length,
-        message: 'Discovered from CF Images (not yet in D1)',
+        message: syncSummary.upserted > 0
+            ? `Discovered from CF Images and synced ${syncSummary.upserted} item(s) to D1`
+            : 'Discovered from CF Images (no D1 sync performed)',
+        d1_sync: syncSummary,
         timestamp: new Date().toISOString()
     }), {
         status: 200,

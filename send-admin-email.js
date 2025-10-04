@@ -1,7 +1,26 @@
 // Send Welcome Email to Admin
-const RESEND_API_KEY = 're_HMira9oK_PyHLikiZRpFuWFSCgsCCZbRX';
-const email = 'fredbademosi1@icloud.com';
-const name = 'Fred';
+const {
+    RESEND_API_KEY,
+    ADMIN_WELCOME_EMAIL,
+    ADMIN_NAME,
+    ADMIN_USERNAME,
+    ADMIN_TEMP_PASSWORD,
+    ADMIN_LOGIN_URL
+} = typeof process !== 'undefined' ? process.env : {};
+
+if (!RESEND_API_KEY) {
+    console.error('Missing RESEND_API_KEY environment variable. Aborting email send.');
+    if (typeof process !== 'undefined' && typeof process.exit === 'function') {
+        process.exit(1);
+    }
+    throw new Error('Missing RESEND_API_KEY');
+}
+
+const email = ADMIN_WELCOME_EMAIL || 'admin@example.com';
+const name = ADMIN_NAME || 'Admin';
+const adminUsername = ADMIN_USERNAME || 'set-admin-handle';
+const adminPassword = ADMIN_TEMP_PASSWORD || 'set-temporary-password';
+const loginUrl = ADMIN_LOGIN_URL || 'https://your-domain/login';
 
 const html = `
 <!DOCTYPE html>
@@ -17,44 +36,44 @@ const html = `
             <h1 style="color: #FFD700; font-size: 48px; font-weight: 900; margin: 0; text-shadow: 0 0 30px rgba(255, 215, 0, 0.5);">SBS</h1>
             <p style="color: #FFD700; margin: 12px 0 0 0; font-weight: 700; letter-spacing: 3px; font-size: 16px;">DUBLIN STREETWEAR</p>
         </div>
-        
+
         <!-- Main Content -->
         <div style="background: rgba(26, 26, 26, 0.9); backdrop-filter: blur(10px); border: 2px solid rgba(255, 215, 0, 0.3); border-radius: 20px; padding: 50px 40px; box-shadow: 0 25px 70px rgba(0, 0, 0, 0.7);">
             <div style="text-align: center; margin-bottom: 30px;">
                 <span style="font-size: 60px;">👑</span>
             </div>
-            
+
             <h2 style="color: #FFD700; font-size: 32px; margin: 0 0 25px 0; font-weight: 900; text-align: center; text-transform: uppercase; letter-spacing: 2px;">Welcome, Boss! 🚀</h2>
-            
+
             <p style="color: #ffffff; font-size: 18px; line-height: 1.8; margin: 0 0 25px 0; text-align: center;">
                 Your <strong style="color: #FFD700;">ADMIN</strong> account is now active!
             </p>
-            
+
             <div style="background: rgba(255, 215, 0, 0.1); border-left: 4px solid #FFD700; border-radius: 12px; padding: 25px; margin: 30px 0;">
                 <p style="color: #FFD700; font-size: 16px; margin: 0 0 15px 0; font-weight: 700;">
                     🔑 Your Login Credentials:
                 </p>
                 <div style="background: rgba(0, 0, 0, 0.5); border-radius: 8px; padding: 20px; margin: 15px 0;">
                     <p style="color: #ffffff; font-size: 15px; margin: 0 0 10px 0;">
-                        <strong style="color: #FFD700;">URL:</strong> <a href="https://main.unity-v3.pages.dev/login" style="color: #FFD700; text-decoration: none;">main.unity-v3.pages.dev/login</a>
+                        <strong style="color: #FFD700;">URL:</strong> <a href="${loginUrl}" style="color: #FFD700; text-decoration: none;">${loginUrl}</a>
                     </p>
                     <p style="color: #ffffff; font-size: 15px; margin: 0 0 10px 0;">
-                        <strong style="color: #FFD700;">Username:</strong> <code style="background: rgba(255, 215, 0, 0.2); padding: 4px 8px; border-radius: 4px; color: #FFD700;">ADMIN</code>
+                        <strong style="color: #FFD700;">Username:</strong> <code style="background: rgba(255, 215, 0, 0.2); padding: 4px 8px; border-radius: 4px; color: #FFD700;">${adminUsername}</code>
                     </p>
                     <p style="color: #ffffff; font-size: 15px; margin: 0;">
-                        <strong style="color: #FFD700;">Password:</strong> <code style="background: rgba(255, 215, 0, 0.2); padding: 4px 8px; border-radius: 4px; color: #FFD700;">IAMADMIN</code>
+                        <strong style="color: #FFD700;">Password:</strong> <code style="background: rgba(255, 215, 0, 0.2); padding: 4px 8px; border-radius: 4px; color: #FFD700;">${adminPassword}</code>
                     </p>
                 </div>
             </div>
-            
+
             <!-- CTA Button -->
             <div style="text-align: center; margin: 40px 0;">
-                <a href="https://main.unity-v3.pages.dev/login" 
+                <a href="${loginUrl}"
                    style="display: inline-block; background: linear-gradient(135deg, #FFD700 0%, #FFC700 100%); color: #000000; padding: 20px 50px; border-radius: 35px; text-decoration: none; font-weight: 900; font-size: 18px; letter-spacing: 2px; box-shadow: 0 15px 40px rgba(255, 215, 0, 0.5); text-transform: uppercase;">
                     🚀 LOGIN NOW
                 </a>
             </div>
-            
+
             <div style="background: rgba(255, 215, 0, 0.05); border-radius: 12px; padding: 25px; margin: 30px 0;">
                 <p style="color: #FFD700; font-size: 16px; margin: 0 0 15px 0; font-weight: 700;">
                     👑 Admin Powers Unlocked:
@@ -67,7 +86,7 @@ const html = `
                     <li>⚡ <strong>Admin Panel</strong> - Complete system control</li>
                 </ul>
             </div>
-            
+
             <div style="border-top: 2px solid rgba(255, 215, 0, 0.2); margin-top: 35px; padding-top: 25px; text-align: center;">
                 <p style="color: #999999; font-size: 14px; line-height: 1.6; margin: 0 0 15px 0;">
                     🔐 <strong>Security Tip:</strong> Change your password after first login
@@ -77,7 +96,7 @@ const html = `
                 </p>
             </div>
         </div>
-        
+
         <!-- Footer -->
         <div style="text-align: center; margin-top: 40px; color: #666666; font-size: 14px; line-height: 1.8;">
             <p style="margin: 0 0 8px 0; font-weight: 700; color: #FFD700; font-size: 16px;">SBS UNITY V3</p>

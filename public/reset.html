@@ -357,6 +357,8 @@
             transform: translateY(-2px);
         }
     </style>
+    <link rel="stylesheet" href="/css/mobile-menu.css">
+    <script src="/js/mobile-menu.js" defer></script>
     <script src="/js/app.js" defer></script>
 </head>
 
@@ -378,32 +380,28 @@
 
             <div class="nav-side nav-side--right">
                 <a href="/sell.html" class="nav-cta nav-cta--sell" id="nav-cta">Sell</a>
+                <!-- Hamburger Menu Button (Mobile Only) -->
+                <button class="hamburger" aria-label="Menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
             </div>
-
-            <button class="mobile-menu-toggle" type="button" aria-label="Toggle menu" aria-expanded="false"
-                onclick="toggleMobileMenu()">
-                <span></span>
-                <span></span>
-                <span></span>
-            </button>
-
-            <ul class="nav-links" id="nav-links">
-                <li><a href="/">Home</a></li>
-                <li><a href="/shop.html">Shop</a></li>
-                <li><a href="/sell.html" class="nav-cta nav-cta--sell">Sell</a></li>
-                <li>
-                    <button type="button" class="nav-basket mobile-basket" onclick="openCartFromNav()"
-                        aria-label="View basket">
-                        <span class="nav-basket-icon" aria-hidden="true">🧺</span>
-                        <span>Basket (<span class="nav-basket-count" id="mobile-cart-count"
-                                aria-live="polite">0</span>)</span>
-                    </button>
-                </li>
-                <li><a href="/login.html" data-auth-link>Sign In</a></li>
-            </ul>
         </nav>
     </header>
-    <div class="mobile-menu-overlay" id="mobile-menu-overlay" onclick="toggleMobileMenu(false)"></div>
+    <!-- Mobile Menu -->
+    <div class="mobile-menu-backdrop"></div>
+    <div class="mobile-menu" aria-hidden="true">
+        <div class="mobile-menu-header">
+            <a href="/" class="logo">SBS</a>
+        </div>
+        <div class="mobile-menu-items">
+            <a href="/shop" class="mobile-menu-item">🛍️ Shop</a>
+            <a href="/sell" class="mobile-menu-item">💰 Sell</a>
+            <a href="/login" class="mobile-menu-item">🔐 Sign In</a>
+            <a href="/register" class="mobile-menu-item btn-style">✨ Sign Up</a>
+        </div>
+    </div>
 
     <main class="main">
         <div class="reset-container">

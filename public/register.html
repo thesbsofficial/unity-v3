@@ -4,8 +4,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Account - SBS</title>
+    <title>Create Account | SBS · King of Pre-Owned Fashion</title>
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Gagalin&family=Inter:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="/css/mobile-menu.css">
+    <link rel="stylesheet" href="/css/cart-overlay.css">
+    <script src="/js/analytics-tracker.js" defer></script>
+    <script src="/js/cart-manager.js" defer></script>
+    <script src="/js/cart-ui.js" defer></script>
+    <script src="/js/mobile-menu.js" defer></script>
     <style>
         /* CSS RESET & VARIABLES */
         * {
@@ -683,13 +694,32 @@
                 <!-- Auth state dynamically updates this section -->
                 <a href="/login" class="nav-link">Sign In</a>
                 <a href="/register" class="btn-gold">Sign Up</a>
-                <button class="cart-toggle" onclick="toggleCart()">
+                <button class="cart-toggle" type="button">
                     Basket
                     <span class="cart-count" id="cart-count">0</span>
+                </button>
+                <!-- Hamburger Menu Button (Mobile Only) -->
+                <button class="hamburger" aria-label="Menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
                 </button>
             </div>
         </nav>
     </header>
+    <!-- Mobile Menu -->
+    <div class="mobile-menu-backdrop"></div>
+    <div class="mobile-menu" aria-hidden="true">
+        <div class="mobile-menu-header">
+            <a href="/" class="logo">SBS</a>
+        </div>
+        <div class="mobile-menu-items">
+            <a href="/shop" class="mobile-menu-item">🛍️ Shop</a>
+            <a href="/sell" class="mobile-menu-item">💰 Sell</a>
+            <a href="/login" class="mobile-menu-item">🔐 Sign In</a>
+            <a href="/register" class="mobile-menu-item btn-style">✨ Sign Up</a>
+        </div>
+    </div>
 
     <main class="main">
         <div class="container">
@@ -796,10 +826,6 @@
     </main>
 
     <script>
-        function toggleCart() {
-            window.location.href = '/shop#cart';
-        }
-
         async function checkExistingSession() {
             try {
                 const response = await fetch('/api/users/me', {
@@ -861,8 +887,8 @@
 
             const formData = new FormData(this);
             const payload = {
-                social_handle: formData.get('social_handle'),
-                password: formData.get('password'),
+                social_handle: (formData.get('social_handle') || '').trim(),
+                password: formData.get('password') || '',
                 first_name: formData.get('first_name') || undefined,
                 last_name: formData.get('last_name') || undefined,
                 email: formData.get('email') || undefined,
@@ -876,7 +902,17 @@
             const registerBtn = document.getElementById('registerBtn');
             const messageContainer = document.getElementById('messageContainer');
 
-            messageContainer.innerHTML = '';
+            const renderMessage = (type, text) => {
+                if (!messageContainer) return null;
+                messageContainer.textContent = '';
+                const wrapper = document.createElement('div');
+                wrapper.className = `message ${type}`;
+                const messageText = document.createElement('span');
+                messageText.textContent = text ?? '';
+                wrapper.appendChild(messageText);
+                messageContainer.appendChild(wrapper);
+                return wrapper;
+            };
             registerBtn.textContent = 'Creating account...';
             registerBtn.disabled = true;
 
@@ -892,18 +928,21 @@
                 const data = await response.json();
 
                 if (data.success) {
-                    let successMessage = 'Account created! Please verify your email to activate your account.';
-                    if (data.verification_token_dev) {
-                        successMessage += ` <br><small>Dev token: ${data.verification_token_dev}</small>`;
+                    const wrapper = renderMessage('success', 'Account created! Please verify your email to activate your account.');
+                    if (wrapper && data.verification_token_dev) {
+                        const tokenNote = document.createElement('small');
+                        tokenNote.style.display = 'block';
+                        tokenNote.style.marginTop = '6px';
+                        tokenNote.textContent = `Dev token: ${data.verification_token_dev}`;
+                        wrapper.appendChild(tokenNote);
                     }
-                    messageContainer.innerHTML = `<div class="message success">${successMessage}</div>`;
                     this.reset();
                 } else {
-                    messageContainer.innerHTML = `<div class="message error">${data.error || 'Registration failed. Please try again.'}</div>`;
+                    renderMessage('error', data.error || 'Registration failed. Please try again.');
                 }
             } catch (error) {
                 console.error('Registration error:', error);
-                messageContainer.innerHTML = '<div class="message error">Network error. Please try again.</div>';
+                renderMessage('error', 'Network error. Please try again.');
             } finally {
                 registerBtn.textContent = 'Create Account';
                 registerBtn.disabled = false;

@@ -852,7 +852,7 @@ export async function onRequest(context) {
     // Get user's data (GDPR: Right to Access)
     if (path === "/api/users/me" && method === "GET") {
       const user = await env.DB.prepare(
-        `SELECT id, social_handle, email, phone, first_name, last_name, address, city, eircode, 
+        `SELECT id, social_handle, email, phone, first_name, last_name, address, city, eircode,
          preferred_contact, role, created_at FROM users WHERE id=?`
       )
         .bind(session.user_id)
@@ -866,7 +866,7 @@ export async function onRequest(context) {
     // Get user's orders
     if (path === "/api/users/me/orders" && method === "GET") {
       const orders = await env.DB.prepare(
-        `SELECT id, order_number, items_json, total_amount, delivery_address, delivery_city, 
+        `SELECT id, order_number, items_json, total_amount, delivery_address, delivery_city,
          delivery_method, status, created_at FROM orders WHERE user_id=? ORDER BY created_at DESC`
       )
         .bind(session.user_id)
@@ -956,7 +956,7 @@ export async function onRequest(context) {
     // Get user's sell submissions
     if (path === "/api/users/me/sell-cases" && method === "GET") {
       const cases = await env.DB.prepare(
-        `SELECT case_id, brand, category, size, color, condition_rating, price, 
+        `SELECT case_id, brand, category, size, color, condition_rating, price,
          offer_amount, status, created_at FROM sell_cases WHERE user_id=? ORDER BY created_at DESC`
       )
         .bind(session.user_id)
@@ -1000,7 +1000,7 @@ export async function onRequest(context) {
         // Hash new password
         const { hash, salt, type, iterations } = await hashPassword(body.new_password);
         await env.DB.prepare(
-          `UPDATE users SET password_hash = ?, password_salt = ?, password_hash_type = ?, 
+          `UPDATE users SET password_hash = ?, password_salt = ?, password_hash_type = ?,
            password_iterations = ? WHERE id = ?`
         )
           .bind(hash, salt, type, iterations, session.user_id)
@@ -1069,7 +1069,7 @@ export async function onRequest(context) {
 
       // Return updated user
       const updatedUser = await env.DB.prepare(
-        `SELECT id, social_handle, email, phone, first_name, last_name, address, city, 
+        `SELECT id, social_handle, email, phone, first_name, last_name, address, city,
          eircode, instagram, snapchat, preferred_contact, role FROM users WHERE id = ?`
       )
         .bind(session.user_id)
@@ -1091,7 +1091,7 @@ export async function onRequest(context) {
         // GDPR Compliant: Soft delete - mark as inactive, keep data for legal/financial records
         // This preserves order history and sell case records
         await env.DB.prepare(
-          `UPDATE users SET 
+          `UPDATE users SET
            is_active = 0,
            email = NULL,
            phone = NULL,
@@ -1123,6 +1123,101 @@ export async function onRequest(context) {
         return json({ success: false, error: "Failed to delete account" }, 500, headers);
       }
     }
+
+    // ===== ADMIN ENDPOINTS =====
+
+    // Admin login (public endpoint)
+    if (path === "/api/admin/login" && method === "POST") {
+      const body = await request.json();
+      const { email, password } = body;
+
+      if (!email || !password) {
+        return json({ success: false, error: "Email and password required" }, 400, headers);
+      }
+
+      // Find admin user
+      const user = await env.DB.prepare(`
+        SELECT id, email, password_hash, password_salt, password_hash_type,
+               password_iterations, role, is_allowlisted, first_name, last_name
+        FROM users
+        WHERE email = ? AND role = 'admin'
+      `).bind(email).first();
+
+      if (!user || !(await verifyPassword(password, user))) {
+        return json({ success: false, error: "Invalid credentials" }, 401, headers);
+      }
+
+      if (!user.is_allowlisted) {
+        return json({ success: false, error: "Access denied" }, 403, headers);
+      }
+
+      // Create admin session
+      const ip = ipOf(request);
+      const ua = request.headers.get("User-Agent") || "unknown";
+      const { token, csrfSecret } = await createSession(env, user.id, ip, ua);
+
+      // Log admin login
+      try {
+        const { logAdminAction } = await import('../lib/admin.js');
+        const mockSession = { user_id: user.id, role: 'admin', is_allowlisted: 1 };
+        await logAdminAction(env, mockSession, 'admin_login', null, {
+          email: user.email,
+          ip_address: ip
+        });
+      } catch (e) {
+        console.warn('Admin logging failed:', e);
+      }
+
+      return json({
+        success: true,
+        token,
+        csrf_token: await csrfTokenFromSecret(csrfSecret),
+        user: {
+          id: user.id,
+          email: user.email,
+          role: user.role,
+          name: `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Admin'
+        }
+      }, 200, headers);
+    }
+
+    // Admin logout
+    if (path === "/api/admin/logout" && method === "POST") {
+      const authHeader = request.headers.get('Authorization');
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        const token = authHeader.substring(7);
+        await destroySession(env, token);
+      }
+      return json({ success: true }, 200, headers);
+    }
+
+    // Admin session verification
+    if (path === "/api/admin/verify" && method === "GET") {
+      const authHeader = request.headers.get('Authorization');
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return json({ success: false, error: "No token provided" }, 401, headers);
+      }
+
+      const token = authHeader.substring(7);
+      const adminSession = await readSession(env, token);
+
+      if (!adminSession || !isAdmin(adminSession)) {
+        return json({ success: false, error: "Invalid admin session" }, 401, headers);
+      }
+
+      return json({
+        success: true,
+        user: {
+          id: adminSession.user_id,
+          email: adminSession.email,
+          role: adminSession.role,
+          name: `${adminSession.first_name || ''} ${adminSession.last_name || ''}`.trim() || 'Admin'
+        },
+        csrf_token: await csrfTokenFromSecret(adminSession.csrf_secret)
+      }, 200, headers);
+    }
+
+    // ===== END ADMIN ENDPOINTS =====
 
     // 404
     return json({ success: false, error: "Endpoint not found" }, 404, headers);

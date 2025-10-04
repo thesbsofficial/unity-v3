@@ -1,9 +1,26 @@
-// Generate PBKDF2 password hash for IAMADMIN
-const password = "IAMADMIN";
+// Generate PBKDF2 password hash for a provided password
+const passwordInput = typeof process !== 'undefined' ? process.argv[2] : undefined;
+if (!passwordInput) {
+    console.error('Usage: node generate-password-hash.js <password> [user-email]');
+    if (typeof process !== 'undefined' && typeof process.exit === 'function') {
+        process.exit(1);
+    }
+    throw new Error('Password argument required');
+}
+
+const password = passwordInput;
 const iterations = 100000;
 
 const enc = new TextEncoder();
-const b64 = (buf) => btoa(String.fromCharCode(...new Uint8Array(buf)));
+const b64 = (buf) => {
+    if (typeof btoa === 'function') {
+        return btoa(String.fromCharCode(...new Uint8Array(buf)));
+    }
+    if (typeof Buffer !== 'undefined') {
+        return Buffer.from(buf).toString('base64');
+    }
+    throw new Error('No base64 encoder available');
+};
 
 // Generate random salt
 const salt = crypto.getRandomValues(new Uint8Array(32));
@@ -27,10 +44,11 @@ const bits = await crypto.subtle.deriveBits(
 const hash = b64(bits);
 const saltB64 = b64(salt);
 
-console.log('Password: IAMADMIN');
+console.log('Password:', password);
 console.log('Hash:', hash);
 console.log('Salt:', saltB64);
 console.log('Iterations:', iterations);
 console.log('');
 console.log('SQL Command:');
-console.log(`UPDATE users SET password_hash = '${hash}', password_salt = '${saltB64}', password_iterations = ${iterations} WHERE email = 'fredbademosi1@icloud.com';`);
+const targetEmail = (typeof process !== 'undefined' && process.argv[3]) || 'user@example.com';
+console.log(`UPDATE users SET password_hash = '${hash}', password_salt = '${saltB64}', password_iterations = ${iterations} WHERE email = '${targetEmail}';`);

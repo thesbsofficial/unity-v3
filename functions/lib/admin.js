@@ -17,6 +17,40 @@ export function isAdminSession(session) {
 }
 
 /**
+ * Verify admin authentication from request headers
+ * @param {Request} request - HTTP request object
+ * @param {Object} env - Cloudflare environment with DB
+ * @returns {Promise<Object|null>} Session object if valid, null if invalid
+ */
+export async function verifyAdminAuth(request, env) {
+    const authHeader = request.headers.get('Authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return null;
+    }
+
+    const token = authHeader.substring(7);
+
+    // Hash token for database lookup
+    const encoder = new TextEncoder();
+    const data = encoder.encode(token);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const tokenHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+    // Verify admin session using unified sessions table
+    const session = await env.DB.prepare(`
+        SELECT s.user_id, s.csrf_secret, s.expires_at,
+               u.email, u.role, u.is_allowlisted, u.first_name, u.last_name
+        FROM sessions s
+        JOIN users u ON s.user_id = u.id
+        WHERE s.token_hash = ? AND s.expires_at > datetime('now')
+        AND u.role = 'admin' AND u.is_allowlisted = 1
+    `).bind(tokenHash).first();
+
+    return session;
+}
+
+/**
  * Check if user should be auto-promoted to admin
  * @param {Object} env - Cloudflare environment (with ADMIN_ALLOWLIST_HANDLES)
  * @param {string} socialHandle - User's social handle (normalized)
@@ -39,14 +73,14 @@ export function shouldElevateToAdmin(env, socialHandle) {
 export async function promoteToAdmin(env, userId) {
     // Set role to admin
     await env.DB.prepare(`
-        UPDATE users 
-        SET role = 'admin' 
+        UPDATE users
+        SET role = 'admin'
         WHERE id = ?
     `).bind(userId).run();
 
     // Add to admin allowlist
     await env.DB.prepare(`
-        INSERT OR IGNORE INTO admin_allowlist (user_id, notes) 
+        INSERT OR IGNORE INTO admin_allowlist (user_id, notes)
         VALUES (?, 'Auto-promoted via ADMIN_ALLOWLIST_HANDLES')
     `).bind(userId).run();
 }
@@ -127,8 +161,8 @@ export async function setupTotpForAdmin(env, session) {
 
     // Store in database
     await env.DB.prepare(`
-        UPDATE users 
-        SET totp_secret = ?, totp_recovery_codes = ? 
+        UPDATE users
+        SET totp_secret = ?, totp_recovery_codes = ?
         WHERE id = ?
     `).bind(
         secret,
@@ -163,8 +197,8 @@ export async function runAdminDiagnostics(env) {
     // Check 1: Verify all required tables exist
     try {
         const tables = await env.DB.prepare(`
-            SELECT name FROM sqlite_master 
-            WHERE type='table' 
+            SELECT name FROM sqlite_master
+            WHERE type='table'
             ORDER BY name
         `).all();
 
@@ -274,8 +308,8 @@ export async function runAdminDiagnostics(env) {
     // Check 5: Count audit log entries (last 24 hours)
     try {
         const auditCount = await env.DB.prepare(`
-            SELECT COUNT(*) as total 
-            FROM admin_audit_logs 
+            SELECT COUNT(*) as total
+            FROM admin_audit_logs
             WHERE created_at > datetime('now', '-1 day')
         `).first();
 
@@ -295,9 +329,9 @@ export async function runAdminDiagnostics(env) {
     // Check 6: Count active sessions
     try {
         const sessionCount = await env.DB.prepare(`
-            SELECT COUNT(*) as total 
-            FROM sessions 
-            WHERE expires_at > datetime('now') 
+            SELECT COUNT(*) as total
+            FROM sessions
+            WHERE expires_at > datetime('now')
                 AND invalidated_at IS NULL
         `).first();
 

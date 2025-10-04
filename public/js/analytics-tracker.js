@@ -1,7 +1,7 @@
 /**
  * 📊 SBS Analytics Tracker
  * Client-side event tracking for comprehensive analytics
- * 
+ *
  * Usage:
  *   const tracker = new SBSAnalytics();
  *   tracker.track('product_view', { product_id: '123', price: 99.99 });
@@ -11,6 +11,7 @@ class SBSAnalytics {
     constructor(config = {}) {
         this.endpoint = config.endpoint || '/api/analytics/track';
         this.sessionId = this.getOrCreateSessionId();
+        this.ensureSessionStart();
         this.userId = config.userId || null;
         this.queue = [];
         this.flushInterval = config.flushInterval || 5000; // 5 seconds
@@ -41,6 +42,16 @@ class SBSAnalytics {
         }
 
         return sessionId;
+    }
+
+    ensureSessionStart() {
+        try {
+            if (!sessionStorage.getItem('sbs_session_start')) {
+                sessionStorage.setItem('sbs_session_start', Date.now().toString());
+            }
+        } catch (error) {
+            this.log('⚠️ Unable to persist session start', error);
+        }
     }
 
     /**
@@ -192,7 +203,13 @@ class SBSAnalytics {
      * Get session duration in seconds
      */
     getSessionDuration() {
-        const sessionStart = sessionStorage.getItem('sbs_session_start');
+        let sessionStart = null;
+        try {
+            sessionStart = sessionStorage.getItem('sbs_session_start');
+        } catch (error) {
+            this.log('⚠️ Unable to read session start', error);
+            return 0;
+        }
         if (sessionStart) {
             return Math.floor((Date.now() - parseInt(sessionStart)) / 1000);
         }
@@ -323,6 +340,7 @@ class SBSAnalytics {
         sessionStorage.removeItem('sbs_analytics_session');
         sessionStorage.removeItem('sbs_session_start');
         this.sessionId = this.getOrCreateSessionId();
+        this.ensureSessionStart();
     }
 }
 

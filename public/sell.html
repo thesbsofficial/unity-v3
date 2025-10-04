@@ -4,19 +4,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sell Your Streetwear | SBS Dublin - Instant Offers, Same-Day Cash</title>
+    <title>Sell Streetwear | SBS · King of Pre-Owned Fashion</title>
     <meta name="description"
-        content="Sell your streetwear to Dublin's most trusted buyer. Get instant offers via WhatsApp. Same-day collection and payment across Dublin.">
+        content="Sell to SBS — Dublin's king of pre-owned fashion. Get instant offers, same-day collection, and fast payouts via checkout or DM.">
+
+    <!-- Google Fonts - Gagalin + Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Gagalin&family=Inter:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
 
     <!-- Helper System -->
     <link rel="stylesheet" href="/css/helper.css">
+    <link rel="stylesheet" href="/css/mobile-menu.css">
+    <link rel="stylesheet" href="/css/cart-overlay.css">
     <script src="/js/helper.js" defer></script>
 
     <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/lucide@latest" defer></script>
 
     <!-- Analytics Tracker -->
-    <script src="/js/analytics-tracker.js"></script>
+    <script src="/js/analytics-tracker.js" defer></script>
+    <script src="/js/cart-manager.js" defer></script>
+    <script src="/js/cart-ui.js" defer></script>
+    <script src="/js/mobile-menu.js" defer></script>
 
     <style>
         * {
@@ -43,12 +54,27 @@
         }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            font-family: 'Gagalin', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
             background: var(--bg-dark);
             color: var(--text-primary);
             line-height: 1.6;
             overflow-x: hidden;
             max-width: 100vw;
+        }
+
+        /* INTER for body text, descriptions, and small text */
+        p,
+        span,
+        small,
+        a,
+        button,
+        input,
+        textarea,
+        select,
+        label,
+        .nav-link,
+        .form-hint {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
         }
 
         /* HEADER */
@@ -89,6 +115,125 @@
             justify-content: flex-end;
             flex-wrap: nowrap;
             white-space: nowrap;
+        }
+
+        /* Hamburger Menu */
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.5rem;
+            z-index: 1001;
+        }
+
+        .hamburger span {
+            width: 25px;
+            height: 3px;
+            background: var(--primary-gold);
+            transition: all 0.3s ease;
+            border-radius: 2px;
+        }
+
+        .hamburger.active span:nth-child(1) {
+            transform: rotate(45deg) translate(8px, 8px);
+        }
+
+        .hamburger.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(7px, -7px);
+        }
+
+        /* Mobile Menu */
+        .mobile-menu {
+            display: none;
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 280px;
+            height: 100vh;
+            background: rgba(10, 10, 10, 0.98);
+            backdrop-filter: blur(10px);
+            border-left: 2px solid var(--primary-gold);
+            z-index: 1000;
+            transition: right 0.3s ease;
+            overflow-y: auto;
+        }
+
+        .mobile-menu.active {
+            right: 0;
+        }
+
+        .mobile-menu-backdrop {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 999;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .mobile-menu-backdrop.active {
+            opacity: 1;
+        }
+
+        .mobile-menu-header {
+            padding: 2rem 1.5rem;
+            border-bottom: 1px solid rgba(255, 215, 0, 0.2);
+        }
+
+        .mobile-menu-header .logo {
+            font-size: 1.8rem;
+        }
+
+        .mobile-menu-items {
+            padding: 1rem 0;
+        }
+
+        .mobile-menu-item {
+            display: block;
+            padding: 1rem 1.5rem;
+            color: var(--text-primary);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            border-left: 3px solid transparent;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+        }
+
+        .mobile-menu-item:hover,
+        .mobile-menu-item:active {
+            background: rgba(255, 215, 0, 0.1);
+            border-left-color: var(--primary-gold);
+            color: var(--primary-gold);
+        }
+
+        .mobile-menu-item.btn-style {
+            margin: 1rem 1.5rem;
+            border-radius: 8px;
+            background: var(--primary-gold);
+            color: var(--primary-black);
+            border: none;
+            text-align: center;
+            font-weight: 600;
+            justify-content: center;
+        }
+
+        .mobile-menu-item.btn-style:hover {
+            background: #ffed4e;
+            border-left-color: transparent;
         }
 
         .logo {
@@ -239,6 +384,15 @@
         .hero {
             text-align: center;
             padding: 3rem 0 2rem;
+        }
+
+        .hero-kicker {
+            font-size: 1rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.75);
+            margin-bottom: 0.75rem;
+            font-weight: 600;
         }
 
         .hero h1 {
@@ -940,6 +1094,31 @@
         @media (max-width: 768px) {
             .nav {
                 padding: 0 1rem;
+                display: flex;
+                justify-content: space-between;
+            }
+
+            /* Hide desktop nav links on mobile */
+            .nav-left,
+            .nav-right .nav-link,
+            .nav-right .btn-gold {
+                display: none;
+            }
+
+            /* Show hamburger on mobile */
+            .hamburger {
+                display: flex;
+            }
+
+            .nav-right {
+                display: flex;
+                gap: 1rem;
+                align-items: center;
+            }
+
+            .cart-toggle {
+                font-size: 0.8rem;
+                padding: 0.5rem 0.75rem;
             }
 
             .container {
@@ -1025,13 +1204,33 @@
                 <!-- Auth state dynamically updates this section -->
                 <a href="/login" class="nav-link">Sign In</a>
                 <a href="/register" class="btn-gold">Sign Up</a>
-                <button class="cart-toggle" onclick="toggleCart()">
+                <button class="cart-toggle" type="button">
                     Basket
                     <span class="cart-count" id="cart-count">0</span>
+                </button>
+                <!-- Hamburger Menu Button (Mobile Only) -->
+                <button class="hamburger" aria-label="Menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
                 </button>
             </div>
         </nav>
     </header>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu-backdrop"></div>
+    <div class="mobile-menu" aria-hidden="true">
+        <div class="mobile-menu-header">
+            <a href="/" class="logo">SBS</a>
+        </div>
+        <div class="mobile-menu-items">
+            <a href="/shop" class="mobile-menu-item">🛍️ Shop</a>
+            <a href="/sell" class="mobile-menu-item">💰 Sell</a>
+            <a href="/login" class="mobile-menu-item">🔐 Sign In</a>
+            <a href="/register" class="mobile-menu-item btn-style">✨ Sign Up</a>
+        </div>
+    </div>
 
     <!-- STICKY REMINDER BAR -->
     <div class="sticky-reminder" id="sticky-reminder">
@@ -1045,9 +1244,10 @@
         <!-- HERO -->
         <section class="hero">
             <div class="container">
+                <p class="hero-kicker">👑 King of Pre-Owned Fashion in Dublin</p>
                 <h1><i data-lucide="banknote" class="icon icon-large icon-gold"></i> Sell to SBS</h1>
-                <p>Dublin's trusted buyer for streetwear, shoes, tech & luxury. <strong>Same-day collection. Instant
-                        cash or transfer.</strong></p>
+                <p>Dublin's trusted buyer for streetwear, shoes, tech & luxury. Use the sell builder or DM photos for an
+                    instant offer. <strong>Same-day collection. Instant cash or transfer.</strong></p>
             </div>
         </section>
 
@@ -1627,8 +1827,33 @@
         // =================================================================================
         import { SIZES } from '/js/taxonomy.js';
 
-        // Initialize analytics
-        const analytics = new SBSAnalytics();
+        // Initialize analytics safely (re-use global tracker when available)
+        function createAnalyticsFallback() {
+            return {
+                trackPageView: () => { },
+                track: () => { }
+            };
+        }
+
+        const analytics = (() => {
+            if (typeof window === 'undefined') {
+                return createAnalyticsFallback();
+            }
+
+            if (window.sbsTracker) {
+                return window.sbsTracker;
+            }
+
+            if (window.SBSAnalytics) {
+                window.sbsTracker = new window.SBSAnalytics({
+                    debug: window.location.hostname === 'localhost'
+                });
+                return window.sbsTracker;
+            }
+
+            console.warn('SBSAnalytics is unavailable; analytics events will be skipped on sell page.');
+            return createAnalyticsFallback();
+        })();
 
         // =================================================================================
         // INITIALIZATION & CORE UI
@@ -1695,6 +1920,57 @@
             setTimeout(() => builderSection.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
             console.log('Path: Quick Builder selected');
             if (typeof lucide !== 'undefined') lucide.createIcons();
+            
+            // Load saved data from localStorage
+            loadSavedData();
+        }
+        
+        // Load saved data from localStorage
+        function loadSavedData() {
+            const savedAddress = localStorage.getItem('sbs-address');
+            const savedCity = localStorage.getItem('sbs-city');
+            const savedEircode = localStorage.getItem('sbs-eircode');
+            const savedPhone = localStorage.getItem('sbs-phone');
+            const savedEmail = localStorage.getItem('sbs-email');
+            const savedSocialChannel = localStorage.getItem('sbs-social-channel');
+            const savedSocialHandle = localStorage.getItem('sbs-social-handle');
+            
+            const address = document.getElementById('qb-address');
+            const city = document.getElementById('qb-city');
+            const eircode = document.getElementById('qb-eircode');
+            const phoneInput = document.getElementById('qb-phone');
+            const igInput = document.getElementById('qb-ig');
+            const snapInput = document.getElementById('qb-snap');
+            
+            if (savedAddress && address) address.value = savedAddress;
+            if (savedCity && city) city.value = savedCity;
+            if (savedEircode && eircode) eircode.value = savedEircode;
+            if (savedPhone && phoneInput) phoneInput.value = savedPhone;
+            if (savedEmail) {
+                const emailInput = document.getElementById('qb-email');
+                if (emailInput) emailInput.value = savedEmail;
+            }
+            
+            if (savedSocialChannel) {
+                const radioBtn = document.querySelector(`input[name="qb-social"][value="${savedSocialChannel}"]`);
+                if (radioBtn) {
+                    radioBtn.checked = true;
+                    // Show correct input
+                    const igGroup = document.getElementById('qb-ig-input');
+                    const snapGroup = document.getElementById('qb-snap-input');
+                    if (savedSocialChannel === 'instagram') {
+                        if (igGroup) igGroup.style.display = 'block';
+                        if (snapGroup) snapGroup.style.display = 'none';
+                        if (savedSocialHandle && igInput) igInput.value = savedSocialHandle;
+                    } else {
+                        if (igGroup) igGroup.style.display = 'none';
+                        if (snapGroup) snapGroup.style.display = 'block';
+                        if (savedSocialHandle && snapInput) snapInput.value = savedSocialHandle;
+                    }
+                }
+            }
+            
+            console.log('✅ Loaded saved data from localStorage');
         }
 
         function showManualContact() {
@@ -2064,7 +2340,54 @@ ${itemsText}
                 document.getElementById('qb-whatsapp-link').href = `https://wa.me/353899662211?text=${encodeURIComponent(message)}`;
                 document.getElementById('qb-message-output').style.display = 'block';
                 document.getElementById('qb-message-output').scrollIntoView({ behavior: 'smooth' });
+                
+                // ALSO submit to API for tracking
+                submitToAPI(socialChannel, phone, email, address.value, city.value, eircode.value, socialHandle);
             });
+        }
+        
+        // Submit to API for database tracking
+        async function submitToAPI(socialChannel, phone, email, addressValue, cityValue, eircodeValue, socialHandle) {
+            try {
+                const submissionData = {
+                    items: items.map(item => ({
+                        category: item.category,
+                        brand: item.brand,
+                        condition: item.condition,
+                        size: item.size,
+                        description: item.defects || null
+                    })),
+                    contact_phone: phone,
+                    contact_channel: socialChannel.value,
+                    contact_handle: socialHandle,
+                    contact_email: email || null,
+                    address: addressValue,
+                    city: cityValue,
+                    eircode: eircodeValue || null,
+                    notes: 'Submitted via Quick Builder',
+                    user_id: null
+                };
+                
+                const response = await fetch('/api/sell-submissions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(submissionData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    console.log('✅ Submission saved to database:', result.batch_id);
+                    // Add batch ID to message
+                    const messageText = document.getElementById('qb-message-text');
+                    messageText.textContent += `\n\n📋 Your Batch ID: ${result.batch_id}`;
+                } else {
+                    console.warn('⚠️ API submission failed:', result.error);
+                }
+            } catch (error) {
+                console.warn('⚠️ API submission failed (message still generated):', error);
+                // Don't block user - message is already generated
+            }
         }
 
         // =================================================================================
@@ -2094,6 +2417,18 @@ ${itemsText}
                 });
             }
         }
+
+        if (typeof window !== 'undefined') {
+            window.revealContact = revealContact;
+            window.showQuickBuilder = showQuickBuilder;
+            window.showManualContact = showManualContact;
+            window.backToChoice = backToChoice;
+            window.showCommunity = showCommunity;
+            window.copyQuickBuilderMessage = copyQuickBuilderMessage;
+            window.shareQuickBuilderMessage = shareQuickBuilderMessage;
+        }
+
+        // Mobile menu handled by shared /js/mobile-menu.js
     </script>
 
     <!-- Auth State Management -->

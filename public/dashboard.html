@@ -466,6 +466,13 @@
             margin-top: 2rem;
         }
     </style>
+    <link rel="stylesheet" href="/css/mobile-menu.css">
+    <link rel="stylesheet" href="/css/cart-overlay.css">
+    <script src="/js/analytics-tracker.js" defer></script>
+    <script src="/js/cart-manager.js" defer></script>
+    <script src="/js/cart-ui.js" defer></script>
+    <script src="/js/mobile-menu.js" defer></script>
+    <script src="/js/app.js" defer></script>
 </head>
 
 <body>
@@ -485,14 +492,33 @@
             <div class="nav-right">
                 <!-- Auth state dynamically updates this section -->
                 <a href="/dashboard" class="nav-link">Dashboard</a>
-                <button class="cart-toggle" onclick="toggleCart()">
+                <button class="cart-toggle" type="button">
                     Basket
                     <span class="cart-count" id="cart-count">0</span>
+                </button>
+                <button class="hamburger" aria-label="Menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
                 </button>
                 <button class="btn-outline" id="signOutBtn">Sign Out</button>
             </div>
         </nav>
     </header>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu-backdrop"></div>
+    <div class="mobile-menu" aria-hidden="true">
+        <div class="mobile-menu-header">
+            <a href="/" class="logo">SBS</a>
+        </div>
+        <div class="mobile-menu-items">
+            <a href="/shop" class="mobile-menu-item">🛍️ Shop</a>
+            <a href="/sell" class="mobile-menu-item">💰 Sell</a>
+            <a href="/dashboard" class="mobile-menu-item">📊 Dashboard</a>
+            <button class="mobile-menu-item btn-style" type="button" id="mobile-signout">🚪 Sign Out</button>
+        </div>
+    </div>
 
     <!-- Main Content -->
     <div class="container">
@@ -573,6 +599,49 @@
             return JSON.parse(user);
         }
 
+        function escapeHTML(value) {
+            return String(value ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+        }
+
+        function escapeAttr(value) {
+            return escapeHTML(value)
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function showProfileMessage(type, text) {
+            const messageDiv = document.getElementById('profile-message');
+            if (!messageDiv) return;
+
+            messageDiv.textContent = '';
+            messageDiv.style.display = 'block';
+
+            let background = 'rgba(76, 175, 80, 0.1)';
+            let border = '3px solid var(--success-green)';
+            let color = 'var(--success-green)';
+
+            if (type === 'error') {
+                background = 'rgba(244, 67, 54, 0.1)';
+                border = '3px solid var(--danger-red)';
+                color = 'var(--danger-red)';
+            } else if (type === 'notice') {
+                background = 'rgba(255, 215, 0, 0.1)';
+                border = '3px solid var(--primary-gold)';
+                color = 'var(--primary-gold)';
+            }
+
+            messageDiv.style.background = background;
+            messageDiv.style.borderLeft = border;
+
+            const strong = document.createElement('strong');
+            strong.style.color = color;
+            strong.textContent = text ?? '';
+            messageDiv.appendChild(strong);
+        }
+
         // Load user profile
         function loadProfile() {
             const user = checkAuth();
@@ -588,11 +657,20 @@
             document.getElementById('profileEmail').textContent = user.email || '';
         }
 
-        // Sign Out
-        document.getElementById('signOutBtn').addEventListener('click', () => {
+        function handleSignOut() {
             sessionStorage.clear();
             window.location.href = '/login.html';
-        });
+        }
+
+        const signOutButton = document.getElementById('signOutBtn');
+        if (signOutButton) {
+            signOutButton.addEventListener('click', handleSignOut);
+        }
+
+        const mobileSignOutBtn = document.getElementById('mobile-signout');
+        if (mobileSignOutBtn) {
+            mobileSignOutBtn.addEventListener('click', handleSignOut);
+        }
 
         // Load section content
         async function loadSection(section) {
@@ -700,6 +778,19 @@
             const user = JSON.parse(sessionStorage.getItem('sbs_user'));
             const content = document.getElementById('mainContent');
 
+            const safeUser = {
+                firstName: escapeAttr(user?.first_name || ''),
+                lastName: escapeAttr(user?.last_name || ''),
+                handle: escapeAttr(user?.social_handle || ''),
+                email: escapeAttr(user?.email || ''),
+                phone: escapeAttr(user?.phone || ''),
+                address: escapeAttr(user?.address || ''),
+                city: escapeAttr(user?.city || 'Dublin'),
+                eircode: escapeAttr(user?.eircode || ''),
+                instagram: escapeAttr(user?.instagram || ''),
+                snapchat: escapeAttr(user?.snapchat || '')
+            };
+
             content.innerHTML = `
                 <div class="section">
                     <div class="section-header">
@@ -709,37 +800,37 @@
                     <form id="profileForm" style="max-width: 600px;">
                         <div class="card">
                             <h3 style="margin-bottom: 1.5rem; color: var(--primary-gold);">Personal Information</h3>
-                            
+
                             <div style="display: grid; gap: 1.5rem;">
                                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                                     <div>
                                         <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">First Name</label>
-                                        <input type="text" id="edit-first-name" value="${user.first_name || ''}" 
+                                        <input type="text" id="edit-first-name" value="${safeUser.firstName}"
                                                style="width: 100%; padding: 0.75rem; background: var(--bg-dark); border: 1px solid var(--border-subtle); border-radius: 8px; color: var(--text-primary); font-size: 1rem;">
                                     </div>
                                     <div>
                                         <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Last Name</label>
-                                        <input type="text" id="edit-last-name" value="${user.last_name || ''}"
+                                        <input type="text" id="edit-last-name" value="${safeUser.lastName}"
                                                style="width: 100%; padding: 0.75rem; background: var(--bg-dark); border: 1px solid var(--border-subtle); border-radius: 8px; color: var(--text-primary); font-size: 1rem;">
                                     </div>
                                 </div>
 
                                 <div>
                                     <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Username (Social Handle)</label>
-                                    <input type="text" id="edit-social-handle" value="${user.social_handle || ''}"
+                                    <input type="text" id="edit-social-handle" value="${safeUser.handle}"
                                            style="width: 100%; padding: 0.75rem; background: var(--bg-dark); border: 1px solid var(--border-subtle); border-radius: 8px; color: var(--text-primary); font-size: 1rem;">
                                     <small style="color: var(--text-secondary); display: block; margin-top: 0.25rem;">Used for login</small>
                                 </div>
 
                                 <div>
                                     <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Email</label>
-                                    <input type="email" id="edit-email" value="${user.email || ''}"
+                                    <input type="email" id="edit-email" value="${safeUser.email}"
                                            style="width: 100%; padding: 0.75rem; background: var(--bg-dark); border: 1px solid var(--border-subtle); border-radius: 8px; color: var(--text-primary); font-size: 1rem;">
                                 </div>
 
                                 <div>
                                     <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Phone</label>
-                                    <input type="tel" id="edit-phone" value="${user.phone || ''}" placeholder="+353..."
+                                    <input type="tel" id="edit-phone" value="${safeUser.phone}" placeholder="+353..."
                                            style="width: 100%; padding: 0.75rem; background: var(--bg-dark); border: 1px solid var(--border-subtle); border-radius: 8px; color: var(--text-primary); font-size: 1rem;">
                                 </div>
                             </div>
@@ -747,23 +838,23 @@
 
                         <div class="card" style="margin-top: 1.5rem;">
                             <h3 style="margin-bottom: 1.5rem; color: var(--primary-gold);">Address</h3>
-                            
+
                             <div style="display: grid; gap: 1.5rem;">
                                 <div>
                                     <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Street Address</label>
-                                    <input type="text" id="edit-address" value="${user.address || ''}"
+                                    <input type="text" id="edit-address" value="${safeUser.address}"
                                            style="width: 100%; padding: 0.75rem; background: var(--bg-dark); border: 1px solid var(--border-subtle); border-radius: 8px; color: var(--text-primary); font-size: 1rem;">
                                 </div>
 
                                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                                     <div>
                                         <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">City</label>
-                                        <input type="text" id="edit-city" value="${user.city || 'Dublin'}"
+                                        <input type="text" id="edit-city" value="${safeUser.city}"
                                                style="width: 100%; padding: 0.75rem; background: var(--bg-dark); border: 1px solid var(--border-subtle); border-radius: 8px; color: var(--text-primary); font-size: 1rem;">
                                     </div>
                                     <div>
                                         <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Eircode</label>
-                                        <input type="text" id="edit-eircode" value="${user.eircode || ''}"
+                                        <input type="text" id="edit-eircode" value="${safeUser.eircode}"
                                                style="width: 100%; padding: 0.75rem; background: var(--bg-dark); border: 1px solid var(--border-subtle); border-radius: 8px; color: var(--text-primary); font-size: 1rem;">
                                     </div>
                                 </div>
@@ -772,17 +863,17 @@
 
                         <div class="card" style="margin-top: 1.5rem;">
                             <h3 style="margin-bottom: 1.5rem; color: var(--primary-gold);">Social Media Handles</h3>
-                            
+
                             <div style="display: grid; gap: 1.5rem;">
                                 <div>
                                     <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">📸 Instagram</label>
-                                    <input type="text" id="edit-instagram" value="${user.instagram || ''}" placeholder="@yourusername"
+                                    <input type="text" id="edit-instagram" value="${safeUser.instagram}" placeholder="@yourusername"
                                            style="width: 100%; padding: 0.75rem; background: var(--bg-dark); border: 1px solid var(--border-subtle); border-radius: 8px; color: var(--text-primary); font-size: 1rem;">
                                 </div>
 
                                 <div>
                                     <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">👻 Snapchat</label>
-                                    <input type="text" id="edit-snapchat" value="${user.snapchat || ''}" placeholder="yourusername"
+                                    <input type="text" id="edit-snapchat" value="${safeUser.snapchat}" placeholder="yourusername"
                                            style="width: 100%; padding: 0.75rem; background: var(--bg-dark); border: 1px solid var(--border-subtle); border-radius: 8px; color: var(--text-primary); font-size: 1rem;">
                                 </div>
 
@@ -801,7 +892,7 @@
 
                         <div class="card" style="margin-top: 1.5rem; background: rgba(255, 215, 0, 0.05); border-color: rgba(255, 215, 0, 0.2);">
                             <h3 style="margin-bottom: 1.5rem; color: var(--primary-gold);">🔒 Change Password</h3>
-                            
+
                             <div style="display: grid; gap: 1.5rem;">
                                 <div>
                                     <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Current Password</label>
@@ -848,7 +939,12 @@
         // Save profile updates
         async function saveProfile() {
             const messageDiv = document.getElementById('profile-message');
-            messageDiv.style.display = 'none';
+            if (messageDiv) {
+                messageDiv.style.display = 'none';
+                messageDiv.textContent = '';
+                messageDiv.style.background = '';
+                messageDiv.style.borderLeft = '';
+            }
 
             const updates = {
                 first_name: document.getElementById('edit-first-name').value,
@@ -870,17 +966,11 @@
 
             if (newPassword) {
                 if (newPassword !== confirmPassword) {
-                    messageDiv.innerHTML = '<strong style="color: var(--danger-red);">⚠️ Passwords don\'t match!</strong>';
-                    messageDiv.style.display = 'block';
-                    messageDiv.style.background = 'rgba(244, 67, 54, 0.1)';
-                    messageDiv.style.borderLeft = '3px solid var(--danger-red)';
+                    showProfileMessage('error', '⚠️ Passwords don\'t match!');
                     return;
                 }
                 if (!currentPassword) {
-                    messageDiv.innerHTML = '<strong style="color: var(--danger-red);">⚠️ Current password required to change password!</strong>';
-                    messageDiv.style.display = 'block';
-                    messageDiv.style.background = 'rgba(244, 67, 54, 0.1)';
-                    messageDiv.style.borderLeft = '3px solid var(--danger-red)';
+                    showProfileMessage('error', '⚠️ Current password required to change password!');
                     return;
                 }
                 updates.current_password = currentPassword;
@@ -905,10 +995,7 @@
                     // Update session storage with new user data
                     sessionStorage.setItem('sbs_user', JSON.stringify(data.user));
 
-                    messageDiv.innerHTML = '<strong style="color: var(--success-green);">✅ Profile updated successfully!</strong>';
-                    messageDiv.style.display = 'block';
-                    messageDiv.style.background = 'rgba(76, 175, 80, 0.1)';
-                    messageDiv.style.borderLeft = '3px solid var(--success-green)';
+                    showProfileMessage('success', '✅ Profile updated successfully!');
 
                     // Clear password fields
                     document.getElementById('edit-current-password').value = '';
@@ -920,17 +1007,12 @@
                         window.location.reload();
                     }, 1500);
                 } else {
-                    messageDiv.innerHTML = `<strong style="color: var(--danger-red);">⚠️ ${data.error || 'Update failed'}</strong>`;
-                    messageDiv.style.display = 'block';
-                    messageDiv.style.background = 'rgba(244, 67, 54, 0.1)';
-                    messageDiv.style.borderLeft = '3px solid var(--danger-red)';
+                    const errorText = data.error ? `⚠️ ${data.error}` : '⚠️ Update failed';
+                    showProfileMessage('error', errorText);
                 }
             } catch (error) {
                 console.error('Update error:', error);
-                messageDiv.innerHTML = '<strong style="color: var(--danger-red);">⚠️ Network error. Please try again.</strong>';
-                messageDiv.style.display = 'block';
-                messageDiv.style.background = 'rgba(244, 67, 54, 0.1)';
-                messageDiv.style.borderLeft = '3px solid var(--danger-red)';
+                showProfileMessage('error', '⚠️ Network error. Please try again.');
             }
         }
 
@@ -938,6 +1020,14 @@
         function loadSettings() {
             const user = JSON.parse(sessionStorage.getItem('sbs_user'));
             const content = document.getElementById('mainContent');
+
+            const safeFirstName = escapeHTML(user?.first_name || '');
+            const safeLastName = escapeHTML(user?.last_name || '');
+            const safeHandle = escapeHTML(user?.social_handle || 'Not set');
+            const safeEmail = escapeHTML(user?.email || 'Not set');
+            const safePhone = escapeHTML(user?.phone || 'Not set');
+            const safeInstagram = escapeHTML(user?.instagram || 'Not set');
+            const safeSnapchat = escapeHTML(user?.snapchat || 'Not set');
 
             content.innerHTML = `
                 <div class="section">
@@ -948,12 +1038,12 @@
                     <div class="card">
                         <h3 style="margin-bottom: 1rem;">Account Information</h3>
                         <div class="card-details">
-                            <p><strong>Name:</strong> ${user.first_name || ''} ${user.last_name || ''}</p>
-                            <p><strong>Username:</strong> ${user.social_handle || 'Not set'}</p>
-                            <p><strong>Email:</strong> ${user.email || 'Not set'}</p>
-                            <p><strong>Phone:</strong> ${user.phone || 'Not set'}</p>
-                            <p><strong>Instagram:</strong> ${user.instagram || 'Not set'}</p>
-                            <p><strong>Snapchat:</strong> ${user.snapchat || 'Not set'}</p>
+                            <p><strong>Name:</strong> ${safeFirstName} ${safeLastName}</p>
+                            <p><strong>Username:</strong> ${safeHandle}</p>
+                            <p><strong>Email:</strong> ${safeEmail}</p>
+                            <p><strong>Phone:</strong> ${safePhone}</p>
+                            <p><strong>Instagram:</strong> ${safeInstagram}</p>
+                            <p><strong>Snapchat:</strong> ${safeSnapchat}</p>
                         </div>
                         <button onclick="loadSection('profile')" class="btn-outline" style="margin-top: 1rem; cursor: pointer;">✏️ Edit Profile</button>
                     </div>

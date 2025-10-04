@@ -22,7 +22,7 @@ bucket_name = "sbs-user-uploads"
 [vars]
 SITE_URL = "https://thesbsofficial.com"
 CLOUDFLARE_ACCOUNT_ID = "625959b904a63f24f6bb7ec9b8c1ed7c"
-ADMIN_ALLOWLIST_HANDLES = "ADMIN,fredbademosi,SBS"
+ADMIN_ALLOWLIST_HANDLES = "fredbademosi,thesbsofficial"
 
 # Resend API Key (get from https://resend.com/api-keys)
 # Add this as a secret: npx wrangler secret put RESEND_API_KEY

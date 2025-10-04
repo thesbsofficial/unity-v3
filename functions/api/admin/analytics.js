@@ -18,14 +18,24 @@ export async function onRequestGet(context) {
 
         const token = authHeader.substring(7);
 
-        // Verify admin session
+        // Hash token for database lookup
+        const encoder = new TextEncoder();
+        const data = encoder.encode(token);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const tokenHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+        // Verify admin session using unified sessions table
         const session = await env.DB.prepare(`
-            SELECT user_id FROM admin_sessions 
-            WHERE token = ? AND datetime(expires_at) > datetime('now')
-        `).bind(token).first();
+            SELECT s.user_id, u.role, u.is_allowlisted
+            FROM sessions s
+            JOIN users u ON s.user_id = u.id
+            WHERE s.token_hash = ? AND s.expires_at > datetime('now')
+            AND u.role = 'admin' AND u.is_allowlisted = 1
+        `).bind(tokenHash).first();
 
         if (!session) {
-            return jsonResponse({ success: false, error: 'Invalid session' }, 401);
+            return jsonResponse({ success: false, error: 'Invalid session or insufficient privileges' }, 401);
         }
 
         console.log(`📊 Fetching analytics for period: ${period}`);
@@ -36,7 +46,7 @@ export async function onRequestGet(context) {
         // ═══════════════════════════════════════════════════════════════
         // GET DAILY SUMMARIES
         // ═══════════════════════════════════════════════════════════════
-        
+
         const summaries = await env.DB.prepare(`
             SELECT * FROM analytics_daily_summary
             WHERE date >= date('now', '-${days} days')
@@ -46,9 +56,9 @@ export async function onRequestGet(context) {
         // ═══════════════════════════════════════════════════════════════
         // GET CURRENT PERIOD TOTALS
         // ═══════════════════════════════════════════════════════════════
-        
+
         const totals = await env.DB.prepare(`
-            SELECT 
+            SELECT
                 SUM(unique_visitors) as total_visitors,
                 SUM(page_views) as total_page_views,
                 SUM(orders_completed) as total_orders,
@@ -62,9 +72,9 @@ export async function onRequestGet(context) {
         // ═══════════════════════════════════════════════════════════════
         // GET TOP PRODUCTS
         // ═══════════════════════════════════════════════════════════════
-        
+
         const topProducts = await env.DB.prepare(`
-            SELECT 
+            SELECT
                 product_id,
                 product_name,
                 category,
@@ -84,9 +94,9 @@ export async function onRequestGet(context) {
         // ═══════════════════════════════════════════════════════════════
         // GET TOP SEARCHES
         // ═══════════════════════════════════════════════════════════════
-        
+
         const topSearches = await env.DB.prepare(`
-            SELECT 
+            SELECT
                 search_term,
                 SUM(search_count) as total_searches,
                 AVG(results_found) as avg_results,
@@ -101,7 +111,7 @@ export async function onRequestGet(context) {
         // ═══════════════════════════════════════════════════════════════
         // GET TODAY'S STATS
         // ═══════════════════════════════════════════════════════════════
-        
+
         const today = await env.DB.prepare(`
             SELECT * FROM analytics_daily_summary
             WHERE date = date('now')
@@ -110,9 +120,9 @@ export async function onRequestGet(context) {
         // ═══════════════════════════════════════════════════════════════
         // CALCULATE GROWTH RATES
         // ═══════════════════════════════════════════════════════════════
-        
+
         const previousPeriod = await env.DB.prepare(`
-            SELECT 
+            SELECT
                 SUM(revenue) as prev_revenue,
                 SUM(unique_visitors) as prev_visitors,
                 SUM(orders_completed) as prev_orders
@@ -161,7 +171,7 @@ export async function onRequestGet(context) {
 
     } catch (error) {
         console.error('❌ Analytics fetch error:', error);
-        
+
         return jsonResponse({
             success: false,
             error: error.message

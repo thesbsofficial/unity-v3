@@ -137,47 +137,34 @@
                     <a href="/dashboard" class="nav-link">👤 ${firstName}</a>
                     ${isAdmin ? '<a href="/admin/inventory/" class="nav-link">⚙️ Admin</a>' : ''}
                     <button class="btn-outline" onclick="window.SBS.auth.signOut()" style="font-family: inherit; font-size: 1rem;">Sign Out</button>
-                    <button class="cart-toggle" onclick="toggleCart()">
+                    <button class="cart-toggle" type="button">
                         Basket
                         <span class="cart-count" id="cart-count">0</span>
+                    </button>
+                    <button class="hamburger" aria-label="Menu" aria-expanded="false" aria-controls="site-mobile-menu">
+                        <span></span>
+                        <span></span>
+                        <span></span>
                     </button>
                 `;
             } else {
                 navRight.innerHTML = `
                     <a href="/login" class="nav-link">Sign In</a>
                     <a href="/register" class="btn-gold">Sign Up</a>
-                    <button class="cart-toggle" onclick="toggleCart()">
+                    <button class="cart-toggle" type="button">
                         Basket
                         <span class="cart-count" id="cart-count">0</span>
+                    </button>
+                    <button class="hamburger" aria-label="Menu" aria-expanded="false" aria-controls="site-mobile-menu">
+                        <span></span>
+                        <span></span>
+                        <span></span>
                     </button>
                 `;
             }
 
             // Update cart count after navigation update
             Cart.updateCartCount();
-        },
-
-        // Toggle mobile menu
-        toggleMobileMenu(forceState) {
-            const navLinks = document.getElementById('nav-links');
-            const menuToggle = document.querySelector('.mobile-menu-toggle');
-            const overlay = document.getElementById('mobile-menu-overlay');
-
-            if (!navLinks) return;
-
-            const isOpen = forceState !== undefined ? !forceState : navLinks.classList.contains('active');
-
-            if (isOpen) {
-                navLinks.classList.remove('active');
-                menuToggle?.classList.remove('active');
-                overlay?.classList.remove('active');
-                document.body.style.overflow = '';
-            } else {
-                navLinks.classList.add('active');
-                menuToggle?.classList.add('active');
-                overlay?.classList.add('active');
-                document.body.style.overflow = 'hidden';
-            }
         }
     };
 
@@ -272,18 +259,6 @@
                 Cart.updateCartCount();
             }
         });
-
-        // Mobile menu event listeners
-        const menuToggle = document.querySelector('.mobile-menu-toggle');
-        const overlay = document.getElementById('mobile-menu-overlay');
-
-        if (menuToggle) {
-            menuToggle.addEventListener('click', () => Navigation.toggleMobileMenu());
-        }
-
-        if (overlay) {
-            overlay.addEventListener('click', () => Navigation.toggleMobileMenu(false));
-        }
 
         console.log('🚀 SBS App initialized');
     }

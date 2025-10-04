@@ -4,15 +4,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Checkout - SBS Official</title>
+    <title>Checkout | SBS · King of Pre-Owned Fashion</title>
 
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
 
-    <!-- Google Fonts - Inter -->
+    <!-- Google Fonts - Gagalin + Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Gagalin&family=Inter:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
 
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest" defer></script>
@@ -22,8 +23,13 @@
 
     <!-- Helper System -->
     <link rel="stylesheet" href="/css/helper.css">
+    <link rel="stylesheet" href="/css/mobile-menu.css">
+    <link rel="stylesheet" href="/css/cart-overlay.css">
     <script src="/js/helper.js" defer></script>
     <script src="/js/cart-manager.js" defer></script>
+    <script src="/js/cart-ui.js" defer></script>
+    <script src="/js/mobile-menu.js" defer></script>
+    <script src="/js/app.js" defer></script>
 
     <style>
         :root {
@@ -44,12 +50,31 @@
         }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            font-family: 'Gagalin', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
             background: var(--bg-dark);
             color: var(--text-primary);
             line-height: 1.6;
+        }
+
+        /* INTER for body text, descriptions, and small text */
+        p,
+        span,
+        small,
+        a,
+        button,
+        input,
+        textarea,
+        select,
+        label,
+        .form-hint,
+        .nav-link {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+        }
+
+        main.page-content {
+            padding-top: 120px;
+            padding-bottom: 80px;
             min-height: 100vh;
-            padding-top: 80px;
         }
 
         /* HEADER */
@@ -91,6 +116,162 @@
             gap: 1.5rem;
             align-items: center;
             justify-content: flex-end;
+        }
+
+        .cart-toggle {
+            background: none;
+            border: 2px solid var(--primary-gold);
+            color: var(--primary-gold);
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            position: relative;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+            overflow: visible;
+        }
+
+        .cart-toggle:hover {
+            background: var(--primary-gold);
+            color: var(--primary-black);
+        }
+
+        .cart-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #ff4444;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        /* Hamburger Menu */
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.5rem;
+            z-index: 1001;
+        }
+
+        .hamburger span {
+            width: 25px;
+            height: 3px;
+            background: var(--primary-gold);
+            transition: all 0.3s ease;
+            border-radius: 2px;
+        }
+
+        .hamburger.active span:nth-child(1) {
+            transform: rotate(45deg) translate(8px, 8px);
+        }
+
+        .hamburger.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(7px, -7px);
+        }
+
+        /* Mobile Menu */
+        .mobile-menu {
+            display: none;
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 280px;
+            height: 100vh;
+            background: rgba(10, 10, 10, 0.98);
+            backdrop-filter: blur(10px);
+            border-left: 2px solid var(--primary-gold);
+            z-index: 1000;
+            transition: right 0.3s ease;
+            overflow-y: auto;
+        }
+
+        .mobile-menu.active {
+            right: 0;
+        }
+
+        .mobile-menu-backdrop {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 999;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .mobile-menu-backdrop.active {
+            opacity: 1;
+        }
+
+        .mobile-menu-header {
+            padding: 2rem 1.5rem;
+            border-bottom: 1px solid rgba(255, 215, 0, 0.2);
+        }
+
+        .mobile-menu-header .logo {
+            font-size: 1.8rem;
+        }
+
+        .mobile-menu-items {
+            padding: 1rem 0;
+        }
+
+        .mobile-menu-item {
+            display: block;
+            padding: 1rem 1.5rem;
+            color: var(--text-primary);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            border-left: 3px solid transparent;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+        }
+
+        .mobile-menu-item:hover,
+        .mobile-menu-item:active {
+            background: rgba(255, 215, 0, 0.1);
+            border-left-color: var(--primary-gold);
+            color: var(--primary-gold);
+        }
+
+        .mobile-menu-item.btn-style {
+            margin: 1rem 1.5rem;
+            border-radius: 8px;
+            background: var(--primary-gold);
+            color: var(--primary-black);
+            border: none;
+            text-align: center;
+            font-weight: 600;
+            justify-content: center;
+        }
+
+        .mobile-menu-item.btn-style:hover {
+            background: #ffed4e;
+            border-left-color: transparent;
         }
 
         .logo {
@@ -413,14 +594,42 @@
 
         @media (max-width: 768px) {
             .nav {
-                grid-template-columns: 1fr;
-                gap: 1rem;
-                text-align: center;
+                display: flex;
+                justify-content: space-between;
+                padding: 0 1rem;
             }
 
+            /* Hide desktop nav links on mobile */
             .nav-left,
+            .nav-right .nav-link,
+            .nav-right .btn-gold {
+                display: none;
+            }
+
+            /* Show hamburger on mobile */
+            .hamburger {
+                display: flex;
+            }
+
             .nav-right {
-                justify-content: center;
+                display: flex;
+                gap: 1rem;
+                align-items: center;
+            }
+
+            .cart-toggle {
+                font-size: 0.65rem;
+                padding: 0.3rem 0.6rem;
+                white-space: nowrap;
+                min-width: fit-content;
+            }
+
+            .cart-count {
+                width: 18px;
+                height: 18px;
+                font-size: 10px;
+                top: -8px;
+                right: -8px;
             }
 
             .checkout-grid {
@@ -451,306 +660,342 @@
             <div class="nav-right">
                 <a href="/login" class="nav-link">Sign In</a>
                 <a href="/register" class="btn-gold">Sign Up</a>
+                <button class="cart-toggle" type="button">
+                    Basket
+                    <span class="cart-count" id="cart-count">0</span>
+                </button>
+                <!-- Hamburger Menu Button (Mobile Only) -->
+                <button class="hamburger" aria-label="Menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
             </div>
         </nav>
     </header>
 
-    <div class="container">
+    <!-- Mobile Menu -->
+    <div class="mobile-menu-backdrop"></div>
+    <div class="mobile-menu" aria-hidden="true">
+        <div class="mobile-menu-header">
+            <a href="/" class="logo">SBS</a>
+        </div>
+        <div class="mobile-menu-items">
+            <a href="/shop" class="mobile-menu-item">🛍️ Shop</a>
+            <a href="/sell" class="mobile-menu-item">💰 Sell</a>
+            <a href="/login" class="mobile-menu-item">🔐 Sign In</a>
+            <a href="/register" class="mobile-menu-item btn-style">✨ Sign Up</a>
+        </div>
+    </div>
 
-        <!-- Checkout Grid -->
-        <div class="checkout-grid" id="checkout-content">
-            <!-- Left Column - Customer Information -->
-            <div class="section">
-                <h2>Reserve Your Items</h2>
+    <main class="page-content">
+        <div class="container">
 
-                <div class="info-box">
-                    <p><strong>⏰ Delivery Times:</strong><br>
-                        Orders placed <strong>before 6pm</strong> arrive <strong>after 6pm same day</strong> (before
-                        midnight)<br>
-                        Orders placed <strong>after 6pm</strong> will be delivered <strong>next working day</strong></p>
-                </div>
+            <!-- Checkout Grid -->
+            <div class="checkout-grid" id="checkout-content">
+                <!-- Left Column - Customer Information -->
+                <div class="section">
+                    <h2>Reserve Your Items</h2>
 
-                <form id="checkout-form">
-                    <div class="form-group">
-                        <label>Full Name <span class="required">*</span></label>
-                        <input type="text" name="name" required placeholder="John Doe">
+                    <div class="info-box">
+                        <p><strong>⏰ Delivery Times:</strong><br>
+                            Orders placed <strong>before 6pm</strong> arrive <strong>after 6pm same day</strong> (before
+                            midnight)<br>
+                            Orders placed <strong>after 6pm</strong> will be delivered <strong>next working day</strong>
+                        </p>
                     </div>
 
-                    <div class="form-group">
-                        <label>Email Address (Optional)</label>
-                        <input type="email" name="email" placeholder="john@example.com">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Phone Number <span class="required">*</span></label>
-                        <input type="tel" name="phone" required placeholder="+353 XX XXX XXXX" 
-                            pattern="^(\+353|0)[0-9\s\-]{9,12}$"
-                            title="Enter a valid Irish phone number (e.g., +353 85 123 4567 or 085 123 4567)"
-                            minlength="10">
-                        <small class="form-hint" style="color: #999; font-size: 12px; display: block; margin-top: 5px;">
-                            Irish mobile or landline (10-11 digits)
-                        </small>
-                    </div>
-
-                    <div class="form-row">
+                    <form id="checkout-form">
                         <div class="form-group">
-                            <label>House Number <span class="required">*</span></label>
-                            <input type="text" name="house_number" required placeholder="10">
+                            <label>Full Name <span class="required">*</span></label>
+                            <input type="text" name="name" required placeholder="John Doe">
                         </div>
+
                         <div class="form-group">
-                            <label>Street Address <span class="required">*</span></label>
-                            <input type="text" name="street" required placeholder="Main Street">
+                            <label>Email Address (Optional)</label>
+                            <input type="email" name="email" placeholder="john@example.com">
                         </div>
-                    </div>
 
-                    <div class="form-row">
                         <div class="form-group">
-                            <label>City/Town <span class="required">*</span></label>
-                            <input type="text" name="city" id="city-input" required
-                                placeholder="Santry, Tallaght, etc.">
+                            <label>Phone Number <span class="required">*</span></label>
+                            <input type="tel" name="phone" required placeholder="+353 XX XXX XXXX"
+                                pattern="^(\+353|0)[0-9\s\-]{9,12}$"
+                                title="Enter a valid Irish phone number (e.g., +353 85 123 4567 or 085 123 4567)"
+                                minlength="10">
+                            <small class="form-hint"
+                                style="color: #999; font-size: 12px; display: block; margin-top: 5px;">
+                                Irish mobile or landline (10-11 digits)
+                            </small>
                         </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>House Number <span class="required">*</span></label>
+                                <input type="text" name="house_number" required placeholder="10">
+                            </div>
+                            <div class="form-group">
+                                <label>Street Address <span class="required">*</span></label>
+                                <input type="text" name="street" required placeholder="Main Street">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>City/Town <span class="required">*</span></label>
+                                <input type="text" name="city" id="city-input" required
+                                    placeholder="Santry, Tallaght, etc.">
+                            </div>
+                            <div class="form-group">
+                                <label>County <span class="required">*</span></label>
+                                <input type="text" name="county" required placeholder="Dublin">
+                            </div>
+                        </div>
+
                         <div class="form-group">
-                            <label>County <span class="required">*</span></label>
-                            <input type="text" name="county" required placeholder="Dublin">
+                            <label>Eircode <span class="required">*</span></label>
+                            <input type="text" name="eircode" id="eircode-input" required placeholder="D02 XY45"
+                                style="text-transform: uppercase;" pattern="^[A-Z0-9]{3}\s?[A-Z0-9]{4,}$"
+                                title="Enter a valid Eircode (e.g., D02 XY45 or K67 W838)" minlength="7" maxlength="10">
+                            <small class="form-hint"
+                                style="color: #999; font-size: 12px; display: block; margin-top: 5px;">
+                                Irish Eircode (e.g., D02 XY45)
+                            </small>
                         </div>
-                    </div>
 
-                    <div class="form-group">
-                        <label>Eircode <span class="required">*</span></label>
-                        <input type="text" name="eircode" id="eircode-input" required placeholder="D02 XY45"
-                            style="text-transform: uppercase;" 
-                            pattern="^[A-Z0-9]{3}\s?[A-Z0-9]{4}$"
-                            title="Enter a valid Eircode (e.g., D02 XY45)"
-                            minlength="7" maxlength="8">
-                        <small class="form-hint" style="color: #999; font-size: 12px; display: block; margin-top: 5px;">
-                            7 characters (e.g., D02 XY45)
-                        </small>
-                    </div>
-
-                    <!-- Delivery Information with Costs -->
-                    <div class="form-group">
-                        <label>Delivery Costs by Zone</label>
-                        <div id="delivery-zones"
-                            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-top: 10px;">
-                            <div class="zone-info-box" data-zone="north-dublin" data-price="15">
-                                <strong>North Dublin - €15</strong>
-                                <small>Santry, Swords, Malahide, Howth</small>
+                        <!-- Delivery Information with Costs -->
+                        <div class="form-group">
+                            <label>Delivery Costs by Zone</label>
+                            <div id="delivery-zones"
+                                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-top: 10px;">
+                                <div class="zone-info-box" data-zone="north-dublin" data-price="15">
+                                    <strong>North Dublin - €15</strong>
+                                    <small>Santry, Swords, Malahide, Howth</small>
+                                </div>
+                                <div class="zone-info-box" data-zone="south-dublin" data-price="20">
+                                    <strong>South Dublin - €20</strong>
+                                    <small>Tallaght, Rathfarnham, Dundrum, Dun Laoghaire</small>
+                                </div>
+                                <div class="zone-info-box" data-zone="dublin-county" data-price="25">
+                                    <strong>Bordering Cities - €25</strong>
+                                    <small>Bray, Ashbourne, Dunshaughlin, Celbridge, Maynooth, Clane</small>
+                                </div>
+                                <div class="zone-info-box" data-zone="surrounding" data-price="35">
+                                    <strong>Further Counties - €35</strong>
+                                    <small>Drogheda, Trim, Navan, Greystones, Naas, Newbridge</small>
+                                </div>
+                                <div class="zone-info-box" data-zone="postage" data-price="10">
+                                    <strong>📦 National Post - €10</strong>
+                                    <small>Tracked delivery anywhere in Ireland (FREE over €100)</small>
+                                </div>
                             </div>
-                            <div class="zone-info-box" data-zone="south-dublin" data-price="20">
-                                <strong>South Dublin - €20</strong>
-                                <small>Tallaght, Rathfarnham, Dundrum, Dun Laoghaire</small>
-                            </div>
-                            <div class="zone-info-box" data-zone="dublin-county" data-price="25">
-                                <strong>Bordering Cities - €25</strong>
-                                <small>Bray, Ashbourne, Dunshaughlin, Celbridge, Maynooth, Clane</small>
-                            </div>
-                            <div class="zone-info-box" data-zone="surrounding" data-price="35">
-                                <strong>Further Counties - €35</strong>
-                                <small>Drogheda, Trim, Navan, Greystones, Naas, Newbridge</small>
-                            </div>
-                            <div class="zone-info-box" data-zone="postage" data-price="10">
-                                <strong>📦 National Post - €10</strong>
-                                <small>Tracked delivery anywhere in Ireland (FREE over €100)</small>
-                            </div>
+                            <p style="color: #ffd700; font-size: 13px; margin-top: 10px; font-style: italic;">
+                                💰 Payment on delivery - We'll confirm your exact delivery cost when we contact you
+                            </p>
+                            <input type="hidden" name="delivery_zone" id="delivery-zone-input" value="north-dublin">
+                            <input type="hidden" name="delivery_price" id="delivery-price-input" value="0">
                         </div>
-                        <p style="color: #ffd700; font-size: 13px; margin-top: 10px; font-style: italic;">
-                            💰 Payment on delivery - We'll confirm your exact delivery cost when we contact you
-                        </p>
-                        <input type="hidden" name="delivery_zone" id="delivery-zone-input" value="north-dublin">
-                        <input type="hidden" name="delivery_price" id="delivery-price-input" value="0">
-                    </div>
 
-                    <!-- Delivery Time Information -->
-                    <div class="form-group"
-                        style="background: #1a1a1a; padding: 15px; border-radius: 8px; border: 1px solid #333;">
-                        <h3 style="color: #ffd700; margin-bottom: 10px; font-size: 16px;">⏰ Delivery Schedule</h3>
-                        <p style="color: #fff; margin-bottom: 8px; font-size: 14px;">
-                            • Orders placed <strong>before 6pm</strong> arrive <strong>after 6pm same day</strong>
-                            (before midnight)
-                        </p>
-                        <p style="color: #fff; margin-bottom: 0; font-size: 14px;">
-                            • Orders placed <strong>after 6pm</strong> will be delivered <strong>next working
-                                day</strong>
-                        </p>
-                    </div>
+                        <!-- Delivery Time Information -->
+                        <div class="form-group"
+                            style="background: #1a1a1a; padding: 15px; border-radius: 8px; border: 1px solid #333;">
+                            <h3 style="color: #ffd700; margin-bottom: 10px; font-size: 16px;">⏰ Delivery Schedule</h3>
+                            <p style="color: #fff; margin-bottom: 8px; font-size: 14px;">
+                                • Orders placed <strong>before 6pm</strong> arrive <strong>after 6pm same day</strong>
+                                (before midnight)
+                            </p>
+                            <p style="color: #fff; margin-bottom: 0; font-size: 14px;">
+                                • Orders placed <strong>after 6pm</strong> will be delivered <strong>next working
+                                    day</strong>
+                            </p>
+                        </div>
 
-                    <!-- Payment Methods -->
-                    <div class="form-group"
-                        style="background: #1a1a1a; padding: 15px; border-radius: 8px; border: 1px solid #333;">
-                        <h3 style="color: #ffd700; margin-bottom: 10px; font-size: 16px;">💳 Payment Options</h3>
-                        <p style="color: #fff; margin-bottom: 8px; font-size: 14px;">
-                            • <strong>Cash on Delivery</strong> - Pay when you receive your items
-                        </p>
-                        <p style="color: #fff; margin-bottom: 8px; font-size: 14px;">
-                            • <strong>Card on Delivery</strong> - Pay by card when you receive your items
-                        </p>
-                        <p style="color: #fff; margin-bottom: 8px; font-size: 14px;">
-                            • <strong>Bank Transfer</strong> - Pay by bank transfer on delivery
-                        </p>
-                        <p style="color: #fff; margin-bottom: 0; font-size: 14px;">
-                            • <strong>Crypto</strong> - We accept cryptocurrency payments! 🪙
-                        </p>
-                    </div>
+                        <!-- Payment Methods -->
+                        <div class="form-group"
+                            style="background: #1a1a1a; padding: 15px; border-radius: 8px; border: 1px solid #333;">
+                            <h3 style="color: #ffd700; margin-bottom: 10px; font-size: 16px;">💳 Payment Options</h3>
+                            <p style="color: #fff; margin-bottom: 8px; font-size: 14px;">
+                                • <strong>Cash on Delivery</strong> - Pay when you receive your items
+                            </p>
+                            <p style="color: #fff; margin-bottom: 8px; font-size: 14px;">
+                                • <strong>Card on Delivery</strong> - Pay by card when you receive your items
+                            </p>
+                            <p style="color: #fff; margin-bottom: 8px; font-size: 14px;">
+                                • <strong>Bank Transfer</strong> - Pay by bank transfer on delivery
+                            </p>
+                            <p style="color: #fff; margin-bottom: 0; font-size: 14px;">
+                                • <strong>Crypto</strong> - We accept cryptocurrency payments! 🪙
+                            </p>
+                        </div>
 
-                    <div class="form-group">
-                        <label>Delivery Notes (Optional)</label>
-                        <textarea name="notes" placeholder="Any special delivery instructions..."></textarea>
-                    </div>
+                        <div class="form-group">
+                            <label>Delivery Notes (Optional)</label>
+                            <textarea name="notes" placeholder="Any special delivery instructions..."></textarea>
+                        </div>
 
-                    <!-- Account Registration Option -->
-                    <div class="form-group"
-                        style="background: linear-gradient(135deg, #1a1a1a, #2a2a2a); padding: 20px; border-radius: 12px; border: 2px solid var(--primary-gold);">
-                        <div style="display: flex; align-items: start; gap: 12px; margin-bottom: 15px;">
-                            <input type="checkbox" id="create-account-checkbox"
-                                style="width: 20px; height: 20px; margin-top: 2px; cursor: pointer; accent-color: var(--primary-gold);">
-                            <div>
-                                <label for="create-account-checkbox"
-                                    style="cursor: pointer; font-size: 16px; font-weight: 600; color: var(--primary-gold); margin-bottom: 5px; display: block;">
-                                    ✨ Create an Account (Optional)
-                                </label>
-                                <p style="color: #ccc; font-size: 13px; margin: 0; line-height: 1.5;">
-                                    Save your details for faster checkout next time. We'll use the information you
-                                    entered above - just create a password!
+                        <!-- Account Registration Option -->
+                        <div class="form-group"
+                            style="background: linear-gradient(135deg, #1a1a1a, #2a2a2a); padding: 20px; border-radius: 12px; border: 2px solid var(--primary-gold);">
+                            <div style="display: flex; align-items: start; gap: 12px; margin-bottom: 15px;">
+                                <input type="checkbox" id="create-account-checkbox"
+                                    style="width: 20px; height: 20px; margin-top: 2px; cursor: pointer; accent-color: var(--primary-gold);">
+                                <div>
+                                    <label for="create-account-checkbox"
+                                        style="cursor: pointer; font-size: 16px; font-weight: 600; color: var(--primary-gold); margin-bottom: 5px; display: block;">
+                                        ✨ Create an Account (Optional)
+                                    </label>
+                                    <p style="color: #ccc; font-size: 13px; margin: 0; line-height: 1.5;">
+                                        Save your details for faster checkout next time. We'll use the information you
+                                        entered above - just create a password!
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div id="password-fields"
+                                style="display: none; margin-top: 15px; padding-top: 15px; border-top: 1px solid #333;">
+                                <div class="form-group" style="margin-bottom: 10px;">
+                                    <label style="color: #fff; font-size: 14px;">Password <span
+                                            class="required">*</span></label>
+                                    <input type="password" id="account-password" name="account_password"
+                                        placeholder="Create a password (min. 8 characters)"
+                                        style="width: 100%; padding: 12px; border: 1px solid #333; border-radius: 6px; background: #0a0a0a; color: #fff; font-size: 14px;">
+                                </div>
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label style="color: #fff; font-size: 14px;">Confirm Password <span
+                                            class="required">*</span></label>
+                                    <input type="password" id="account-password-confirm" name="account_password_confirm"
+                                        placeholder="Confirm your password"
+                                        style="width: 100%; padding: 12px; border: 1px solid #333; border-radius: 6px; background: #0a0a0a; color: #fff; font-size: 14px;">
+                                </div>
+                                <p id="password-error"
+                                    style="color: #ff4444; font-size: 12px; margin-top: 8px; display: none;"></p>
+                                <p style="color: #ffd700; font-size: 12px; margin-top: 10px; margin-bottom: 0;">
+                                    🔒 Your password will be securely hashed and stored
                                 </p>
                             </div>
                         </div>
 
-                        <div id="password-fields"
-                            style="display: none; margin-top: 15px; padding-top: 15px; border-top: 1px solid #333;">
-                            <div class="form-group" style="margin-bottom: 10px;">
-                                <label style="color: #fff; font-size: 14px;">Password <span
-                                        class="required">*</span></label>
-                                <input type="password" id="account-password" name="account_password"
-                                    placeholder="Create a password (min. 8 characters)"
-                                    style="width: 100%; padding: 12px; border: 1px solid #333; border-radius: 6px; background: #0a0a0a; color: #fff; font-size: 14px;">
+                        <button type="submit" class="btn btn-primary" id="submit-btn">
+                            <i data-lucide="check-circle" class="w-5 h-5"></i>
+                            Place Order
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Right Column - Order Summary -->
+                <div>
+                    <div class="section">
+                        <h2>Order Summary</h2>
+
+                        <div id="order-items">
+                            <!-- Items will be loaded here -->
+                        </div>
+
+                        <!-- Total Cost Summary -->
+                        <div id="cost-summary"
+                            style="margin-top: 20px; padding: 20px; background: rgba(255, 215, 0, 0.05); border: 2px solid var(--primary-gold); border-radius: 8px;">
+                            <div
+                                style="display: flex; justify-content: space-between; margin-bottom: 10px; color: #fff;">
+                                <span>Items (<span id="item-count">0</span>):</span>
+                                <span style="color: #ffd700;">Payment on delivery</span>
                             </div>
-                            <div class="form-group" style="margin-bottom: 0;">
-                                <label style="color: #fff; font-size: 14px;">Confirm Password <span
-                                        class="required">*</span></label>
-                                <input type="password" id="account-password-confirm" name="account_password_confirm"
-                                    placeholder="Confirm your password"
-                                    style="width: 100%; padding: 12px; border: 1px solid #333; border-radius: 6px; background: #0a0a0a; color: #fff; font-size: 14px;">
+                            <div
+                                style="display: flex; justify-content: space-between; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #333; color: #fff;">
+                                <span>Delivery Zone:</span>
+                                <span id="delivery-zone-name" style="color: #ffd700;">Will be calculated</span>
                             </div>
-                            <p id="password-error"
-                                style="color: #ff4444; font-size: 12px; margin-top: 8px; display: none;"></p>
-                            <p style="color: #ffd700; font-size: 12px; margin-top: 10px; margin-bottom: 0;">
-                                🔒 Your password will be securely hashed and stored
+                            <div
+                                style="display: flex; justify-content: space-between; align-items: center; font-size: 18px; font-weight: 700;">
+                                <span style="color: var(--primary-gold);">Total Due on Delivery:</span>
+                                <span id="total-amount"
+                                    style="color: var(--primary-gold); font-size: 22px;">Calculating...</span>
+                            </div>
+                            <p style="color: #999; font-size: 13px; margin-top: 12px; margin-bottom: 0;">
+                                💡 Final amount includes delivery cost based on your address
                             </p>
                         </div>
                     </div>
 
-                    <button type="submit" class="btn btn-primary" id="submit-btn">
-                        <i data-lucide="check-circle" class="w-5 h-5"></i>
-                        Place Order
-                    </button>
-                </form>
+                    <div class="section" style="margin-top: 20px;">
+                        <div
+                            style="display: flex; align-items: center; gap: 15px; padding: 15px; background: #1a1a1a; border-radius: 8px; border: 1px solid #333;">
+                            <i data-lucide="info" class="w-8 h-8" style="color: #ffd700;"></i>
+                            <div>
+                                <strong style="color: #333; display: block; margin-bottom: 5px;">Cash or Card on
+                                    Delivery</strong>
+                                <span style="color: #666; font-size: 14px;">Pay when you receive your order</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <!-- Right Column - Order Summary -->
-            <div>
-                <div class="section">
-                    <h2>Order Summary</h2>
-
-                    <div id="order-items">
-                        <!-- Items will be loaded here -->
-                    </div>
-
-                    <!-- Total Cost Summary -->
-                    <div id="cost-summary"
-                        style="margin-top: 20px; padding: 20px; background: rgba(255, 215, 0, 0.05); border: 2px solid var(--primary-gold); border-radius: 8px;">
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px; color: #fff;">
-                            <span>Items (<span id="item-count">0</span>):</span>
-                            <span style="color: #ffd700;">Payment on delivery</span>
-                        </div>
-                        <div
-                            style="display: flex; justify-content: space-between; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #333; color: #fff;">
-                            <span>Delivery Zone:</span>
-                            <span id="delivery-zone-name" style="color: #ffd700;">Will be calculated</span>
-                        </div>
-                        <div
-                            style="display: flex; justify-content: space-between; align-items: center; font-size: 18px; font-weight: 700;">
-                            <span style="color: var(--primary-gold);">Total Due on Delivery:</span>
-                            <span id="total-amount"
-                                style="color: var(--primary-gold); font-size: 22px;">Calculating...</span>
-                        </div>
-                        <p style="color: #999; font-size: 13px; margin-top: 12px; margin-bottom: 0;">
-                            💡 Final amount includes delivery cost based on your address
+            <!-- Success Message (Hidden by default) -->
+            <div class="section success-message" id="success-message">
+                <div class="success-icon"
+                    style="background: linear-gradient(135deg, var(--primary-gold), #ffed4e); border-radius: 50%; width: 100px; height: 100px; display: flex; align-items: center; justify-content: center; margin: 0 auto 30px;">
+                    <i data-lucide="check" style="width: 60px; height: 60px; color: #000;"></i>
+                </div>
+                <h2 style="color: var(--primary-gold); margin-bottom: 20px; font-size: 32px;">🎉 Items Reserved
+                    Successfully!</h2>
+                <p style="color: var(--text-primary); margin-bottom: 15px; font-size: 18px; font-weight: 500;">
+                    Your order has been received and your items are now reserved for you!
+                </p>
+                <div
+                    style="background: #1a1a1a; padding: 25px; border-radius: 12px; border: 2px solid var(--primary-gold); margin: 25px 0; max-width: 600px; margin-left: auto; margin-right: auto;">
+                    <p style="color: var(--primary-gold); margin-bottom: 15px; font-size: 16px;">
+                        <strong>📦 Order Number:</strong> <span id="order-id"
+                            style="font-size: 20px; letter-spacing: 1px;"></span>
+                    </p>
+                    <p style="color: #fff; margin-bottom: 10px; font-size: 15px;">
+                        ⏰ <strong>Delivery:</strong> <span id="delivery-time"></span>
+                    </p>
+                    <p style="color: #fff; margin-bottom: 10px; font-size: 15px;">
+                        💳 <strong>Payment:</strong> On delivery (Cash, Card, Bank Transfer, or Crypto)
+                    </p>
+                    <p
+                        style="color: #ffd700; margin-top: 20px; font-size: 14px; padding: 15px; background: rgba(255, 215, 0, 0.1); border-radius: 8px;">
+                        ✨ <strong>Reserved for 24 hours</strong> - We'll contact you shortly to confirm!
+                    </p>
+                    <div id="account-created-message"
+                        style="display: none; margin-top: 15px; padding: 15px; background: rgba(76, 175, 80, 0.1); border: 2px solid #4caf50; border-radius: 8px;">
+                        <p style="color: #4caf50; font-size: 14px; margin: 0;">
+                            🎉 <strong>Account Created!</strong> You can now log in with your email and password for
+                            faster
+                            checkout next time.
                         </p>
                     </div>
                 </div>
+                <a href="/shop" class="btn btn-primary"
+                    style="max-width: 300px; margin: 20px auto 0; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 16px; padding: 15px 30px;">
+                    <i data-lucide="shopping-bag" class="w-5 h-5"></i>
+                    Continue Shopping
+                </a>
+            </div>
 
-                <div class="section" style="margin-top: 20px;">
-                    <div
-                        style="display: flex; align-items: center; gap: 15px; padding: 15px; background: #1a1a1a; border-radius: 8px; border: 1px solid #333;">
-                        <i data-lucide="info" class="w-8 h-8" style="color: #ffd700;"></i>
-                        <div>
-                            <strong style="color: #333; display: block; margin-bottom: 5px;">Cash or Card on
-                                Delivery</strong>
-                            <span style="color: #666; font-size: 14px;">Pay when you receive your order</span>
-                        </div>
-                    </div>
-                </div>
+            <!-- Empty Cart Message -->
+            <div class="section empty-cart" id="empty-cart" style="display: none;">
+                <i data-lucide="shopping-cart" style="width: 80px; height: 80px; color: var(--border-subtle);"></i>
+                <h2 style="color: var(--text-secondary); margin: 20px 0;">Your cart is empty</h2>
+                <p style="color: var(--text-secondary); margin-bottom: 25px;">Add some items to your cart before
+                    checking
+                    out</p>
+                <a href="/shop" class="btn btn-primary" style="max-width: 300px; margin: 0 auto;">
+                    <i data-lucide="shopping-bag" class="w-5 h-5"></i>
+                    Start Shopping
+                </a>
             </div>
         </div>
-
-        <!-- Success Message (Hidden by default) -->
-        <div class="section success-message" id="success-message">
-            <div class="success-icon"
-                style="background: linear-gradient(135deg, var(--primary-gold), #ffed4e); border-radius: 50%; width: 100px; height: 100px; display: flex; align-items: center; justify-content: center; margin: 0 auto 30px;">
-                <i data-lucide="check" style="width: 60px; height: 60px; color: #000;"></i>
-            </div>
-            <h2 style="color: var(--primary-gold); margin-bottom: 20px; font-size: 32px;">🎉 Items Reserved
-                Successfully!</h2>
-            <p style="color: var(--text-primary); margin-bottom: 15px; font-size: 18px; font-weight: 500;">
-                Your order has been received and your items are now reserved for you!
-            </p>
-            <div
-                style="background: #1a1a1a; padding: 25px; border-radius: 12px; border: 2px solid var(--primary-gold); margin: 25px 0; max-width: 600px; margin-left: auto; margin-right: auto;">
-                <p style="color: var(--primary-gold); margin-bottom: 15px; font-size: 16px;">
-                    <strong>📦 Order Number:</strong> <span id="order-id"
-                        style="font-size: 20px; letter-spacing: 1px;"></span>
-                </p>
-                <p style="color: #fff; margin-bottom: 10px; font-size: 15px;">
-                    ⏰ <strong>Delivery:</strong> <span id="delivery-time"></span>
-                </p>
-                <p style="color: #fff; margin-bottom: 10px; font-size: 15px;">
-                    💳 <strong>Payment:</strong> On delivery (Cash, Card, Bank Transfer, or Crypto)
-                </p>
-                <p
-                    style="color: #ffd700; margin-top: 20px; font-size: 14px; padding: 15px; background: rgba(255, 215, 0, 0.1); border-radius: 8px;">
-                    ✨ <strong>Reserved for 24 hours</strong> - We'll contact you shortly to confirm!
-                </p>
-                <div id="account-created-message"
-                    style="display: none; margin-top: 15px; padding: 15px; background: rgba(76, 175, 80, 0.1); border: 2px solid #4caf50; border-radius: 8px;">
-                    <p style="color: #4caf50; font-size: 14px; margin: 0;">
-                        🎉 <strong>Account Created!</strong> You can now log in with your email and password for faster
-                        checkout next time.
-                    </p>
-                </div>
-            </div>
-            <a href="/shop" class="btn btn-primary"
-                style="max-width: 300px; margin: 20px auto 0; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 16px; padding: 15px 30px;">
-                <i data-lucide="shopping-bag" class="w-5 h-5"></i>
-                Continue Shopping
-            </a>
-        </div>
-
-        <!-- Empty Cart Message -->
-        <div class="section empty-cart" id="empty-cart" style="display: none;">
-            <i data-lucide="shopping-cart" style="width: 80px; height: 80px; color: var(--border-subtle);"></i>
-            <h2 style="color: var(--text-secondary); margin: 20px 0;">Your cart is empty</h2>
-            <p style="color: var(--text-secondary); margin-bottom: 25px;">Add some items to your cart before checking
-                out</p>
-            <a href="/shop" class="btn btn-primary" style="max-width: 300px; margin: 0 auto;">
-                <i data-lucide="shopping-bag" class="w-5 h-5"></i>
-                Start Shopping
-            </a>
-        </div>
-    </div>
+    </main>
 
     <script>
+        const iconify = () => {
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        };
+
         // Initialize
-        lucide.createIcons();
+        iconify();
         const analytics = new SBSAnalytics();
 
         let deliveryPrice = 0;
@@ -758,7 +1003,19 @@
 
         // Get cart
         function getCart() {
-            return JSON.parse(localStorage.getItem('sbs-basket') || '[]');
+            if (window.SBSCart && typeof window.SBSCart.getItems === 'function') {
+                return window.SBSCart.getItems();
+            }
+            try {
+                return JSON.parse(localStorage.getItem('sbs-basket') || '[]');
+            } catch (error) {
+                console.warn('Failed to parse legacy cart from storage', error);
+                // Show error to user
+                alert('⚠️ Your cart data appears corrupted. Starting with empty cart.\n\nIf you had items, please go back to the shop and re-add them.');
+                // Clear corrupted data
+                localStorage.removeItem('sbs-basket');
+                return [];
+            }
         }
 
         // Account creation checkbox toggle
@@ -805,6 +1062,17 @@
             errorEl.style.display = 'none';
             return true;
         }
+        
+        // Real-time password validation
+        const passwordInput = document.getElementById('account-password');
+        const confirmInput = document.getElementById('account-password-confirm');
+        
+        if (passwordInput) {
+            passwordInput.addEventListener('input', validatePasswords);
+        }
+        if (confirmInput) {
+            confirmInput.addEventListener('input', validatePasswords);
+        }
 
         // Delivery zones are now view-only (no selection needed)
 
@@ -841,6 +1109,8 @@
             analytics.track('checkout_start', {
                 item_count: cart.length
             });
+
+            iconify();
         }
 
         // Update total cost display
@@ -891,7 +1161,7 @@
             const submitBtn = document.getElementById('submit-btn');
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<i data-lucide="loader" class="w-5 h-5 animate-spin"></i> Processing...';
-            lucide.createIcons();
+            iconify();
 
             const formData = new FormData(e.target);
             const cart = getCart();
@@ -990,7 +1260,9 @@
 
                             // Store token if provided
                             if (accountResult.token) {
-                                localStorage.setItem('auth-token', accountResult.token);
+                                if (typeof sessionStorage !== 'undefined') {
+                                    sessionStorage.setItem('auth-token', accountResult.token);
+                                }
                             }
 
                             // Add success message to UI
@@ -1014,12 +1286,16 @@
                 });
 
                 // Clear cart
-                localStorage.removeItem('sbs-basket');
+                if (window.SBSCart && typeof window.SBSCart.clear === 'function') {
+                    window.SBSCart.clear();
+                } else {
+                    localStorage.removeItem('sbs-basket');
+                }
 
                 // Show success message
                 document.getElementById('checkout-content').style.display = 'none';
                 document.getElementById('success-message').style.display = 'block';
-                lucide.createIcons();
+                iconify();
 
                 // Scroll to top
                 window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1035,7 +1311,7 @@
                 // Re-enable button
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = '<i data-lucide="check-circle" class="w-5 h-5"></i> Place Order';
-                lucide.createIcons();
+                iconify();
             }
         });
 
@@ -1045,7 +1321,7 @@
             eircodeInput.addEventListener('input', function (e) {
                 let value = e.target.value.toUpperCase().replace(/\s/g, ''); // Remove spaces, uppercase
                 if (value.length > 3) {
-                    value = value.slice(0, 3) + ' ' + value.slice(3, 7); // Add space after 3rd char
+                    value = value.slice(0, 3) + ' ' + value.slice(3); // Add space after 3rd char, keep rest
                 }
                 e.target.value = value;
             });
@@ -1054,11 +1330,17 @@
         // Load items on page load
         window.addEventListener('DOMContentLoaded', () => {
             loadOrderItems();
-            lucide.createIcons();
+            iconify();
+
+            if (window.SBSCart && typeof window.SBSCart.updateAllCounters === 'function') {
+                window.SBSCart.updateAllCounters();
+            }
 
             // Track page view
             analytics.trackPageView('Checkout');
         });
+
+        // Mobile menu handled by shared /js/mobile-menu.js
     </script>
 </body>
 

@@ -4,11 +4,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Privacy Policy - SBS</title>
-    <meta name="description" content="Privacy policy for SBS - Dublin's Premier Streetwear marketplace">
+    <title>Privacy Policy | SBS · King of Pre-Owned Fashion</title>
+    <meta name="description" content="Privacy commitments from SBS — Dublin's king of pre-owned fashion.">
     <link rel="icon" type="image/png" href="/images/favicon.png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/helper.css">
+    <link rel="stylesheet" href="/css/mobile-menu.css">
+    <link rel="stylesheet" href="/css/cart-overlay.css">
     <script src="https://unpkg.com/lucide@latest" defer></script>
+    <script src="/js/analytics-tracker.js" defer></script>
+    <script src="/js/cart-manager.js" defer></script>
+    <script src="/js/cart-ui.js" defer></script>
+    <script src="/js/mobile-menu.js" defer></script>
+    <script src="/js/app.js" defer></script>
     <style>
         * {
             margin: 0;
@@ -21,6 +29,7 @@
             --primary-gold: #ffd700;
             --text-primary: #ffffff;
             --text-secondary: #999;
+            --border-subtle: rgba(255, 255, 255, 0.1);
         }
 
         body {
@@ -28,45 +37,156 @@
             background: var(--primary-black);
             color: var(--text-primary);
             line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: rgba(10, 10, 10, 0.95);
+            border-bottom: 1px solid var(--border-subtle);
+            backdrop-filter: blur(10px);
+            width: 100%;
         }
 
         .nav {
-            background: rgba(10, 10, 10, 0.95);
-            backdrop-filter: blur(10px);
+            max-width: 1200px;
+            margin: 0 auto;
             padding: 1rem 2rem;
             display: grid;
-            grid-template-columns: auto 1fr auto;
+            grid-template-columns: 1fr auto 1fr;
             align-items: center;
             gap: 2rem;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            border-bottom: 1px solid rgba(255, 215, 0, 0.1);
         }
 
-        .logo {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--primary-gold);
-            text-decoration: none;
-        }
-
-        .nav-links {
+        .nav-left,
+        .nav-right {
             display: flex;
-            gap: 2rem;
-            list-style: none;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .nav-left {
+            justify-content: flex-start;
+        }
+
+        .nav-right {
+            justify-content: flex-end;
+        }
+
+        .nav-center {
+            display: flex;
             justify-content: center;
         }
 
-        .nav-links a {
-            color: var(--text-primary);
+        .logo {
+            display: flex;
+            align-items: center;
+            font-weight: 800;
+            color: var(--primary-gold);
             text-decoration: none;
-            transition: color 0.3s;
-            font-weight: 500;
+            font-size: 1.5rem;
+            letter-spacing: 2px;
         }
 
-        .nav-links a:hover {
+        .logo img {
+            height: 38px;
+            width: auto;
+        }
+
+        .nav-link {
+            color: var(--text-primary);
+            text-decoration: none;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.85rem;
+            transition: color 0.2s ease;
+        }
+
+        .nav-link:hover {
             color: var(--primary-gold);
+        }
+
+        .btn-gold {
+            background: var(--primary-gold);
+            color: var(--primary-black);
+            border: 2px solid var(--primary-gold);
+            padding: 0.5rem 1.5rem;
+            border-radius: 25px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+        }
+
+        .btn-gold:hover {
+            background: transparent;
+            color: var(--primary-gold);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(255, 215, 0, 0.3);
+        }
+
+        .cart-toggle {
+            background: none;
+            border: 2px solid var(--primary-gold);
+            color: var(--primary-gold);
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            position: relative;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+        }
+
+        .cart-toggle:hover {
+            background: var(--primary-gold);
+            color: var(--primary-black);
+        }
+
+        .cart-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #ff4444;
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 700;
+        }
+
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.5rem;
+        }
+
+        .hamburger span {
+            width: 25px;
+            height: 3px;
+            background: var(--primary-gold);
+            transition: all 0.3s ease;
+            border-radius: 2px;
+        }
+
+        .main {
+            padding: 120px 0 0;
         }
 
         .container {
@@ -101,7 +221,8 @@
             color: #fff;
         }
 
-        p, li {
+        p,
+        li {
             color: rgba(255, 255, 255, 0.85);
             margin-bottom: 1rem;
         }
@@ -167,22 +288,40 @@
 
         @media (max-width: 768px) {
             .nav {
-                grid-template-columns: 1fr;
+                grid-template-columns: 1fr auto;
                 gap: 1rem;
-                text-align: center;
             }
 
-            .nav-links {
-                flex-direction: column;
-                gap: 0.5rem;
+            .nav-left {
+                display: none;
             }
 
-            h1 {
-                font-size: 2rem;
+            .nav-right {
+                gap: 0.75rem;
             }
 
-            h2 {
-                font-size: 1.5rem;
+            .btn-gold,
+            .nav-link {
+                display: none;
+            }
+
+            .hamburger {
+                display: flex;
+            }
+
+            .cart-toggle {
+                font-size: 0.7rem;
+                padding: 0.35rem 0.75rem;
+            }
+
+            .cart-count {
+                width: 16px;
+                height: 16px;
+                font-size: 9px;
+            }
+
+            .main {
+                padding-top: 100px;
             }
 
             .container {
@@ -193,163 +332,240 @@
 </head>
 
 <body>
-    <nav class="nav">
-        <a href="/" class="logo">SBS</a>
-        <ul class="nav-links">
-            <li><a href="/shop.html">Shop</a></li>
-            <li><a href="/sell.html">Sell</a></li>
-            <li><a href="/login.html">Login</a></li>
-        </ul>
-    </nav>
+    <!-- HEADER -->
+    <header class="header">
+        <nav class="nav">
+            <div class="nav-left">
+                <a href="/shop" class="nav-link">Shop</a>
+                <a href="/sell" class="nav-link">Sell</a>
+            </div>
+            <div class="nav-center">
+                <a href="/" class="logo" aria-label="SBS home">
+                    <img src="/SBS (Your Story).png" alt="SBS"
+                        onerror="this.style.display='none'; this.parentNode.textContent='SBS';">
+                </a>
+            </div>
+            <div class="nav-right">
+                <!-- Auth state dynamically updates this section -->
+                <a href="/login" class="nav-link">Sign In</a>
+                <a href="/register" class="btn-gold">Sign Up</a>
+                <button class="cart-toggle" type="button">
+                    Basket
+                    <span class="cart-count" id="cart-count">0</span>
+                </button>
+                <button class="hamburger" type="button" aria-label="Menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+        </nav>
+    </header>
 
-    <div class="container">
-        <h1>Privacy Policy</h1>
-        <p class="last-updated">Last Updated: January 2025</p>
-
-        <div class="highlight-box">
-            <p><strong>🔒 Your Privacy Matters</strong> - At SBS, we respect your privacy and are committed to protecting your personal information. This policy explains how we collect, use, and safeguard your data.</p>
+    <!-- Mobile Menu -->
+    <div class="mobile-menu-backdrop" aria-hidden="true"></div>
+    <div class="mobile-menu" aria-hidden="true">
+        <div class="mobile-menu-header">
+            <a href="/" class="logo">SBS</a>
         </div>
-
-        <h2>1. Information We Collect</h2>
-        
-        <h3>Account Information</h3>
-        <p>When you create an account with SBS, we collect:</p>
-        <ul>
-            <li><strong>Name:</strong> Your full name for personalization and order processing</li>
-            <li><strong>Social Media Handle:</strong> Your Instagram, TikTok, or other social media username for login</li>
-            <li><strong>Email Address:</strong> For account verification and important order updates (optional)</li>
-            <li><strong>Password:</strong> Securely hashed and stored using industry-standard encryption</li>
-        </ul>
-
-        <h3>Order & Delivery Information</h3>
-        <p>When you place an order, we collect:</p>
-        <ul>
-            <li><strong>Delivery Address:</strong> House number, street, city, county, and Eircode</li>
-            <li><strong>Phone Number:</strong> To contact you about delivery</li>
-            <li><strong>Delivery Notes:</strong> Any special instructions you provide</li>
-        </ul>
-
-        <h3>Selling Information</h3>
-        <p>When you list items for sale, we collect:</p>
-        <ul>
-            <li><strong>Product Details:</strong> Images, descriptions, prices, sizes, and condition</li>
-            <li><strong>Payment Preferences:</strong> Your preferred payment methods</li>
-        </ul>
-
-        <h3>Technical Information</h3>
-        <p>We automatically collect:</p>
-        <ul>
-            <li><strong>Usage Data:</strong> Pages visited, time spent, items viewed</li>
-            <li><strong>Device Information:</strong> Browser type, device type, IP address</li>
-            <li><strong>Cookies:</strong> For authentication and site functionality</li>
-        </ul>
-
-        <h2>2. How We Use Your Information</h2>
-        <p>We use your personal information for:</p>
-        <ul>
-            <li><strong>Order Fulfillment:</strong> Processing and delivering your purchases</li>
-            <li><strong>Account Management:</strong> Creating and maintaining your SBS account</li>
-            <li><strong>Communication:</strong> Sending order updates, delivery notifications, and customer support</li>
-            <li><strong>Marketplace Operations:</strong> Facilitating transactions between buyers and sellers</li>
-            <li><strong>Site Improvement:</strong> Analyzing usage patterns to enhance user experience</li>
-            <li><strong>Security:</strong> Detecting fraud, preventing abuse, and protecting our community</li>
-        </ul>
-
-        <div class="highlight-box">
-            <p><strong>✅ We Will NEVER:</strong></p>
-            <ul style="margin-bottom: 0;">
-                <li>Sell your personal information to third parties</li>
-                <li>Send you spam or unsolicited marketing emails</li>
-                <li>Share your data without your consent (except as legally required)</li>
-            </ul>
-        </div>
-
-        <h2>3. Data Storage & Security</h2>
-        <p>Your data is stored securely using:</p>
-        <ul>
-            <li><strong>Encryption:</strong> All passwords are hashed using bcrypt (industry-standard)</li>
-            <li><strong>Cloudflare Infrastructure:</strong> Enterprise-grade security and DDoS protection</li>
-            <li><strong>Access Controls:</strong> Only authorized administrators can access your data</li>
-            <li><strong>Regular Backups:</strong> Your information is backed up to prevent data loss</li>
-        </ul>
-
-        <h2>4. Data Sharing & Third Parties</h2>
-        <p>We only share your information with:</p>
-        <ul>
-            <li><strong>Service Providers:</strong> Cloudflare (hosting), Resend (email delivery) - only to provide services</li>
-            <li><strong>Other Users:</strong> Sellers see buyer delivery information only for orders they fulfill</li>
-            <li><strong>Legal Requirements:</strong> When required by law or to protect our rights</li>
-        </ul>
-        <p><strong>We do NOT:</strong> Sell, rent, or trade your personal information to marketers or advertisers.</p>
-
-        <h2>5. Your Rights</h2>
-        <p>You have the right to:</p>
-        <ul>
-            <li><strong>Access Your Data:</strong> Request a copy of all personal information we hold</li>
-            <li><strong>Correct Your Data:</strong> Update inaccurate or incomplete information</li>
-            <li><strong>Delete Your Account:</strong> Permanently remove your account and associated data</li>
-            <li><strong>Opt-Out:</strong> Unsubscribe from promotional emails (order updates will still be sent)</li>
-            <li><strong>Data Portability:</strong> Export your data in a machine-readable format</li>
-        </ul>
-        <p>To exercise these rights, contact us at <a href="mailto:sbsofficial808@gmail.com">sbsofficial808@gmail.com</a></p>
-
-        <h2>6. Cookies & Tracking</h2>
-        <p>We use cookies for:</p>
-        <ul>
-            <li><strong>Authentication:</strong> Keeping you logged in</li>
-            <li><strong>Shopping Cart:</strong> Remembering items in your basket</li>
-            <li><strong>Analytics:</strong> Understanding how users interact with our site (no personal data collected)</li>
-        </ul>
-        <p>You can disable cookies in your browser settings, but some features may not work properly.</p>
-
-        <h2>7. Data Retention</h2>
-        <p>We retain your information for:</p>
-        <ul>
-            <li><strong>Active Accounts:</strong> As long as your account is active</li>
-            <li><strong>Order History:</strong> 7 years (for accounting and legal compliance)</li>
-            <li><strong>Deleted Accounts:</strong> 90 days (to allow account recovery), then permanently deleted</li>
-        </ul>
-
-        <h2>8. Children's Privacy</h2>
-        <p>SBS is intended for users aged 16 and older. We do not knowingly collect information from children under 16. If you believe we have inadvertently collected such information, please contact us immediately.</p>
-
-        <h2>9. Changes to This Policy</h2>
-        <p>We may update this privacy policy from time to time. We will notify you of significant changes by:</p>
-        <ul>
-            <li>Posting a notice on our website</li>
-            <li>Sending an email to registered users (if applicable)</li>
-            <li>Updating the "Last Updated" date at the top of this page</li>
-        </ul>
-
-        <h2>10. Contact Us</h2>
-        <div class="contact-info">
-            <p><strong>Questions or concerns about your privacy?</strong></p>
-            <p style="margin-top: 1rem;">
-                📧 Email: <a href="mailto:sbsofficial808@gmail.com">sbsofficial808@gmail.com</a><br>
-                📱 WhatsApp: <a href="https://wa.me/353833258410">+353 83 325 8410</a><br>
-                📍 Instagram: <a href="https://instagram.com/sbs.officiall" target="_blank">@sbs.officiall</a>
-            </p>
-            <p style="margin-top: 1rem; font-size: 0.9rem; color: var(--text-secondary);">
-                We aim to respond to all privacy inquiries within 48 hours.
-            </p>
-        </div>
-
-        <div class="highlight-box" style="margin-top: 3rem;">
-            <p><strong>🛡️ GDPR Compliance:</strong> SBS complies with the General Data Protection Regulation (GDPR) and Irish data protection laws. Your rights are protected under EU law.</p>
+        <div class="mobile-menu-items">
+            <a href="/shop" class="mobile-menu-item">🛍️ Shop</a>
+            <a href="/sell" class="mobile-menu-item">💰 Sell</a>
+            <a href="/login" class="mobile-menu-item">🔐 Sign In</a>
+            <a href="/register" class="mobile-menu-item">✨ Sign Up</a>
+            <a href="/sell" class="mobile-menu-item btn-style">Start Selling</a>
         </div>
     </div>
 
+    <main class="main">
+        <div class="container">
+            <h1>Privacy Policy</h1>
+            <p class="last-updated">Last Updated: January 2025</p>
+
+            <div class="highlight-box">
+                <p><strong>🔒 Your Privacy Matters</strong> - At SBS, we respect your privacy and are committed to
+                    protecting your personal information. This policy explains how we collect, use, and safeguard your
+                    data.
+                </p>
+            </div>
+
+            <h2>1. Information We Collect</h2>
+
+            <h3>Account Information</h3>
+            <p>When you create an account with SBS, we collect:</p>
+            <ul>
+                <li><strong>Name:</strong> Your full name for personalization and order processing</li>
+                <li><strong>Social Media Handle:</strong> Your Instagram, TikTok, or other social media username for
+                    login
+                </li>
+                <li><strong>Email Address:</strong> For account verification and important order updates (optional)</li>
+                <li><strong>Password:</strong> Securely hashed and stored using industry-standard encryption</li>
+            </ul>
+
+            <h3>Order & Delivery Information</h3>
+            <p>When you place an order, we collect:</p>
+            <ul>
+                <li><strong>Delivery Address:</strong> House number, street, city, county, and Eircode</li>
+                <li><strong>Phone Number:</strong> To contact you about delivery</li>
+                <li><strong>Delivery Notes:</strong> Any special instructions you provide</li>
+            </ul>
+
+            <h3>Selling Information</h3>
+            <p>When you list items for sale, we collect:</p>
+            <ul>
+                <li><strong>Product Details:</strong> Images, descriptions, prices, sizes, and condition</li>
+                <li><strong>Payment Preferences:</strong> Your preferred payment methods</li>
+            </ul>
+
+            <h3>Technical Information</h3>
+            <p>We automatically collect:</p>
+            <ul>
+                <li><strong>Usage Data:</strong> Pages visited, time spent, items viewed</li>
+                <li><strong>Device Information:</strong> Browser type, device type, IP address</li>
+                <li><strong>Cookies:</strong> For authentication and site functionality</li>
+            </ul>
+
+            <h2>2. How We Use Your Information</h2>
+            <p>We use your personal information for:</p>
+            <ul>
+                <li><strong>Order Fulfillment:</strong> Processing and delivering your purchases</li>
+                <li><strong>Account Management:</strong> Creating and maintaining your SBS account</li>
+                <li><strong>Communication:</strong> Sending order updates, delivery notifications, and customer support
+                </li>
+                <li><strong>Marketplace Operations:</strong> Facilitating transactions between buyers and sellers</li>
+                <li><strong>Site Improvement:</strong> Analyzing usage patterns to enhance user experience</li>
+                <li><strong>Security:</strong> Detecting fraud, preventing abuse, and protecting our community</li>
+            </ul>
+
+            <div class="highlight-box">
+                <p><strong>✅ We Will NEVER:</strong></p>
+                <ul style="margin-bottom: 0;">
+                    <li>Sell your personal information to third parties</li>
+                    <li>Send you spam or unsolicited marketing emails</li>
+                    <li>Share your data without your consent (except as legally required)</li>
+                </ul>
+            </div>
+
+            <h2>3. Data Storage & Security</h2>
+            <p>Your data is stored securely using:</p>
+            <ul>
+                <li><strong>Encryption:</strong> All passwords are hashed using bcrypt (industry-standard)</li>
+                <li><strong>Cloudflare Infrastructure:</strong> Enterprise-grade security and DDoS protection</li>
+                <li><strong>Access Controls:</strong> Only authorized administrators can access your data</li>
+                <li><strong>Regular Backups:</strong> Your information is backed up to prevent data loss</li>
+            </ul>
+
+            <h2>4. Data Sharing & Third Parties</h2>
+            <p>We only share your information with:</p>
+            <ul>
+                <li><strong>Service Providers:</strong> Cloudflare (hosting), Resend (email delivery) - only to provide
+                    services</li>
+                <li><strong>Other Users:</strong> Sellers see buyer delivery information only for orders they fulfill
+                </li>
+                <li><strong>Legal Requirements:</strong> When required by law or to protect our rights</li>
+            </ul>
+            <p><strong>We do NOT:</strong> Sell, rent, or trade your personal information to marketers or advertisers.
+            </p>
+
+            <h2>5. Your Rights</h2>
+            <p>You have the right to:</p>
+            <ul>
+                <li><strong>Access Your Data:</strong> Request a copy of all personal information we hold</li>
+                <li><strong>Correct Your Data:</strong> Update inaccurate or incomplete information</li>
+                <li><strong>Delete Your Account:</strong> Permanently remove your account and associated data</li>
+                <li><strong>Opt-Out:</strong> Unsubscribe from promotional emails (order updates will still be sent)
+                </li>
+                <li><strong>Data Portability:</strong> Export your data in a machine-readable format</li>
+            </ul>
+            <p>To exercise these rights, contact us at <a
+                    href="mailto:sbsofficial808@gmail.com">sbsofficial808@gmail.com</a></p>
+
+            <h2>6. Cookies & Tracking</h2>
+            <p>We use cookies for:</p>
+            <ul>
+                <li><strong>Authentication:</strong> Keeping you logged in</li>
+                <li><strong>Shopping Cart:</strong> Remembering items in your basket</li>
+                <li><strong>Analytics:</strong> Understanding how users interact with our site (no personal data
+                    collected)
+                </li>
+            </ul>
+            <p>You can disable cookies in your browser settings, but some features may not work properly.</p>
+
+            <h2>7. Data Retention</h2>
+            <p>We retain your information for:</p>
+            <ul>
+                <li><strong>Active Accounts:</strong> As long as your account is active</li>
+                <li><strong>Order History:</strong> 7 years (for accounting and legal compliance)</li>
+                <li><strong>Deleted Accounts:</strong> 90 days (to allow account recovery), then permanently deleted
+                </li>
+            </ul>
+
+            <h2>8. Children's Privacy</h2>
+            <p>SBS is intended for users aged 16 and older. We do not knowingly collect information from children under
+                16.
+                If you believe we have inadvertently collected such information, please contact us immediately.</p>
+
+            <h2>9. Changes to This Policy</h2>
+            <p>We may update this privacy policy from time to time. We will notify you of significant changes by:</p>
+            <ul>
+                <li>Posting a notice on our website</li>
+                <li>Sending an email to registered users (if applicable)</li>
+                <li>Updating the "Last Updated" date at the top of this page</li>
+            </ul>
+
+            <h2>10. Contact Us</h2>
+            <div class="contact-info">
+                <p><strong>Questions or concerns about your privacy?</strong></p>
+                <p style="margin-top: 1rem;">
+                    📧 Email: <a href="mailto:sbsofficial808@gmail.com">sbsofficial808@gmail.com</a><br>
+                    📱 WhatsApp: <a href="https://wa.me/353833258410">+353 83 325 8410</a><br>
+                    📍 Instagram: <a href="https://instagram.com/sbs.officiall" target="_blank">@sbs.officiall</a>
+                </p>
+                <p style="margin-top: 1rem; font-size: 0.9rem; color: var(--text-secondary);">
+                    We aim to respond to all privacy inquiries within 48 hours.
+                </p>
+            </div>
+
+            <div class="highlight-box" style="margin-top: 3rem;">
+                <p><strong>🛡️ GDPR Compliance:</strong> SBS complies with the General Data Protection Regulation (GDPR)
+                    and
+                    Irish data protection laws. Your rights are protected under EU law.</p>
+            </div>
+        </div>
+    </main>
+
     <footer>
-        <p>&copy; 2025 SBS - Dublin's Premier Streetwear. All rights reserved.</p>
+        <p>&copy; 2025 SBS · King of Pre-Owned Fashion. All rights reserved.</p>
         <p style="margin-top: 0.5rem;">
-            <a href="/privacy.html">Privacy Policy</a> • 
-            <a href="mailto:sbsofficial808@gmail.com">Contact</a> • 
-            <a href="/shop.html">Shop</a>
+            <a href="/privacy.html">Privacy Policy</a> •
+            <a href="mailto:sbsofficial808@gmail.com">Contact</a> •
+            <a href="/shop">Shop</a>
         </p>
     </footer>
 
     <script>
-        lucide.createIcons();
+        function renderIcons() {
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderIcons();
+
+            if (window.SBSCart && typeof window.SBSCart.updateAllCounters === 'function') {
+                window.SBSCart.updateAllCounters();
+            }
+
+            if (window.SBSAnalytics) {
+                try {
+                    const analytics = new window.SBSAnalytics();
+                    analytics.trackPageView('privacy-policy');
+                } catch (error) {
+                    console.warn('Analytics init failed on privacy page', error);
+                }
+            }
+        });
     </script>
 </body>
 
