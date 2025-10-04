@@ -540,6 +540,9 @@ export async function onRequest(context) {
 
         for (const event of events) {
           try {
+            // Log the event being processed
+            console.log(`Processing event:`, JSON.stringify(event).substring(0, 200));
+
             // Ensure all values are never undefined (use null instead)
             const eventType = event.type || 'unknown';
             const eventData = JSON.stringify(event.data || {});
@@ -548,6 +551,17 @@ export async function onRequest(context) {
             const eventIp = ip !== undefined ? ip : null;
             const eventUa = ua !== undefined ? ua : 'unknown';
             const eventPath = event.path !== undefined ? event.path : null;
+
+            // Log all values being inserted
+            console.log(`Inserting analytics event:`, {
+              eventType,
+              dataLength: eventData.length,
+              eventUserId,
+              eventSessionId,
+              eventIp,
+              eventUa,
+              eventPath
+            });
 
             await env.DB.prepare(
               `INSERT INTO analytics_events (event_type, event_data, user_id, session_id, ip_address, user_agent, path)
@@ -561,10 +575,22 @@ export async function onRequest(context) {
               eventUa,
               eventPath
             ).run();
+            
+            console.log(`✅ Successfully inserted event: ${eventType}`);
             successCount++;
           } catch (insertError) {
-            console.error(`Failed to insert event ${event.type}:`, insertError);
-            errors.push({ event: event.type, error: insertError.message });
+            console.error(`❌ Failed to insert event ${event.type}:`, {
+              error: insertError.message,
+              cause: insertError.cause,
+              stack: insertError.stack,
+              eventData: JSON.stringify(event).substring(0, 500)
+            });
+            errors.push({ 
+              event: event.type, 
+              error: insertError.message,
+              cause: insertError.cause?.toString(),
+              details: insertError.toString()
+            });
           }
         }
 
@@ -579,13 +605,21 @@ export async function onRequest(context) {
           }, 200, headers);
         }
       } catch (error) {
-        console.error('Analytics tracking error:', error);
-        console.error('Error stack:', error.stack);
+        console.error('❌ Analytics tracking critical error:', {
+          message: error.message,
+          name: error.name,
+          cause: error.cause,
+          stack: error.stack
+        });
+        
         return json({ 
           success: false, 
           error: "Failed to track analytics", 
           details: error.message,
-          stack: error.stack?.split('\n').slice(0, 3).join('\n')
+          errorType: error.name,
+          cause: error.cause?.toString(),
+          stack: error.stack?.split('\n').slice(0, 5).join('\n'),
+          timestamp: new Date().toISOString()
         }, 500, headers);
       }
     }

@@ -327,8 +327,27 @@ class SBSAnalytics {
             });
 
             if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                throw new Error(`HTTP ${response.status}: ${errorData.error || 'Unknown error'}`);
+                let errorData = {};
+                let errorText = '';
+                try {
+                    errorText = await response.text();
+                    errorData = JSON.parse(errorText);
+                } catch (parseError) {
+                    errorData = { raw: errorText };
+                }
+                
+                // Log full error details for debugging
+                console.error('❌ Analytics API Error:', {
+                    status: response.status,
+                    statusText: response.statusText,
+                    error: errorData.error,
+                    details: errorData.details,
+                    hint: errorData.hint,
+                    stack: errorData.stack,
+                    raw: errorData.raw
+                });
+                
+                throw new Error(`HTTP ${response.status}: ${errorData.error || errorData.details || 'Unknown error'}`);
             }
 
             const data = await response.json();
@@ -340,9 +359,14 @@ class SBSAnalytics {
         } catch (error) {
             this.failureCount = (this.failureCount || 0) + 1;
             
-            // Only log error every 5th failure to avoid spam
-            if (this.failureCount % 5 === 1) {
-                console.warn(`⚠️ Analytics flush failed (${this.failureCount} times):`, error.message);
+            // Log full error details on first failure and every 5th failure
+            if (this.failureCount === 1 || this.failureCount % 5 === 0) {
+                console.error(`❌ Analytics flush failed (attempt ${this.failureCount}):`, {
+                    message: error.message,
+                    stack: error.stack,
+                    endpoint: this.endpoint,
+                    queueSize: this.queue.length
+                });
             }
 
             // Re-add to queue on failure (but limit to prevent infinite growth)
