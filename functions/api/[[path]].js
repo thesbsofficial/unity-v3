@@ -587,7 +587,7 @@ export async function onRequest(context) {
               <li><a href="/admin/requests/" target="_blank">📋 Requests</a></li>
               <li><a href="/admin/customers/" target="_blank">👥 Customers</a></li>
               <li><a href="/admin/data/" target="_blank">💾 Data</a></li>
-              <li><a href="/admin/logs/" target="_blank">� Logs & Analytics</a></li>
+              <li><a href="/admin/analytics.html" target="_blank">📊 Logs & Analytics</a></li>
               <li><a href="/admin/security/" target="_blank">🔒 Security</a></li>
               <li><a href="/admin/audit/" target="_blank">📜 Audit</a></li>
             </ul>
@@ -620,11 +620,135 @@ export async function onRequest(context) {
         );
       }
 
+      // Admin Analytics Dashboard - Comprehensive metrics
+      if (path === "/api/admin/analytics-dashboard" && method === "GET") {
+        try {
+          // 1. User Metrics
+          const totalUsers = await env.DB.prepare("SELECT COUNT(*) as count FROM users").first();
+          const activeUsers = await env.DB.prepare("SELECT COUNT(*) as count FROM users WHERE is_active = 1").first();
+          const newUsersToday = await env.DB.prepare(
+            "SELECT COUNT(*) as count FROM users WHERE DATE(created_at) = DATE('now')"
+          ).first();
+
+          // 2. Product Metrics
+          const totalProducts = await env.DB.prepare("SELECT COUNT(*) as count FROM products").first();
+          const activeProducts = await env.DB.prepare(
+            "SELECT COUNT(*) as count FROM products WHERE status = 'active'"
+          ).first();
+          const soldProducts = await env.DB.prepare(
+            "SELECT COUNT(*) as count FROM products WHERE status = 'sold'"
+          ).first();
+          
+          // Top products by views
+          const topProducts = await env.DB.prepare(
+            "SELECT id, brand, category, size, views_count, price FROM products ORDER BY views_count DESC LIMIT 5"
+          ).all();
+
+          // 3. Order Metrics
+          const totalOrders = await env.DB.prepare("SELECT COUNT(*) as count FROM orders").first();
+          const pendingOrders = await env.DB.prepare(
+            "SELECT COUNT(*) as count FROM orders WHERE status = 'pending'"
+          ).first();
+          const completedOrders = await env.DB.prepare(
+            "SELECT COUNT(*) as count FROM orders WHERE status = 'completed'"
+          ).first();
+          const totalRevenue = await env.DB.prepare(
+            "SELECT COALESCE(SUM(total_amount), 0) as total FROM orders WHERE status = 'completed'"
+          ).first();
+
+          // Recent orders
+          const recentOrders = await env.DB.prepare(
+            "SELECT order_number, total_amount, status, created_at FROM orders ORDER BY created_at DESC LIMIT 10"
+          ).all();
+
+          // 4. Sell Cases Metrics
+          const totalSellCases = await env.DB.prepare("SELECT COUNT(*) as count FROM sell_cases").first();
+          const pendingSellCases = await env.DB.prepare(
+            "SELECT COUNT(*) as count FROM sell_cases WHERE status = 'pending'"
+          ).first();
+
+          // 5. Analytics Events (if table exists)
+          let analyticsEvents = { results: [] };
+          let eventCounts = {};
+          try {
+            analyticsEvents = await env.DB.prepare(
+              "SELECT event_type, COUNT(*) as count FROM analytics_events GROUP BY event_type ORDER BY count DESC LIMIT 10"
+            ).all();
+            
+            analyticsEvents.results.forEach(row => {
+              eventCounts[row.event_type] = row.count;
+            });
+          } catch (e) {
+            console.log('Analytics events table not yet available:', e.message);
+          }
+
+          // 6. Category Performance
+          const categoryPerformance = await env.DB.prepare(`
+            SELECT 
+              category,
+              COUNT(*) as total,
+              SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) as active,
+              SUM(CASE WHEN status = 'sold' THEN 1 ELSE 0 END) as sold,
+              COALESCE(SUM(views_count), 0) as total_views
+            FROM products
+            GROUP BY category
+            ORDER BY total DESC
+          `).all();
+
+          return json({
+            success: true,
+            dashboard: {
+              users: {
+                total: totalUsers.count,
+                active: activeUsers.count,
+                new_today: newUsersToday.count
+              },
+              products: {
+                total: totalProducts.count,
+                active: activeProducts.count,
+                sold: soldProducts.count,
+                top_products: topProducts.results || []
+              },
+              orders: {
+                total: totalOrders.count,
+                pending: pendingOrders.count,
+                completed: completedOrders.count,
+                revenue: totalRevenue.total || 0,
+                recent: recentOrders.results || []
+              },
+              sell_cases: {
+                total: totalSellCases.count,
+                pending: pendingSellCases.count
+              },
+              events: eventCounts,
+              categories: categoryPerformance.results || []
+            },
+            timestamp: new Date().toISOString()
+          }, 200, headers);
+        } catch (error) {
+          console.error('Dashboard analytics error:', error);
+          return json({ 
+            success: false, 
+            error: "Failed to load dashboard analytics", 
+            details: error.message 
+          }, 500, headers);
+        }
+      }
+
       if (path === "/api/admin/analytics-events" && method === "GET") {
-        const { results } = await env.DB.prepare(
-          "SELECT id, event_type, path, user_id, timestamp, event_data FROM analytics_events ORDER BY timestamp DESC LIMIT 100"
-        ).all();
-        return json({ success: true, events: results || [] }, 200, headers);
+        try {
+          const { results } = await env.DB.prepare(
+            "SELECT id, event_type, path, user_id, timestamp, event_data FROM analytics_events ORDER BY timestamp DESC LIMIT 100"
+          ).all();
+          return json({ success: true, events: results || [] }, 200, headers);
+        } catch (error) {
+          // Table might not exist yet
+          return json({ 
+            success: true, 
+            events: [],
+            message: "Analytics events table not yet created. Events will appear after first deployment with schema."
+          }, 200, headers);
+        }
       }
 
       // Admin Health Check - comprehensive configuration verification
