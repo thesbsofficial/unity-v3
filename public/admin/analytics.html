@@ -342,14 +342,14 @@
     <div id="customers-section" class="content-section">
         <div class="metrics-grid" id="customer-metrics"></div>
 
-        <div class="data-table">
-            <div class="table-header">👑 Top Customers</div>
-            <div id="top-customers"></div>
-        </div>
-
-        <div class="data-table">
-            <div class="table-header">📍 Locations</div>
-            <div id="customer-locations"></div>
+        <div class="data-table" style="margin-top: 20px;">
+            <div class="table-header">� Registered Users</div>
+            <div id="registered-users">
+                <div style="text-align: center; padding: 40px; color: #888;">
+                    <div class="spinner"></div>
+                    <div>Loading users...</div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -649,43 +649,118 @@
         }
 
         // RENDER CUSTOMERS
-        function renderCustomers(data) {
-            // Summary metrics
-            const metricsHtml = `
-                <div class="metric-card">
-                    <div class="metric-icon">👥</div>
-                    <div class="metric-label">Active Customers</div>
-                    <div class="metric-value">${data.summary.total_active}</div>
-                </div>
-                ${data.customer_types.map(t => `
+        async function renderCustomers(data) {
+            // Fetch user data from new endpoint
+            try {
+                const usersResponse = await fetch('/api/admin/users');
+                const usersData = await usersResponse.json();
+
+                if (usersData.success && usersData.users) {
+                    // Summary metrics
+                    const metricsHtml = `
+                        <div class="metric-card">
+                            <div class="metric-icon">👥</div>
+                            <div class="metric-label">Total Users</div>
+                            <div class="metric-value">${usersData.total}</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-icon">✅</div>
+                            <div class="metric-label">Active</div>
+                            <div class="metric-value">${usersData.active}</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-icon">🟢</div>
+                            <div class="metric-label">Currently Logged In</div>
+                            <div class="metric-value">${usersData.logged_in}</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-icon">�</div>
+                            <div class="metric-label">Email Verified</div>
+                            <div class="metric-value">${usersData.verified}</div>
+                        </div>
+                    `;
+                    document.getElementById('customer-metrics').innerHTML = metricsHtml;
+
+                    // Registered users table
+                    const usersHtml = usersData.users.length > 0 ? `
+                        <div style="overflow-x: auto;">
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <thead style="background: rgba(255, 215, 0, 0.1); border-bottom: 2px solid var(--border);">
+                                    <tr>
+                                        <th style="padding: 12px; text-align: left; font-size: 13px;">Status</th>
+                                        <th style="padding: 12px; text-align: left; font-size: 13px;">Social Handle</th>
+                                        <th style="padding: 12px; text-align: left; font-size: 13px;">Full Name</th>
+                                        <th style="padding: 12px; text-align: left; font-size: 13px;">Email</th>
+                                        <th style="padding: 12px; text-align: left; font-size: 13px;">Role</th>
+                                        <th style="padding: 12px; text-align: left; font-size: 13px;">Registered</th>
+                                        <th style="padding: 12px; text-align: left; font-size: 13px;">Last Login</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${usersData.users.map(user => {
+                                        const statusIcon = user.is_logged_in ? '🟢' : user.is_active ? '⚪' : '🔴';
+                                        const statusText = user.is_logged_in ? 'Online' : user.is_active ? 'Offline' : 'Inactive';
+                                        const emailBadge = user.email_verified === 1 ? 
+                                            '<span class="badge badge-success" style="font-size: 10px;">✓ Verified</span>' : 
+                                            '<span class="badge badge-warning" style="font-size: 10px;">⚠ Unverified</span>';
+                                        const roleBadge = user.role === 'admin' ? 
+                                            '<span class="badge badge-success">👑 Admin</span>' : 
+                                            '<span class="badge" style="background: rgba(100, 100, 100, 0.2);">User</span>';
+                                        
+                                        return `
+                                            <tr style="border-bottom: 1px solid var(--border);">
+                                                <td style="padding: 12px;">
+                                                    <div style="display: flex; align-items: center; gap: 6px;">
+                                                        <span style="font-size: 16px;">${statusIcon}</span>
+                                                        <span style="font-size: 11px; color: var(--text-secondary);">${statusText}</span>
+                                                    </div>
+                                                    ${user.active_sessions > 0 ? `<div style="font-size: 10px; color: var(--success); margin-top: 2px;">${user.active_sessions} session(s)</div>` : ''}
+                                                </td>
+                                                <td style="padding: 12px;">
+                                                    <strong>@${user.social_handle}</strong>
+                                                    ${user.is_allowlisted === 1 ? '<span style="font-size: 14px; margin-left: 4px;">⭐</span>' : ''}
+                                                </td>
+                                                <td style="padding: 12px;">${user.full_name}</td>
+                                                <td style="padding: 12px;">
+                                                    ${user.email || '<span style="color: #888;">No email</span>'}
+                                                    ${user.email ? `<br>${emailBadge}` : ''}
+                                                </td>
+                                                <td style="padding: 12px;">${roleBadge}</td>
+                                                <td style="padding: 12px; font-size: 12px; color: var(--text-secondary);">
+                                                    ${new Date(user.created_at).toLocaleDateString()}
+                                                    <div style="font-size: 11px; opacity: 0.7;">${new Date(user.created_at).toLocaleTimeString()}</div>
+                                                </td>
+                                                <td style="padding: 12px; font-size: 12px; color: var(--text-secondary);">
+                                                    ${user.last_login ? new Date(user.last_login).toLocaleDateString() : 'Never'}
+                                                    ${user.last_login ? `<div style="font-size: 11px; opacity: 0.7;">${new Date(user.last_login).toLocaleTimeString()}</div>` : ''}
+                                                </td>
+                                            </tr>
+                                        `;
+                                    }).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    ` : '<div class="empty-state"><p>No registered users yet</p></div>';
+                    
+                    document.getElementById('registered-users').innerHTML = usersHtml;
+                } else {
+                    throw new Error(usersData.error || 'Failed to load users');
+                }
+            } catch (error) {
+                console.error('Error loading users:', error);
+                document.getElementById('customer-metrics').innerHTML = `
                     <div class="metric-card">
-                        <div class="metric-icon">${t.type === 'new' ? '🆕' : '🔄'}</div>
-                        <div class="metric-label">${t.type.toUpperCase()}</div>
-                        <div class="metric-value">${t.count}</div>
+                        <div class="metric-icon">⚠️</div>
+                        <div class="metric-label">Error</div>
+                        <div class="metric-value" style="font-size: 14px;">${error.message}</div>
                     </div>
-                `).join('')}
-            `;
-            document.getElementById('customer-metrics').innerHTML = metricsHtml;
-
-            // Top customers
-            const topHtml = data.summary.top_customers.length > 0 ? data.summary.top_customers.map(c => `
-                <div class="table-row">
-                    <div><strong>${c.email}</strong></div>
-                    <div>${c.city || 'Unknown'}</div>
-                    <div><span class="badge badge-success">${c.order_count} orders</span></div>
-                    <div>${c.preferred_contact}</div>
-                </div>
-            `).join('') : '<div class="empty-state"><p>No customers yet</p></div>';
-            document.getElementById('top-customers').innerHTML = topHtml;
-
-            // Locations
-            const locationHtml = data.locations.length > 0 ? data.locations.map(l => `
-                <div class="table-row">
-                    <div><strong>📍 ${l.city}</strong></div>
-                    <div colspan="3">${l.customer_count} customers</div>
-                </div>
-            `).join('') : '<div class="empty-state"><p>No location data yet</p></div>';
-            document.getElementById('customer-locations').innerHTML = locationHtml;
+                `;
+                document.getElementById('registered-users').innerHTML = `
+                    <div class="empty-state">
+                        <p style="color: var(--danger);">Failed to load user data</p>
+                    </div>
+                `;
+            }
         }
 
         // RENDER EVENTS

@@ -751,6 +751,66 @@ export async function onRequest(context) {
         }
       }
 
+      // Admin Users Management - Get all registered users with full details
+      if (path === "/api/admin/users" && method === "GET") {
+        try {
+          const { results } = await env.DB.prepare(`
+            SELECT 
+              id,
+              social_handle,
+              email,
+              email_verified,
+              first_name,
+              last_name,
+              role,
+              is_active,
+              is_allowlisted,
+              created_at,
+              last_login
+            FROM users
+            ORDER BY created_at DESC
+          `).all();
+
+          // Get active session count for each user
+          const activeSessions = await env.DB.prepare(`
+            SELECT user_id, COUNT(*) as session_count
+            FROM sessions
+            WHERE expires_at > datetime('now')
+            GROUP BY user_id
+          `).all();
+
+          const sessionMap = {};
+          activeSessions.results?.forEach(s => {
+            sessionMap[s.user_id] = s.session_count;
+          });
+
+          // Enhance user data with session info
+          const users = results.map(user => ({
+            ...user,
+            active_sessions: sessionMap[user.id] || 0,
+            is_logged_in: (sessionMap[user.id] || 0) > 0,
+            full_name: [user.first_name, user.last_name].filter(Boolean).join(' ') || 'N/A'
+          }));
+
+          return json({
+            success: true,
+            users,
+            total: users.length,
+            active: users.filter(u => u.is_active === 1).length,
+            logged_in: users.filter(u => u.is_logged_in).length,
+            verified: users.filter(u => u.email_verified === 1).length,
+            timestamp: new Date().toISOString()
+          }, 200, headers);
+        } catch (error) {
+          console.error('Users management error:', error);
+          return json({
+            success: false,
+            error: "Failed to fetch users",
+            details: error.message
+          }, 500, headers);
+        }
+      }
+
       // Admin Health Check - comprehensive configuration verification
       if (path === "/api/admin/health-check" && method === "GET") {
         const checks = [];
