@@ -217,6 +217,29 @@ class SBSAnalytics {
     }
 
     /**
+     * Clean object to remove undefined values (D1 doesn't support undefined)
+     */
+    cleanObject(obj) {
+        if (typeof obj !== 'object' || obj === null) {
+            return obj;
+        }
+
+        const cleaned = {};
+        for (const [key, value] of Object.entries(obj)) {
+            // Skip undefined values entirely
+            if (value !== undefined) {
+                // Recursively clean nested objects
+                if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+                    cleaned[key] = this.cleanObject(value);
+                } else {
+                    cleaned[key] = value;
+                }
+            }
+        }
+        return cleaned;
+    }
+
+    /**
      * Determine event category
      */
     getEventCategory(eventType) {
@@ -261,18 +284,24 @@ class SBSAnalytics {
         this.log('📤 Flushing events:', events.length);
 
         try {
+            // Clean events to remove undefined values (D1 doesn't support undefined)
+            const cleanEvents = events.map(e => {
+                const cleaned = {
+                    type: e.event_type || 'unknown',
+                    data: this.cleanObject(e),
+                    path: e.page_url || window.location.pathname || '/'
+                };
+                return cleaned;
+            });
+
             const response = await fetch(this.endpoint, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({ 
-                    events: events.map(e => ({
-                        type: e.event_type,
-                        data: e,
-                        path: e.page_url || window.location.pathname
-                    })),
-                    sessionId: this.sessionId
+                    events: cleanEvents,
+                    sessionId: this.sessionId || null
                 }),
                 keepalive: true // Ensure delivery even on page unload
             });
