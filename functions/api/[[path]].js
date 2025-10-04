@@ -540,17 +540,26 @@ export async function onRequest(context) {
 
         for (const event of events) {
           try {
+            // Ensure all values are never undefined (use null instead)
+            const eventType = event.type || 'unknown';
+            const eventData = JSON.stringify(event.data || {});
+            const eventUserId = userId !== undefined ? userId : null;
+            const eventSessionId = sessionId !== undefined ? sessionId : null;
+            const eventIp = ip !== undefined ? ip : null;
+            const eventUa = ua !== undefined ? ua : 'unknown';
+            const eventPath = event.path !== undefined ? event.path : null;
+
             await env.DB.prepare(
               `INSERT INTO analytics_events (event_type, event_data, user_id, session_id, ip_address, user_agent, path)
                VALUES (?, ?, ?, ?, ?, ?, ?)`
             ).bind(
-              event.type || 'unknown',
-              JSON.stringify(event.data || {}),
-              userId,
-              sessionId,
-              ip,
-              ua,
-              event.path || null
+              eventType,
+              eventData,
+              eventUserId,
+              eventSessionId,
+              eventIp,
+              eventUa,
+              eventPath
             ).run();
             successCount++;
           } catch (insertError) {
