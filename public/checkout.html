@@ -259,6 +259,46 @@
             font-size: 18px;
         }
 
+        /* Delivery Zone Boxes */
+        .zone-box {
+            background: var(--bg-dark);
+            border: 2px solid var(--border-subtle);
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .zone-box:hover {
+            border-color: var(--primary-gold);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 215, 0, 0.2);
+        }
+
+        .zone-box.selected {
+            background: var(--primary-gold);
+            border-color: var(--primary-gold);
+            color: var(--primary-black);
+        }
+
+        .zone-box strong {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+
+        .zone-box small {
+            display: block;
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .zone-box.selected strong,
+        .zone-box.selected small {
+            color: var(--primary-black);
+        }
+
         .order-summary {
             background: var(--bg-dark);
             border: 1px solid var(--border-subtle);
@@ -427,8 +467,8 @@
                 <h2>Delivery Information</h2>
                 
                 <div class="info-box">
-                    <p><strong>Payment on Delivery</strong><br>
-                    You can pay by cash or card when your order arrives. No upfront payment required!</p>
+                    <p><strong>🚚 Order by 6PM → Arrives before midnight</strong><br>
+                    Payment on delivery (cash or card). No upfront payment required!</p>
                 </div>
 
                 <form id="checkout-form">
@@ -438,8 +478,8 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Email Address <span class="required">*</span></label>
-                        <input type="email" name="email" required placeholder="john@example.com">
+                        <label>Email Address (Optional)</label>
+                        <input type="email" name="email" placeholder="john@example.com">
                     </div>
 
                     <div class="form-group">
@@ -460,18 +500,48 @@
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label>Eircode <span class="required">*</span></label>
-                            <input type="text" name="eircode" required placeholder="D02 XY45" style="text-transform: uppercase;" pattern="[A-Za-z0-9\s]*" minlength="7" maxlength="8">
+                            <label>City/Town <span class="required">*</span></label>
+                            <input type="text" name="city" id="city-input" required placeholder="Santry, Tallaght, etc.">
                         </div>
                         <div class="form-group">
-                            <label>City/Town <span class="required">*</span></label>
-                            <input type="text" name="city" required placeholder="Dublin">
+                            <label>County <span class="required">*</span></label>
+                            <input type="text" name="county" required placeholder="Dublin">
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label>County (Optional)</label>
-                        <input type="text" name="county" placeholder="Co. Dublin">
+                        <label>Eircode <span class="required">*</span></label>
+                        <input type="text" name="eircode" required placeholder="D02 XY45" style="text-transform: uppercase;" pattern="[A-Za-z0-9\s]*" minlength="7" maxlength="8">
+                    </div>
+
+                    <!-- Delivery Method Selection -->
+                    <div class="form-group">
+                        <label>Delivery Method <span class="required">*</span></label>
+                        <div id="delivery-zones" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-top: 10px;">
+                            <div class="zone-box" data-zone="north-dublin" data-price="15">
+                                <strong>North Dublin - €15</strong>
+                                <small>Santry, Swords, Malahide, Howth</small>
+                            </div>
+                            <div class="zone-box" data-zone="south-dublin" data-price="20">
+                                <strong>South Dublin - €20</strong>
+                                <small>Tallaght, Rathfarnham, Dundrum, Dun Laoghaire</small>
+                            </div>
+                            <div class="zone-box" data-zone="dublin-county" data-price="25">
+                                <strong>Dublin County - €25</strong>
+                                <small>Bray, Ashbourne, Dunshaughlin, Celbridge, Maynooth, Clane</small>
+                            </div>
+                            <div class="zone-box" data-zone="surrounding" data-price="35">
+                                <strong>Surrounding Counties - €35</strong>
+                                <small>Drogheda, Trim, Navan, Greystones, Naas, Newbridge</small>
+                            </div>
+                            <div class="zone-box" data-zone="postage" data-price="10">
+                                <strong>📦 National Post - €10</strong>
+                                <small>Tracked delivery (FREE over €100)</small>
+                            </div>
+                        </div>
+                        <input type="hidden" name="delivery_zone" id="delivery-zone-input" required>
+                        <input type="hidden" name="delivery_price" id="delivery-price-input">
+                        <div id="delivery-error" style="color: #ff4444; font-size: 12px; margin-top: 5px; display: none;">Please select a delivery method</div>
                     </div>
 
                     <div class="form-group">
@@ -502,11 +572,11 @@
                         </div>
                         <div class="summary-row">
                             <span>Delivery</span>
-                            <span style="color: #4caf50;">FREE</span>
+                            <span id="delivery-cost" style="color: var(--primary-gold);">€0.00</span>
                         </div>
-                        <div class="summary-row">
+                        <div class="summary-row" style="border-top: 2px solid var(--border-subtle); padding-top: 15px; margin-top: 10px; font-size: 20px; font-weight: 700;">
                             <span>Total</span>
-                            <span id="total">€0.00</span>
+                            <span id="total-amount" style="color: var(--primary-gold);">€0.00</span>
                         </div>
                     </div>
                 </div>
@@ -559,9 +629,55 @@
         lucide.createIcons();
         const analytics = new SBSAnalytics();
 
+        let deliveryPrice = 0;
+        let subtotal = 0;
+
         // Get cart
         function getCart() {
             return JSON.parse(localStorage.getItem('sbs-basket') || '[]');
+        }
+
+        // Delivery zone selection
+        document.querySelectorAll('.zone-box').forEach(box => {
+            box.addEventListener('click', function() {
+                // Remove previous selection
+                document.querySelectorAll('.zone-box').forEach(b => b.classList.remove('selected'));
+                
+                // Add selection
+                this.classList.add('selected');
+                
+                // Get values
+                const zone = this.dataset.zone;
+                const price = parseFloat(this.dataset.price);
+                
+                // Update hidden inputs
+                document.getElementById('delivery-zone-input').value = zone;
+                document.getElementById('delivery-price-input').value = price;
+                
+                // Hide error
+                document.getElementById('delivery-error').style.display = 'none';
+                
+                // Update delivery price
+                deliveryPrice = price;
+                
+                // Check for free postage
+                if (zone === 'postage' && subtotal >= 100) {
+                    deliveryPrice = 0;
+                    this.querySelector('strong').innerHTML = '📦 National Post - <span style="text-decoration: line-through;">€10</span> FREE';
+                } else if (zone === 'postage') {
+                    this.querySelector('strong').textContent = '📦 National Post - €10';
+                }
+                
+                // Update total
+                updateTotal();
+            });
+        });
+
+        // Update order total
+        function updateTotal() {
+            const total = subtotal + deliveryPrice;
+            document.getElementById('delivery-cost').textContent = deliveryPrice === 0 ? 'FREE' : `€${deliveryPrice.toFixed(2)}`;
+            document.getElementById('total-amount').textContent = `€${total.toFixed(2)}`;
         }
 
         // Load order items
@@ -577,8 +693,8 @@
                 return;
             }
 
-            // Calculate total
-            const total = cart.reduce((sum, item) => sum + (item.price || 0), 0);
+            // Calculate subtotal
+            subtotal = cart.reduce((sum, item) => sum + (item.price || 0), 0);
 
             // Render items
             orderItems.innerHTML = cart.map(item => `
@@ -596,19 +712,28 @@
             `).join('');
 
             // Update totals
-            document.getElementById('subtotal').textContent = `€${total.toFixed(2)}`;
-            document.getElementById('total').textContent = `€${total.toFixed(2)}`;
+            document.getElementById('subtotal').textContent = `€${subtotal.toFixed(2)}`;
+            document.getElementById('delivery-cost').textContent = '€0.00';
+            document.getElementById('total-amount').textContent = `€${subtotal.toFixed(2)}`;
 
             // Track checkout start
             analytics.track('checkout_start', {
                 item_count: cart.length,
-                total: total
+                total: subtotal
             });
         }
 
         // Handle form submission
         document.getElementById('checkout-form').addEventListener('submit', async (e) => {
             e.preventDefault();
+            
+            // Validate delivery zone selection
+            const deliveryZone = document.getElementById('delivery-zone-input').value;
+            if (!deliveryZone) {
+                document.getElementById('delivery-error').style.display = 'block';
+                document.getElementById('delivery-zones').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return;
+            }
             
             const submitBtn = document.getElementById('submit-btn');
             submitBtn.disabled = true;
