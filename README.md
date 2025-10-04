@@ -26,18 +26,21 @@ SBS Unity V3 is a complete e-commerce platform for buying and selling streetwear
 ## 🏗️ Architecture
 
 ### Frontend
+
 - **Pure HTML/CSS/JavaScript** - No framework overhead
 - **Modular Design** - Unified `sbs-core.js` system
 - **Helper System** - Context-aware tooltips (`helper.js`)
 - **Mobile-First** - Responsive with `clamp()` fluid typography
 
 ### Backend
+
 - **Cloudflare Workers** - Serverless API endpoints
 - **D1 Database** - SQLite at the edge
 - **Cloudflare Images** - Image optimization and CDN
 - **Pages Functions** - File-based routing in `/functions/api/`
 
 ### Database Schema
+
 ```sql
 users               -- Authentication + profiles
 products            -- Inventory with metadata
@@ -54,6 +57,7 @@ system_logs         -- Error logging
 ## 🚀 Quick Start
 
 ### Prerequisites
+
 - Node.js 18+
 - Cloudflare account
 - Wrangler CLI: `npm install -g wrangler`
@@ -78,6 +82,7 @@ npx wrangler pages deploy public --project-name=unity-v3 --branch=MAIN
 ### Environment Setup
 
 Required Cloudflare bindings in `wrangler.toml`:
+
 ```toml
 [[d1_databases]]
 binding = "DB"
@@ -150,6 +155,7 @@ docs/
 ## 🎨 Design System
 
 ### Colors
+
 ```css
 --primary-black: #000000    /* Backgrounds */
 --primary-gold: #ffd700     /* Accents, CTAs */
@@ -160,12 +166,14 @@ docs/
 ```
 
 ### Typography
+
 - **Font:** Inter (system fallback to SF Pro)
 - **Responsive Sizing:** `clamp()` for fluid scaling
 - **Mobile:** 14-16px base
 - **Desktop:** 16-18px base
 
 ### Z-Index Hierarchy
+
 ```
 10000 - Critical modals (checkout, helper)
 5000  - Cart modal
@@ -179,24 +187,28 @@ docs/
 ## 🔧 Key Components
 
 ### Shop System
+
 - Real-time product loading from Cloudflare Images
 - Smart cart with localStorage persistence
 - Multi-step checkout with delivery options
 - Order confirmation with WhatsApp integration
 
 ### Sell System
+
 - Eligibility accordion (Streetwear, Shoes, Tech, Jewellery)
 - Quick Builder - Multi-item message generator
 - Photo upload with metadata
 - WhatsApp/Instagram/Snapchat sharing
 
 ### Helper System
+
 - Context-aware tooltips (? buttons)
 - 15+ help topics covering all features
 - "Don't show again" persistence
 - Keyboard accessible (ESC to close)
 
 ### Authentication
+
 - Session-based with HttpOnly cookies
 - CSRF token protection
 - Role-based access (admin/customer)
@@ -207,6 +219,7 @@ docs/
 ## 🐛 Recent Fixes (Oct 3, 2025)
 
 ### ✅ Fixed Bugs
+
 1. **Cart Modal Z-Index** - Increased from 2000 to 5000 (now clickable)
 2. **Accordion JavaScript** - Added toggle functionality for eligibility sections
 3. **Lucide Icons** - Added CDN to all pages (unpkg.com)
@@ -215,6 +228,7 @@ docs/
 6. **UpdateQuantity** - Removed undefined function reference
 
 ### 📊 Performance
+
 - **Bundle Size:** 25KB (compressed)
 - **HTTP Requests:** 1 unified script
 - **Load Time:** < 1s on 3G
@@ -225,6 +239,7 @@ docs/
 ## 🔒 Security
 
 ### Implemented
+
 - ✅ Content Security Policy (CSP)
 - ✅ CSRF token validation
 - ✅ HttpOnly secure cookies
@@ -234,6 +249,7 @@ docs/
 - ✅ Secure password hashing (100k iterations)
 
 ### Environment Variables
+
 ```bash
 # Never commit these!
 CLOUDFLARE_API_TOKEN=your_token_here
@@ -248,11 +264,13 @@ See `.gitignore` for complete list of excluded secrets.
 ## 📱 Mobile Optimization
 
 ### Responsive Breakpoints
+
 - **Mobile:** 320px - 480px
 - **Tablet:** 481px - 768px
 - **Desktop:** 769px+
 
 ### Mobile-Specific Features
+
 - Hero text: `clamp(1.5rem, 10vw, 5rem)` (fluid scaling)
 - Image constraints: `max-height: 250-300px`
 - Touch-friendly buttons: `min-height: 44px`
@@ -263,6 +281,7 @@ See `.gitignore` for complete list of excluded secrets.
 ## 🚀 Deployment
 
 ### Production Deployment
+
 ```bash
 # Deploy to Cloudflare Pages
 npx wrangler pages deploy public --project-name=unity-v3 --branch=MAIN
@@ -272,11 +291,14 @@ wrangler deploy workers/sbs-products-api.js
 ```
 
 ### Continuous Deployment
+
 Cloudflare Pages automatically deploys on:
+
 - Push to `MAIN` branch (production)
 - Pull request preview deployments
 
 ### Environment Variables (Cloudflare Dashboard)
+
 1. Go to Workers & Pages > unity-v3 > Settings
 2. Add secrets:
    - `CLOUDFLARE_API_TOKEN`
@@ -288,11 +310,13 @@ Cloudflare Pages automatically deploys on:
 ## 📊 Analytics & Monitoring
 
 ### Built-in Analytics
+
 - Product views tracked in `analytics` table
 - Order tracking with timestamps
 - Error logging in `system_logs`
 
 ### Cloudflare Analytics
+
 - Page views, bandwidth, cache hit ratio
 - Real-time visitor data
 - Performance metrics
@@ -302,12 +326,14 @@ Cloudflare Pages automatically deploys on:
 ## 🤝 Contributing
 
 ### Development Workflow
+
 1. Create feature branch: `git checkout -b feature/your-feature`
 2. Make changes and test locally
 3. Commit with descriptive message: `git commit -m "FEAT: Add feature"`
 4. Push and create pull request
 
 ### Code Standards
+
 - Use modern ES6+ JavaScript
 - Comment complex logic
 - Follow existing naming conventions
@@ -328,6 +354,7 @@ Cloudflare Pages automatically deploys on:
 ## 🛠️ Tech Stack
 
 ### Core Technologies
+
 - **Frontend:** HTML5, CSS3, JavaScript (ES6+)
 - **Backend:** Cloudflare Workers, Pages Functions
 - **Database:** Cloudflare D1 (SQLite)
@@ -336,11 +363,13 @@ Cloudflare Pages automatically deploys on:
 - **CDN:** Cloudflare Global Network
 
 ### Libraries & Tools
+
 - **Lucide Icons** - Icon library (unpkg.com CDN)
 - **Wrangler CLI** - Cloudflare development tool
 - **Git** - Version control
 
 ### External APIs
+
 - **WhatsApp Business API** - Order notifications
 - **Resend** - Email notifications (optional)
 
@@ -349,6 +378,7 @@ Cloudflare Pages automatically deploys on:
 ## 🎯 Roadmap
 
 ### Phase 1: Core Features ✅
+
 - [x] Shop system with cart
 - [x] Sell submission form
 - [x] Authentication system
@@ -356,6 +386,7 @@ Cloudflare Pages automatically deploys on:
 - [x] Mobile optimization
 
 ### Phase 2: Admin Dashboard 🚧
+
 - [ ] Inventory management UI
 - [ ] Order processing dashboard
 - [ ] Sell request review system
@@ -363,6 +394,7 @@ Cloudflare Pages automatically deploys on:
 - [ ] Bulk upload tool
 
 ### Phase 3: Enhanced Features 📋
+
 - [ ] Email verification
 - [ ] Password reset flow
 - [ ] Order tracking
@@ -370,6 +402,7 @@ Cloudflare Pages automatically deploys on:
 - [ ] Reviews/ratings system
 
 ### Phase 4: Advanced 🔮
+
 - [ ] Push notifications
 - [ ] Progressive Web App (PWA)
 - [ ] Dark/light mode toggle
@@ -381,12 +414,15 @@ Cloudflare Pages automatically deploys on:
 ## 📞 Support
 
 ### Contact
+
 - **WhatsApp:** +353 87 123 4567
 - **Instagram:** [@sbs.dublin](https://instagram.com/thesbsofficial)
 - **Email:** hello@sbsdublin.com
 
 ### Issues
+
 Report bugs or request features:
+
 - GitHub Issues: [Create Issue](https://github.com/fredbademosi/sbs-unity-v3/issues)
 - Include browser, OS, and steps to reproduce
 
@@ -403,6 +439,7 @@ Report bugs or request features:
 Built with ❤️ in Dublin, Ireland
 
 Special thanks to:
+
 - Cloudflare for amazing developer platform
 - Lucide Icons for beautiful iconography
 - The open-source community

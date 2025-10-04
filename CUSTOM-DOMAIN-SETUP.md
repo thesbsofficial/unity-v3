@@ -11,7 +11,9 @@
 ## 📋 What Changed
 
 ### ✅ Redirects Added
+
 All pages.dev URLs now redirect to your custom domain:
+
 ```
 https://unity-v3.pages.dev/* → https://thesbsofficial.com/* (301)
 ```
@@ -24,12 +26,15 @@ https://unity-v3.pages.dev/* → https://thesbsofficial.com/* (301)
 ## 🔗 Your URLs
 
 ### ✅ USE THIS ONE
+
 **https://thesbsofficial.com**
+
 - Professional brand URL
 - Easy to remember
 - Use everywhere
 
 ### ⚠️ DON'T SHARE THESE
+
 - ~~https://unity-v3.pages.dev~~ (redirects automatically)
 - ~~https://9b83e573.unity-v3.pages.dev~~ (preview URLs)
 
@@ -38,9 +43,11 @@ https://unity-v3.pages.dev/* → https://thesbsofficial.com/* (301)
 ## 📱 Update Your Links
 
 ### Share This URL Everywhere:
+
 **https://thesbsofficial.com**
 
 Update these:
+
 - ✅ Instagram bio
 - ✅ Snapchat links
 - ✅ LinkTree

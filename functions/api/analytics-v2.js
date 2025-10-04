@@ -119,7 +119,7 @@ async function getOverviewAnalytics(db, startDate) {
 async function getProductAnalytics(db, startDate) {
     // Total products
     const total = await db.prepare('SELECT COUNT(*) as count FROM products').first();
-    
+
     // Active vs sold
     const statusBreakdown = await db.prepare(`
         SELECT 
@@ -266,7 +266,7 @@ async function getCustomerAnalytics(db, startDate) {
 async function getSellerAnalytics(db, startDate) {
     // TODO: Track sell form submissions in future
     // For now, return placeholder structure
-    
+
     return {
         summary: {
             message: 'Seller tracking coming soon',
@@ -287,31 +287,31 @@ async function getSellerAnalytics(db, startDate) {
 // ═══════════════════════════════════════════════════════════════
 function generateProductInsights(categories, hotProducts) {
     const insights = [];
-    
+
     if (categories.length > 0) {
         const topCategory = categories[0];
         insights.push(`${topCategory.category} is your best performing category with ${topCategory.sold} sales`);
     }
-    
+
     if (hotProducts.length > 0) {
         insights.push(`${hotProducts.length} products are getting high views - potential hot sellers`);
     }
-    
+
     return insights;
 }
 
 function generateCustomerInsights(topCustomers, locations) {
     const insights = [];
-    
+
     if (topCustomers.length > 0) {
         const vip = topCustomers[0];
         insights.push(`Top customer has placed ${vip.order_count} orders`);
     }
-    
+
     if (locations.length > 0) {
         const topLocation = locations[0];
         insights.push(`${topLocation.city} has the most customers (${topLocation.customer_count})`);
     }
-    
+
     return insights;
 }

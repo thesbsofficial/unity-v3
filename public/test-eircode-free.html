@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -214,6 +215,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <h1>🇮🇪 FREE Eircode Finder <span class="free-badge">100% FREE</span></h1>
@@ -258,7 +260,7 @@
     <script>
         let sessionKey = null;
         const PROXY_URL = '/api/eircode-proxy';
-        
+
         // Step 1: Get session key
         async function getApiKey() {
             const resultDiv = document.getElementById('key-result');
@@ -276,7 +278,7 @@
 
                 if (data.key) {
                     sessionKey = data.key;
-                    
+
                     resultDiv.innerHTML = `
                         <div class="success">
                             <strong>✅ Session Key Obtained!</strong><br>
@@ -327,7 +329,7 @@
                 const searchQuery = query.length <= 8 ? query.replace(/\s/g, '').toUpperCase() : query;
 
                 const url = `${PROXY_URL}?action=search&key=${sessionKey}&address=${encodeURIComponent(searchQuery)}&language=en&geographicAddress=true&clientVersion=e98fe302`;
-                
+
                 const response = await fetch(url);
 
                 const data = await response.json();
@@ -356,7 +358,7 @@
 
                 // Display results
                 let html = `<div class="success"><strong>✅ Found ${data.results.length} result(s)</strong></div>`;
-                
+
                 data.results.forEach((result, index) => {
                     const addr = result.address;
                     html += `
@@ -450,9 +452,9 @@
             if (!window.searchResults || !window.searchResults[index]) return;
 
             const addr = window.searchResults[index].address;
-            
+
             alert(`✅ Address Selected!\n\nAddress: ${addr.addressLine1}\nEircode: ${addr.eircode}\n\nThis would auto-fill your checkout form in production.`);
-            
+
             console.log('Selected Address:', addr);
         }
 
@@ -473,4 +475,5 @@
         });
     </script>
 </body>
+
 </html>

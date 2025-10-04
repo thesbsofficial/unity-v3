@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -79,7 +80,8 @@
             margin-bottom: 8px;
         }
 
-        input, textarea {
+        input,
+        textarea {
             width: 100%;
             padding: 12px 16px;
             background: #000;
@@ -90,7 +92,8 @@
             transition: all 0.3s;
         }
 
-        input:focus, textarea:focus {
+        input:focus,
+        textarea:focus {
             outline: none;
             border-color: #ffd700;
             box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
@@ -224,8 +227,13 @@
         }
 
         @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
         }
 
         .spinner {
@@ -239,6 +247,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <h1>🗺️ OpenCage Address Autocomplete Test</h1>
@@ -253,14 +262,12 @@
         <!-- Address Search Test -->
         <div class="test-section">
             <h2>Address Autocomplete</h2>
-            
+
             <div class="form-group">
                 <label>Start typing an Irish address or Eircode:</label>
                 <div style="position: relative;">
-                    <input type="text" 
-                           id="address-input" 
-                           placeholder="e.g. Main Street Dublin, D02X285, Grafton Street..." 
-                           autocomplete="off">
+                    <input type="text" id="address-input"
+                        placeholder="e.g. Main Street Dublin, D02X285, Grafton Street..." autocomplete="off">
                     <div id="address-suggestions"></div>
                 </div>
                 <div class="hint">💡 Type at least 3 characters. Suggestions appear after 0.8s delay.</div>
@@ -268,7 +275,8 @@
 
             <div class="form-group">
                 <label>Eircode (auto-filled):</label>
-                <input type="text" id="eircode-input" placeholder="Will be filled automatically" style="text-transform: uppercase;">
+                <input type="text" id="eircode-input" placeholder="Will be filled automatically"
+                    style="text-transform: uppercase;">
             </div>
 
             <div class="form-group">
@@ -314,7 +322,7 @@
         const OPENCAGE_API_KEY = '837470acedca44beb5f7fa55a393d3b3';
         let searchTimeout;
         let addressCache = {};
-        
+
         // Statistics
         let stats = {
             totalSearches: 0,
@@ -341,7 +349,7 @@
         }
 
         // Address autocomplete input handler
-        addressInput.addEventListener('input', function(e) {
+        addressInput.addEventListener('input', function (e) {
             clearTimeout(searchTimeout);
             const query = e.target.value.trim();
 
@@ -378,7 +386,7 @@
 
                 // Use cleaner OpenCage parameters for better Irish addresses
                 const url = `https://api.opencagedata.com/geocode/v1/json?q=${encodeURIComponent(query)}&key=${OPENCAGE_API_KEY}&limit=5&countrycode=ie&no_annotations=1&abbrv=0&address_only=1`;
-                
+
                 const response = await fetch(url);
                 const data = await response.json();
 
@@ -406,11 +414,11 @@
         // Display suggestions dropdown
         function displaySuggestions(results) {
             console.log('📋 Displaying', results.length, 'suggestions');
-            
+
             suggestionsDiv.innerHTML = results.map((result, index) => {
                 const addr = result.components;
                 const formatted = result.formatted;
-                
+
                 return `
                     <div class="suggestion-item" onclick="selectAddress(${index})">
                         <div class="suggestion-address">${formatted}</div>
@@ -460,7 +468,7 @@
         // Display detailed result
         function displayResult(result) {
             const addr = result.components;
-            
+
             resultContent.innerHTML = `
                 <div class="result-item">
                     <div class="result-label">Full Address:</div>
@@ -509,14 +517,14 @@
         }
 
         // Close suggestions when clicking outside
-        document.addEventListener('click', function(e) {
+        document.addEventListener('click', function (e) {
             if (!addressInput.contains(e.target) && !suggestionsDiv.contains(e.target)) {
                 suggestionsDiv.style.display = 'none';
             }
         });
 
         // Keyboard navigation (Escape to close)
-        addressInput.addEventListener('keydown', function(e) {
+        addressInput.addEventListener('keydown', function (e) {
             if (e.key === 'Escape') {
                 suggestionsDiv.style.display = 'none';
             }
@@ -527,4 +535,5 @@
         console.log('📊 Daily Limit: 2,500 requests');
     </script>
 </body>
+
 </html>

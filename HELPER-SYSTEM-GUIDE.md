@@ -8,6 +8,7 @@
 ## 📦 What's Included
 
 ### Files Created:
+
 1. **`/public/js/helper.js`** - Main helper system JavaScript
 2. **`/public/css/helper.css`** - Helper button styles
 3. **This guide** - How to use it
@@ -21,7 +22,7 @@
 Add to your HTML `<head>`:
 
 ```html
-<link rel="stylesheet" href="/css/helper.css">
+<link rel="stylesheet" href="/css/helper.css" />
 <script src="/js/helper.js" defer></script>
 ```
 
@@ -32,9 +33,9 @@ Add anywhere in your HTML (usually top-right of sections):
 ```html
 <!-- Example: Shop page -->
 <section class="hero help-section">
-    <button class="sbs-help-btn" data-help="shop-how-to-buy">?</button>
-    <h1>Shop</h1>
-    <p>Browse our collection</p>
+  <button class="sbs-help-btn" data-help="shop-how-to-buy">?</button>
+  <h1>Shop</h1>
+  <p>Browse our collection</p>
 </section>
 ```
 
@@ -45,12 +46,14 @@ Add anywhere in your HTML (usually top-right of sections):
 ## 📚 Available Helper Topics
 
 ### Shop Page (`/shop.html`)
+
 - `shop-how-to-buy` - Complete buying process
 - `shop-size-guide` - Size chart and explanations
 - `shop-condition` - BN vs PO condition labels
 - `shop-contact` - Contact methods
 
 ### Sell Page (`/sell.html`)
+
 - `sell-how-to-sell` - Selling process step-by-step
 - `sell-what-we-buy` - Categories and brands accepted
 - `sell-pricing-tips` - How to set realistic prices
@@ -58,11 +61,13 @@ Add anywhere in your HTML (usually top-right of sections):
 - `sell-payment` - Payment methods and timeline
 
 ### Admin Pages
+
 - `admin-quick-start` - Admin dashboard overview
 - `admin-inventory` - Inventory uploader guide
 - `admin-analytics` - Analytics dashboard explained
 
 ### Customer Dashboard
+
 - `dashboard-orders` - Order status meanings
 - `dashboard-submissions` - Sell submission tracking
 
@@ -71,26 +76,29 @@ Add anywhere in your HTML (usually top-right of sections):
 ## 🎨 Button Placement Examples
 
 ### In Hero Section (Top-right)
+
 ```html
 <section class="hero" style="position: relative;">
-    <button class="sbs-help-btn" data-help="shop-how-to-buy">?</button>
-    <h1>Welcome</h1>
+  <button class="sbs-help-btn" data-help="shop-how-to-buy">?</button>
+  <h1>Welcome</h1>
 </section>
 ```
 
 ### In Form Section
+
 ```html
 <div class="form-container" style="position: relative;">
-    <button class="sbs-help-btn" data-help="sell-how-to-sell">?</button>
-    <form>...</form>
+  <button class="sbs-help-btn" data-help="sell-how-to-sell">?</button>
+  <form>...</form>
 </div>
 ```
 
 ### In Admin Panel
+
 ```html
 <div class="admin-section" style="position: relative;">
-    <button class="sbs-help-btn" data-help="admin-inventory">?</button>
-    <h2>Inventory</h2>
+  <button class="sbs-help-btn" data-help="admin-inventory">?</button>
+  <h2>Inventory</h2>
 </div>
 ```
 
@@ -99,17 +107,21 @@ Add anywhere in your HTML (usually top-right of sections):
 ## ✨ Features
 
 ### Auto-Dismissal
+
 Users can check "Don't show this again" and the helper won't appear again (stored in localStorage)
 
 ### Keyboard Shortcuts
+
 - **Escape** - Close helper modal
 
 ### Mobile-Friendly
+
 - Responsive design
 - Touch-friendly buttons
 - Optimized for small screens
 
 ### Accessibility
+
 - Semantic HTML
 - Keyboard navigation
 - Clear focus states
@@ -122,11 +134,11 @@ Edit `/public/js/helper.js` and add to the `helperContent` object:
 
 ```javascript
 const helperContent = {
-    // ... existing topics ...
-    
-    'your-new-topic': {
-        title: '🎯 Your Title',
-        content: `
+  // ... existing topics ...
+
+  "your-new-topic": {
+    title: "🎯 Your Title",
+    content: `
             <h4>Subtitle</h4>
             <p>Your content here...</p>
             
@@ -136,8 +148,8 @@ const helperContent = {
             </ol>
             
             <p class="help-note">💡 Helpful tip</p>
-        `
-    }
+        `,
+  },
 };
 ```
 
@@ -164,17 +176,20 @@ Then use it:
 ## 📋 Pages to Add Helpers To
 
 ### High Priority
+
 - [ ] `/shop.html` - How to buy, size guide, condition labels
 - [ ] `/sell.html` - How to sell, what we buy, pricing tips
 - [ ] `/admin/index.html` - Quick start guide
 - [ ] `/admin/analytics.html` - Analytics explained
 
 ### Medium Priority
+
 - [ ] `/admin/inventory/index.html` - Upload guide
 - [ ] `/dashboard.html` - Orders and submissions
 - [ ] `/admin/requests/` - Sell request review
 
 ### Low Priority
+
 - [ ] Other admin pages
 - [ ] Login/register pages (if needed)
 
@@ -204,4 +219,4 @@ npx wrangler pages deploy --project-name=unity-v3 --branch=MAIN .
 ---
 
 **Helper System Ready!** 🎉  
-*Add `?` buttons to any page for instant context-aware help*
+_Add `?` buttons to any page for instant context-aware help_

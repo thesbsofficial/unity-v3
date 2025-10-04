@@ -139,10 +139,25 @@
             justify-content: center;
         }
 
-        .stat-icon.pending { background: rgba(249, 115, 22, 0.1); color: #f97316; }
-        .stat-icon.ready { background: rgba(16, 185, 129, 0.1); color: #10b981; }
-        .stat-icon.completed { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
-        .stat-icon.revenue { background: rgba(212, 175, 55, 0.1); color: #ffd700; }
+        .stat-icon.pending {
+            background: rgba(249, 115, 22, 0.1);
+            color: #f97316;
+        }
+
+        .stat-icon.ready {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+
+        .stat-icon.completed {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+        }
+
+        .stat-icon.revenue {
+            background: rgba(212, 175, 55, 0.1);
+            color: #ffd700;
+        }
 
         /* Filters */
         .filters {
@@ -531,7 +546,9 @@
         }
 
         @keyframes spin {
-            to { transform: rotate(360deg); }
+            to {
+                transform: rotate(360deg);
+            }
         }
 
         /* Responsive */
@@ -636,12 +653,14 @@
                 <button class="filter-btn active" data-status="all" onclick="filterByStatus('all')">All</button>
                 <button class="filter-btn" data-status="pending" onclick="filterByStatus('pending')">Pending</button>
                 <button class="filter-btn" data-status="ready" onclick="filterByStatus('ready')">Ready</button>
-                <button class="filter-btn" data-status="completed" onclick="filterByStatus('completed')">Completed</button>
+                <button class="filter-btn" data-status="completed"
+                    onclick="filterByStatus('completed')">Completed</button>
             </div>
 
             <div class="search-box">
                 <i data-lucide="search" class="search-icon"></i>
-                <input type="text" id="searchInput" placeholder="Search by order number, customer name, or phone..." oninput="searchOrders()">
+                <input type="text" id="searchInput" placeholder="Search by order number, customer name, or phone..."
+                    oninput="searchOrders()">
             </div>
         </div>
 
@@ -721,11 +740,11 @@
                             'Authorization': 'Bearer ' + sessionStorage.getItem('adminToken')
                         }
                     });
-                    
+
                     if (response.ok) {
                         const data = await response.json();
                         allOrders = data.orders || [];
-                        
+
                         // Also fetch reservations and merge them as "orders"
                         try {
                             const reservationsResponse = await fetch('/api/admin/reservations');
@@ -752,7 +771,7 @@
                                         reservation_id: r.id,
                                         expires_at: r.expires_at
                                     }));
-                                    
+
                                     // Merge reservations with orders
                                     allOrders = [...allOrders, ...reservationOrders];
                                 }
@@ -760,12 +779,12 @@
                         } catch (resError) {
                             console.log('Could not fetch reservations:', resError);
                         }
-                        
+
                         filteredOrders = allOrders;
-                        
+
                         // Update stats from combined data
                         updateStats();
-                        
+
                         renderOrders();
                         document.getElementById('loadingState').style.display = 'none';
                         document.getElementById('ordersTable').style.display = 'table';
@@ -775,17 +794,17 @@
                 } catch (apiError) {
                     console.log('API not available, using mock data');
                 }
-                
+
                 // Fallback to mock data if API fails
                 allOrders = generateMockOrders(25);
                 filteredOrders = allOrders;
-                
+
                 updateStats();
                 renderOrders();
-                
+
                 document.getElementById('loadingState').style.display = 'none';
                 document.getElementById('ordersTable').style.display = 'table';
-                
+
                 lucide.createIcons();
             } catch (error) {
                 console.error('Failed to load orders:', error);
@@ -811,7 +830,7 @@
         // Render orders table
         function renderOrders() {
             const tbody = document.getElementById('ordersBody');
-            
+
             if (filteredOrders.length === 0) {
                 document.getElementById('ordersTable').style.display = 'none';
                 document.getElementById('emptyState').style.display = 'block';
@@ -987,11 +1006,11 @@
                 if (order) {
                     order.status = newStatus;
                 }
-                
+
                 updateStats();
                 renderOrders();
                 closeOrderModal();
-                
+
                 alert(`✅ Order ${orderNumber} marked as ${newStatus}!`);
             } catch (error) {
                 console.error('Failed to update order status:', error);
@@ -1002,7 +1021,7 @@
         // Filter by status
         function filterByStatus(status) {
             currentFilter = status;
-            
+
             // Update active button
             document.querySelectorAll('.filter-btn').forEach(btn => {
                 btn.classList.remove('active');
@@ -1024,15 +1043,15 @@
         // Search orders
         function searchOrders() {
             const query = document.getElementById('searchInput').value.toLowerCase();
-            
+
             filteredOrders = allOrders.filter(order => {
-                const matchesSearch = 
+                const matchesSearch =
                     order.order_number.toLowerCase().includes(query) ||
                     order.customer_name.toLowerCase().includes(query) ||
                     order.customer_phone.includes(query);
-                
+
                 const matchesFilter = currentFilter === 'all' || order.status === currentFilter;
-                
+
                 return matchesSearch && matchesFilter;
             });
 
@@ -1057,7 +1076,7 @@
             if (diffMins < 60) return `${diffMins}m ago`;
             if (diffHours < 24) return `${diffHours}h ago`;
             if (diffDays < 7) return `${diffDays}d ago`;
-            
+
             return date.toLocaleDateString('en-IE', { day: 'numeric', month: 'short' });
         }
 
@@ -1072,12 +1091,12 @@
             const statuses = ['pending', 'ready', 'completed'];
             const methods = ['collection', 'delivery'];
             const names = ['John Smith', 'Emma Wilson', 'Michael Brown', 'Sarah Davis', 'James Jones'];
-            
+
             return Array.from({ length: count }, (_, i) => {
                 const status = statuses[Math.floor(Math.random() * statuses.length)];
                 const method = methods[Math.floor(Math.random() * methods.length)];
                 const itemCount = Math.floor(Math.random() * 3) + 1;
-                
+
                 return {
                     order_number: `ORD-${String(1000 + i).padStart(5, '0')}`,
                     customer_name: names[Math.floor(Math.random() * names.length)],

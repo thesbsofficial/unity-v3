@@ -16,16 +16,16 @@ class SBSAnalytics {
         this.flushInterval = config.flushInterval || 5000; // 5 seconds
         this.maxQueueSize = config.maxQueueSize || 10;
         this.debug = config.debug || false;
-        
+
         // Start auto-flush
         this.startAutoFlush();
-        
+
         // Track session start
         this.trackSessionStart();
-        
+
         // Track page unload
         this.setupUnloadHandler();
-        
+
         this.log('📊 SBS Analytics initialized', { sessionId: this.sessionId });
     }
 
@@ -34,12 +34,12 @@ class SBSAnalytics {
      */
     getOrCreateSessionId() {
         let sessionId = sessionStorage.getItem('sbs_analytics_session');
-        
+
         if (!sessionId) {
             sessionId = 'SBS_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
             sessionStorage.setItem('sbs_analytics_session', sessionId);
         }
-        
+
         return sessionId;
     }
 
@@ -66,7 +66,7 @@ class SBSAnalytics {
         if (this.isCriticalEvent(eventType)) {
             this.flush();
         }
-        
+
         // Flush if queue is full
         if (this.queue.length >= this.maxQueueSize) {
             this.flush();
@@ -329,12 +329,12 @@ class SBSAnalytics {
 // Auto-initialize if not already done
 if (typeof window !== 'undefined' && !window.SBSAnalytics) {
     window.SBSAnalytics = SBSAnalytics;
-    
+
     // Create global instance
     window.sbsTracker = new SBSAnalytics({
         debug: window.location.hostname === 'localhost'
     });
-    
+
     // Auto-track page view
     window.sbsTracker.trackPageView();
 }

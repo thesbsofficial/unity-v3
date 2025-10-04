@@ -8,13 +8,16 @@
 ## 🛒 PART 1: BASKET CHECKOUT FLOW
 
 ### Current State
+
 ✅ **Working:**
+
 - Add to basket (localStorage)
 - Remove from basket
 - Cart display with item count
 - Cart modal UI
 
 ❌ **Missing:**
+
 - `checkout()` function implementation
 - Order creation API integration
 - Delivery details form
@@ -81,7 +84,9 @@ CREATE TABLE orders (
 ## 📸 PART 2: SELL FORM SUBMISSION
 
 ### Current State
+
 ✅ **Working:**
+
 - Multi-item builder
 - Category/brand/condition/size selection
 - Photo upload (optional, up to 5 per item)
@@ -89,6 +94,7 @@ CREATE TABLE orders (
 - Form validation
 
 ❌ **Missing:**
+
 - Form submission handler
 - API endpoint to save submission
 - Email notification system
@@ -156,9 +162,11 @@ CREATE TABLE IF NOT EXISTS sell_submissions (
 ## ❓ PART 3: HELPER SYSTEM (Context-Aware Tips)
 
 ### Purpose
+
 Add small `?` helper buttons that explain features without cluttering the UI
 
 ### Design Principles
+
 1. **Unobtrusive** - Small ? icon in corner, doesn't distract
 2. **Context-aware** - Only shows relevant info for that screen
 3. **Dismissible** - Can close and won't show again (localStorage)
@@ -167,6 +175,7 @@ Add small `?` helper buttons that explain features without cluttering the UI
 ### Helper Locations
 
 #### Shop Page (`/shop.html`)
+
 ```
 ? Helper Topics:
 - "How to buy" - Add to basket → Checkout → Collection/Delivery
@@ -176,6 +185,7 @@ Add small `?` helper buttons that explain features without cluttering the UI
 ```
 
 #### Sell Page (`/sell.html`)
+
 ```
 ? Helper Topics:
 - "How to sell" - Fill form → Submit → Get offer → Accept/Decline
@@ -186,6 +196,7 @@ Add small `?` helper buttons that explain features without cluttering the UI
 ```
 
 #### Admin Dashboard (`/admin/*`)
+
 ```
 ? Helper Topics:
 - "Inventory tool" - How to upload, organize, manage stock
@@ -195,6 +206,7 @@ Add small `?` helper buttons that explain features without cluttering the UI
 ```
 
 #### Customer Dashboard (`/dashboard.html`)
+
 ```
 ? Helper Topics:
 - "My orders" - Track status, contact about orders
@@ -207,41 +219,43 @@ Add small `?` helper buttons that explain features without cluttering the UI
 ```html
 <!-- Helper Button (Top-right corner of section) -->
 <button class="help-btn" onclick="showHelp('shop-how-to-buy')">
-    <span>?</span>
+  <span>?</span>
 </button>
 
 <!-- Helper Modal (Overlay) -->
 <div class="help-modal" id="help-modal" style="display: none;">
-    <div class="help-content">
-        <button class="help-close" onclick="closeHelp()">×</button>
-        <h3 class="help-title">📦 How to Buy</h3>
-        <div class="help-body">
-            <ol>
-                <li><strong>Browse</strong> - Find items you love</li>
-                <li><strong>Add to Basket</strong> - Click the basket button</li>
-                <li><strong>Checkout</strong> - Enter delivery details</li>
-                <li><strong>Collection/Delivery</strong> - Choose your option</li>
-                <li><strong>We'll Contact You</strong> - Via WhatsApp to arrange</li>
-            </ol>
-            <p class="help-note">💡 All items are authentic and as described</p>
-        </div>
-        <label class="help-checkbox">
-            <input type="checkbox" onchange="dontShowAgain('shop-how-to-buy')">
-            Don't show this again
-        </label>
+  <div class="help-content">
+    <button class="help-close" onclick="closeHelp()">×</button>
+    <h3 class="help-title">📦 How to Buy</h3>
+    <div class="help-body">
+      <ol>
+        <li><strong>Browse</strong> - Find items you love</li>
+        <li><strong>Add to Basket</strong> - Click the basket button</li>
+        <li><strong>Checkout</strong> - Enter delivery details</li>
+        <li><strong>Collection/Delivery</strong> - Choose your option</li>
+        <li><strong>We'll Contact You</strong> - Via WhatsApp to arrange</li>
+      </ol>
+      <p class="help-note">💡 All items are authentic and as described</p>
     </div>
+    <label class="help-checkbox">
+      <input type="checkbox" onchange="dontShowAgain('shop-how-to-buy')" />
+      Don't show this again
+    </label>
+  </div>
 </div>
 ```
 
 ### Helper Topics Content
 
 #### Shop Helpers
+
 1. **How to Buy**: Step-by-step buying process
 2. **Size Guide**: UK shoe sizes, clothing size charts
 3. **Condition Labels**: BN vs PO explained
 4. **Contact Us**: WhatsApp, Instagram, email
 
 #### Sell Helpers
+
 1. **How to Sell**: Submit → Review → Offer → Accept
 2. **What We Buy**: Categories, brands, conditions
 3. **Pricing Tips**: Setting realistic expectations
@@ -249,6 +263,7 @@ Add small `?` helper buttons that explain features without cluttering the UI
 5. **Payment Info**: How and when you get paid
 
 #### Admin Helpers
+
 1. **Quick Start**: First-time admin setup
 2. **Inventory Upload**: Using the smart uploader
 3. **Analytics**: Understanding the dashboard
@@ -260,6 +275,7 @@ Add small `?` helper buttons that explain features without cluttering the UI
 ## 📋 IMPLEMENTATION CHECKLIST
 
 ### Phase 1: Checkout Flow ✅
+
 - [ ] Create checkout modal UI
 - [ ] Add delivery details form
 - [ ] Implement `checkout()` function
@@ -270,6 +286,7 @@ Add small `?` helper buttons that explain features without cluttering the UI
 - [ ] Test full flow
 
 ### Phase 2: Sell Submission ✅
+
 - [ ] Create `sell_submissions` table
 - [ ] Create `/api/sell-submissions` endpoint
 - [ ] Implement submission handler in sell.html
@@ -280,6 +297,7 @@ Add small `?` helper buttons that explain features without cluttering the UI
 - [ ] Create admin review interface
 
 ### Phase 3: Helper System ✅
+
 - [ ] Design helper component (CSS + HTML)
 - [ ] Create helper content library
 - [ ] Add helpers to shop.html
@@ -294,6 +312,7 @@ Add small `?` helper buttons that explain features without cluttering the UI
 ## 🎨 VISUAL MOCKUPS
 
 ### Checkout Modal
+
 ```
 ╔═══════════════════════════════════╗
 ║  🛒 Checkout                      ║
@@ -325,6 +344,7 @@ Add small `?` helper buttons that explain features without cluttering the UI
 ```
 
 ### Helper Button (Top-right)
+
 ```
 ┌───────────────────────┐
 │ Shop                ? │ ← Helper button
@@ -334,6 +354,7 @@ Add small `?` helper buttons that explain features without cluttering the UI
 ```
 
 ### Helper Modal
+
 ```
 ╔═══════════════════════════════════╗
 ║  ❓ How to Buy               × ║

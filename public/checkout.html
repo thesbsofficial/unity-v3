@@ -1,35 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Checkout - SBS Official</title>
-    
+
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
-    
+
     <!-- Google Fonts - Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
+
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest" defer></script>
-    
+
     <!-- Analytics Tracker -->
     <script src="/js/analytics-tracker.js" defer></script>
-    
+
     <!-- Helper System -->
     <link rel="stylesheet" href="/css/helper.css">
     <script src="/js/helper.js" defer></script>
-    
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+    <script src="/js/cart-manager.js" defer></script>
 
+    <style>
         :root {
             --primary-black: #000000;
             --primary-gold: #ffd700;
@@ -39,6 +35,12 @@
             --text-secondary: #cccccc;
             --border-subtle: rgba(255, 255, 255, 0.1);
             --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
         body {
@@ -416,7 +418,8 @@
                 text-align: center;
             }
 
-            .nav-left, .nav-right {
+            .nav-left,
+            .nav-right {
                 justify-content: center;
             }
 
@@ -430,6 +433,7 @@
         }
     </style>
 </head>
+
 <body>
     <!-- HEADER -->
     <header class="header">
@@ -458,11 +462,12 @@
             <!-- Left Column - Customer Information -->
             <div class="section">
                 <h2>Reserve Your Items</h2>
-                
+
                 <div class="info-box">
                     <p><strong>⏰ Delivery Times:</strong><br>
-                    Orders placed <strong>before 6pm</strong> arrive <strong>after 6pm same day</strong> (before midnight)<br>
-                    Orders placed <strong>after 6pm</strong> will be delivered <strong>next working day</strong></p>
+                        Orders placed <strong>before 6pm</strong> arrive <strong>after 6pm same day</strong> (before
+                        midnight)<br>
+                        Orders placed <strong>after 6pm</strong> will be delivered <strong>next working day</strong></p>
                 </div>
 
                 <form id="checkout-form">
@@ -478,7 +483,13 @@
 
                     <div class="form-group">
                         <label>Phone Number <span class="required">*</span></label>
-                        <input type="tel" name="phone" required placeholder="+353 XX XXX XXXX" pattern="[0-9+\s\-()]*" minlength="10">
+                        <input type="tel" name="phone" required placeholder="+353 XX XXX XXXX" 
+                            pattern="^(\+353|0)[0-9\s\-]{9,12}$"
+                            title="Enter a valid Irish phone number (e.g., +353 85 123 4567 or 085 123 4567)"
+                            minlength="10">
+                        <small class="form-hint" style="color: #999; font-size: 12px; display: block; margin-top: 5px;">
+                            Irish mobile or landline (10-11 digits)
+                        </small>
                     </div>
 
                     <div class="form-row">
@@ -495,7 +506,8 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label>City/Town <span class="required">*</span></label>
-                            <input type="text" name="city" id="city-input" required placeholder="Santry, Tallaght, etc.">
+                            <input type="text" name="city" id="city-input" required
+                                placeholder="Santry, Tallaght, etc.">
                         </div>
                         <div class="form-group">
                             <label>County <span class="required">*</span></label>
@@ -505,13 +517,21 @@
 
                     <div class="form-group">
                         <label>Eircode <span class="required">*</span></label>
-                        <input type="text" name="eircode" required placeholder="D02 XY45" style="text-transform: uppercase;" pattern="[A-Za-z0-9\s]*" minlength="7" maxlength="8">
+                        <input type="text" name="eircode" id="eircode-input" required placeholder="D02 XY45"
+                            style="text-transform: uppercase;" 
+                            pattern="^[A-Z0-9]{3}\s?[A-Z0-9]{4}$"
+                            title="Enter a valid Eircode (e.g., D02 XY45)"
+                            minlength="7" maxlength="8">
+                        <small class="form-hint" style="color: #999; font-size: 12px; display: block; margin-top: 5px;">
+                            7 characters (e.g., D02 XY45)
+                        </small>
                     </div>
 
                     <!-- Delivery Information with Costs -->
                     <div class="form-group">
                         <label>Delivery Costs by Zone</label>
-                        <div id="delivery-zones" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-top: 10px;">
+                        <div id="delivery-zones"
+                            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-top: 10px;">
                             <div class="zone-info-box" data-zone="north-dublin" data-price="15">
                                 <strong>North Dublin - €15</strong>
                                 <small>Santry, Swords, Malahide, Howth</small>
@@ -541,18 +561,22 @@
                     </div>
 
                     <!-- Delivery Time Information -->
-                    <div class="form-group" style="background: #1a1a1a; padding: 15px; border-radius: 8px; border: 1px solid #333;">
+                    <div class="form-group"
+                        style="background: #1a1a1a; padding: 15px; border-radius: 8px; border: 1px solid #333;">
                         <h3 style="color: #ffd700; margin-bottom: 10px; font-size: 16px;">⏰ Delivery Schedule</h3>
                         <p style="color: #fff; margin-bottom: 8px; font-size: 14px;">
-                            • Orders placed <strong>before 6pm</strong> arrive <strong>after 6pm same day</strong> (before midnight)
+                            • Orders placed <strong>before 6pm</strong> arrive <strong>after 6pm same day</strong>
+                            (before midnight)
                         </p>
                         <p style="color: #fff; margin-bottom: 0; font-size: 14px;">
-                            • Orders placed <strong>after 6pm</strong> will be delivered <strong>next working day</strong>
+                            • Orders placed <strong>after 6pm</strong> will be delivered <strong>next working
+                                day</strong>
                         </p>
                     </div>
 
                     <!-- Payment Methods -->
-                    <div class="form-group" style="background: #1a1a1a; padding: 15px; border-radius: 8px; border: 1px solid #333;">
+                    <div class="form-group"
+                        style="background: #1a1a1a; padding: 15px; border-radius: 8px; border: 1px solid #333;">
                         <h3 style="color: #ffd700; margin-bottom: 10px; font-size: 16px;">💳 Payment Options</h3>
                         <p style="color: #fff; margin-bottom: 8px; font-size: 14px;">
                             • <strong>Cash on Delivery</strong> - Pay when you receive your items
@@ -574,29 +598,41 @@
                     </div>
 
                     <!-- Account Registration Option -->
-                    <div class="form-group" style="background: linear-gradient(135deg, #1a1a1a, #2a2a2a); padding: 20px; border-radius: 12px; border: 2px solid var(--primary-gold);">
+                    <div class="form-group"
+                        style="background: linear-gradient(135deg, #1a1a1a, #2a2a2a); padding: 20px; border-radius: 12px; border: 2px solid var(--primary-gold);">
                         <div style="display: flex; align-items: start; gap: 12px; margin-bottom: 15px;">
-                            <input type="checkbox" id="create-account-checkbox" style="width: 20px; height: 20px; margin-top: 2px; cursor: pointer; accent-color: var(--primary-gold);">
+                            <input type="checkbox" id="create-account-checkbox"
+                                style="width: 20px; height: 20px; margin-top: 2px; cursor: pointer; accent-color: var(--primary-gold);">
                             <div>
-                                <label for="create-account-checkbox" style="cursor: pointer; font-size: 16px; font-weight: 600; color: var(--primary-gold); margin-bottom: 5px; display: block;">
+                                <label for="create-account-checkbox"
+                                    style="cursor: pointer; font-size: 16px; font-weight: 600; color: var(--primary-gold); margin-bottom: 5px; display: block;">
                                     ✨ Create an Account (Optional)
                                 </label>
                                 <p style="color: #ccc; font-size: 13px; margin: 0; line-height: 1.5;">
-                                    Save your details for faster checkout next time. We'll use the information you entered above - just create a password!
+                                    Save your details for faster checkout next time. We'll use the information you
+                                    entered above - just create a password!
                                 </p>
                             </div>
                         </div>
-                        
-                        <div id="password-fields" style="display: none; margin-top: 15px; padding-top: 15px; border-top: 1px solid #333;">
+
+                        <div id="password-fields"
+                            style="display: none; margin-top: 15px; padding-top: 15px; border-top: 1px solid #333;">
                             <div class="form-group" style="margin-bottom: 10px;">
-                                <label style="color: #fff; font-size: 14px;">Password <span class="required">*</span></label>
-                                <input type="password" id="account-password" name="account_password" placeholder="Create a password (min. 8 characters)" style="width: 100%; padding: 12px; border: 1px solid #333; border-radius: 6px; background: #0a0a0a; color: #fff; font-size: 14px;">
+                                <label style="color: #fff; font-size: 14px;">Password <span
+                                        class="required">*</span></label>
+                                <input type="password" id="account-password" name="account_password"
+                                    placeholder="Create a password (min. 8 characters)"
+                                    style="width: 100%; padding: 12px; border: 1px solid #333; border-radius: 6px; background: #0a0a0a; color: #fff; font-size: 14px;">
                             </div>
                             <div class="form-group" style="margin-bottom: 0;">
-                                <label style="color: #fff; font-size: 14px;">Confirm Password <span class="required">*</span></label>
-                                <input type="password" id="account-password-confirm" name="account_password_confirm" placeholder="Confirm your password" style="width: 100%; padding: 12px; border: 1px solid #333; border-radius: 6px; background: #0a0a0a; color: #fff; font-size: 14px;">
+                                <label style="color: #fff; font-size: 14px;">Confirm Password <span
+                                        class="required">*</span></label>
+                                <input type="password" id="account-password-confirm" name="account_password_confirm"
+                                    placeholder="Confirm your password"
+                                    style="width: 100%; padding: 12px; border: 1px solid #333; border-radius: 6px; background: #0a0a0a; color: #fff; font-size: 14px;">
                             </div>
-                            <p id="password-error" style="color: #ff4444; font-size: 12px; margin-top: 8px; display: none;"></p>
+                            <p id="password-error"
+                                style="color: #ff4444; font-size: 12px; margin-top: 8px; display: none;"></p>
                             <p style="color: #ffd700; font-size: 12px; margin-top: 10px; margin-bottom: 0;">
                                 🔒 Your password will be securely hashed and stored
                             </p>
@@ -614,24 +650,28 @@
             <div>
                 <div class="section">
                     <h2>Order Summary</h2>
-                    
+
                     <div id="order-items">
                         <!-- Items will be loaded here -->
                     </div>
 
                     <!-- Total Cost Summary -->
-                    <div id="cost-summary" style="margin-top: 20px; padding: 20px; background: rgba(255, 215, 0, 0.05); border: 2px solid var(--primary-gold); border-radius: 8px;">
+                    <div id="cost-summary"
+                        style="margin-top: 20px; padding: 20px; background: rgba(255, 215, 0, 0.05); border: 2px solid var(--primary-gold); border-radius: 8px;">
                         <div style="display: flex; justify-content: space-between; margin-bottom: 10px; color: #fff;">
                             <span>Items (<span id="item-count">0</span>):</span>
                             <span style="color: #ffd700;">Payment on delivery</span>
                         </div>
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #333; color: #fff;">
+                        <div
+                            style="display: flex; justify-content: space-between; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #333; color: #fff;">
                             <span>Delivery Zone:</span>
                             <span id="delivery-zone-name" style="color: #ffd700;">Will be calculated</span>
                         </div>
-                        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 18px; font-weight: 700;">
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; font-size: 18px; font-weight: 700;">
                             <span style="color: var(--primary-gold);">Total Due on Delivery:</span>
-                            <span id="total-amount" style="color: var(--primary-gold); font-size: 22px;">Calculating...</span>
+                            <span id="total-amount"
+                                style="color: var(--primary-gold); font-size: 22px;">Calculating...</span>
                         </div>
                         <p style="color: #999; font-size: 13px; margin-top: 12px; margin-bottom: 0;">
                             💡 Final amount includes delivery cost based on your address
@@ -640,10 +680,12 @@
                 </div>
 
                 <div class="section" style="margin-top: 20px;">
-                    <div style="display: flex; align-items: center; gap: 15px; padding: 15px; background: #1a1a1a; border-radius: 8px; border: 1px solid #333;">
+                    <div
+                        style="display: flex; align-items: center; gap: 15px; padding: 15px; background: #1a1a1a; border-radius: 8px; border: 1px solid #333;">
                         <i data-lucide="info" class="w-8 h-8" style="color: #ffd700;"></i>
                         <div>
-                            <strong style="color: #333; display: block; margin-bottom: 5px;">Cash or Card on Delivery</strong>
+                            <strong style="color: #333; display: block; margin-bottom: 5px;">Cash or Card on
+                                Delivery</strong>
                             <span style="color: #666; font-size: 14px;">Pay when you receive your order</span>
                         </div>
                     </div>
@@ -653,16 +695,20 @@
 
         <!-- Success Message (Hidden by default) -->
         <div class="section success-message" id="success-message">
-            <div class="success-icon" style="background: linear-gradient(135deg, var(--primary-gold), #ffed4e); border-radius: 50%; width: 100px; height: 100px; display: flex; align-items: center; justify-content: center; margin: 0 auto 30px;">
+            <div class="success-icon"
+                style="background: linear-gradient(135deg, var(--primary-gold), #ffed4e); border-radius: 50%; width: 100px; height: 100px; display: flex; align-items: center; justify-content: center; margin: 0 auto 30px;">
                 <i data-lucide="check" style="width: 60px; height: 60px; color: #000;"></i>
             </div>
-            <h2 style="color: var(--primary-gold); margin-bottom: 20px; font-size: 32px;">🎉 Items Reserved Successfully!</h2>
+            <h2 style="color: var(--primary-gold); margin-bottom: 20px; font-size: 32px;">🎉 Items Reserved
+                Successfully!</h2>
             <p style="color: var(--text-primary); margin-bottom: 15px; font-size: 18px; font-weight: 500;">
                 Your order has been received and your items are now reserved for you!
             </p>
-            <div style="background: #1a1a1a; padding: 25px; border-radius: 12px; border: 2px solid var(--primary-gold); margin: 25px 0; max-width: 600px; margin-left: auto; margin-right: auto;">
+            <div
+                style="background: #1a1a1a; padding: 25px; border-radius: 12px; border: 2px solid var(--primary-gold); margin: 25px 0; max-width: 600px; margin-left: auto; margin-right: auto;">
                 <p style="color: var(--primary-gold); margin-bottom: 15px; font-size: 16px;">
-                    <strong>📦 Order Number:</strong> <span id="order-id" style="font-size: 20px; letter-spacing: 1px;"></span>
+                    <strong>📦 Order Number:</strong> <span id="order-id"
+                        style="font-size: 20px; letter-spacing: 1px;"></span>
                 </p>
                 <p style="color: #fff; margin-bottom: 10px; font-size: 15px;">
                     ⏰ <strong>Delivery:</strong> <span id="delivery-time"></span>
@@ -670,16 +716,20 @@
                 <p style="color: #fff; margin-bottom: 10px; font-size: 15px;">
                     💳 <strong>Payment:</strong> On delivery (Cash, Card, Bank Transfer, or Crypto)
                 </p>
-                <p style="color: #ffd700; margin-top: 20px; font-size: 14px; padding: 15px; background: rgba(255, 215, 0, 0.1); border-radius: 8px;">
+                <p
+                    style="color: #ffd700; margin-top: 20px; font-size: 14px; padding: 15px; background: rgba(255, 215, 0, 0.1); border-radius: 8px;">
                     ✨ <strong>Reserved for 24 hours</strong> - We'll contact you shortly to confirm!
                 </p>
-                <div id="account-created-message" style="display: none; margin-top: 15px; padding: 15px; background: rgba(76, 175, 80, 0.1); border: 2px solid #4caf50; border-radius: 8px;">
+                <div id="account-created-message"
+                    style="display: none; margin-top: 15px; padding: 15px; background: rgba(76, 175, 80, 0.1); border: 2px solid #4caf50; border-radius: 8px;">
                     <p style="color: #4caf50; font-size: 14px; margin: 0;">
-                        🎉 <strong>Account Created!</strong> You can now log in with your email and password for faster checkout next time.
+                        🎉 <strong>Account Created!</strong> You can now log in with your email and password for faster
+                        checkout next time.
                     </p>
                 </div>
             </div>
-            <a href="/shop" class="btn btn-primary" style="max-width: 300px; margin: 20px auto 0; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 16px; padding: 15px 30px;">
+            <a href="/shop" class="btn btn-primary"
+                style="max-width: 300px; margin: 20px auto 0; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 16px; padding: 15px 30px;">
                 <i data-lucide="shopping-bag" class="w-5 h-5"></i>
                 Continue Shopping
             </a>
@@ -689,7 +739,8 @@
         <div class="section empty-cart" id="empty-cart" style="display: none;">
             <i data-lucide="shopping-cart" style="width: 80px; height: 80px; color: var(--border-subtle);"></i>
             <h2 style="color: var(--text-secondary); margin: 20px 0;">Your cart is empty</h2>
-            <p style="color: var(--text-secondary); margin-bottom: 25px;">Add some items to your cart before checking out</p>
+            <p style="color: var(--text-secondary); margin-bottom: 25px;">Add some items to your cart before checking
+                out</p>
             <a href="/shop" class="btn btn-primary" style="max-width: 300px; margin: 0 auto;">
                 <i data-lucide="shopping-bag" class="w-5 h-5"></i>
                 Start Shopping
@@ -711,11 +762,11 @@
         }
 
         // Account creation checkbox toggle
-        document.getElementById('create-account-checkbox').addEventListener('change', function() {
+        document.getElementById('create-account-checkbox').addEventListener('change', function () {
             const passwordFields = document.getElementById('password-fields');
             const passwordInput = document.getElementById('account-password');
             const confirmInput = document.getElementById('account-password-confirm');
-            
+
             if (this.checked) {
                 passwordFields.style.display = 'block';
                 passwordInput.required = true;
@@ -797,7 +848,7 @@
             const deliveryZoneInput = document.getElementById('delivery-zone-input');
             const deliveryPriceInput = document.getElementById('delivery-price-input');
             const deliveryPrice = parseInt(deliveryPriceInput.value) || 0;
-            
+
             // Get zone name mapping
             const zoneNames = {
                 'north-dublin': 'North Dublin (€15)',
@@ -806,10 +857,10 @@
                 'surrounding': 'Further Counties (€35)',
                 'postage': 'National Post (€10)'
             };
-            
+
             const zoneName = zoneNames[deliveryZoneInput.value] || 'To be determined';
             document.getElementById('delivery-zone-name').textContent = zoneName;
-            
+
             if (deliveryPrice > 0) {
                 document.getElementById('total-amount').textContent = `€${deliveryPrice}`;
             } else {
@@ -831,7 +882,7 @@
         // Handle form submission
         document.getElementById('checkout-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
             // Validate passwords if account creation is checked
             if (!validatePasswords()) {
                 return;
@@ -883,7 +934,7 @@
                 });
 
                 const reservationData = await reservationResponse.json();
-                
+
                 if (!reservationData.success) {
                     throw new Error(reservationData.error || 'Failed to reserve items');
                 }
@@ -897,7 +948,7 @@
                 const now = new Date();
                 const currentHour = now.getHours();
                 let deliveryMessage = '';
-                
+
                 if (currentHour < 18) {
                     deliveryMessage = 'Today after 6pm (before midnight)';
                 } else {
@@ -905,7 +956,7 @@
                     tomorrow.setDate(tomorrow.getDate() + 1);
                     deliveryMessage = 'Tomorrow during working hours';
                 }
-                
+
                 document.getElementById('delivery-time').textContent = deliveryMessage;
 
                 // Handle account creation if checkbox was checked
@@ -913,7 +964,7 @@
                 if (createAccount) {
                     try {
                         const password = document.getElementById('account-password').value;
-                        
+
                         const accountData = {
                             name: orderData.customer.name,
                             email: orderData.customer.email,
@@ -936,12 +987,12 @@
                         if (accountResponse.ok) {
                             const accountResult = await accountResponse.json();
                             console.log('✅ Account created successfully:', accountResult);
-                            
+
                             // Store token if provided
                             if (accountResult.token) {
                                 localStorage.setItem('auth-token', accountResult.token);
                             }
-                            
+
                             // Add success message to UI
                             document.getElementById('account-created-message').style.display = 'block';
                         } else {
@@ -980,13 +1031,25 @@
             } catch (error) {
                 console.error('❌ Checkout error:', error);
                 alert(`Order failed: ${error.message}\n\nPlease try again or contact support.`);
-                
+
                 // Re-enable button
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = '<i data-lucide="check-circle" class="w-5 h-5"></i> Place Order';
                 lucide.createIcons();
             }
         });
+
+        // Auto-format Eircode input (force uppercase, add space)
+        const eircodeInput = document.getElementById('eircode-input');
+        if (eircodeInput) {
+            eircodeInput.addEventListener('input', function (e) {
+                let value = e.target.value.toUpperCase().replace(/\s/g, ''); // Remove spaces, uppercase
+                if (value.length > 3) {
+                    value = value.slice(0, 3) + ' ' + value.slice(3, 7); // Add space after 3rd char
+                }
+                e.target.value = value;
+            });
+        }
 
         // Load items on page load
         window.addEventListener('DOMContentLoaded', () => {
@@ -998,4 +1061,5 @@
         });
     </script>
 </body>
+
 </html>

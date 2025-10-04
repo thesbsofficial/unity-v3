@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,6 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
+
 <body class="bg-gray-50">
     <!-- Top Navigation -->
     <nav class="bg-white shadow-sm border-b border-gray-200">
@@ -14,7 +16,8 @@
             <div class="flex justify-between items-center h-16">
                 <div class="flex items-center space-x-4">
                     <a href="/admin/" class="flex items-center">
-                        <div class="w-10 h-10 bg-gradient-to-br from-purple-600 to-indigo-600 rounded-lg flex items-center justify-center">
+                        <div
+                            class="w-10 h-10 bg-gradient-to-br from-purple-600 to-indigo-600 rounded-lg flex items-center justify-center">
                             <i data-lucide="shield-check" class="w-6 h-6 text-white"></i>
                         </div>
                         <span class="ml-3 text-xl font-bold text-gray-900">SBS Admin</span>
@@ -40,7 +43,8 @@
                 <h1 class="text-3xl font-bold text-gray-900">Inventory Management</h1>
                 <p class="text-gray-600 mt-2">Manage your product catalog</p>
             </div>
-            <button id="addProductButton" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium flex items-center shadow-lg transition-all">
+            <button id="addProductButton"
+                class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium flex items-center shadow-lg transition-all">
                 <i data-lucide="plus" class="w-5 h-5 mr-2"></i>
                 Add Product
             </button>
@@ -52,19 +56,17 @@
                 <!-- Search -->
                 <div class="md:col-span-2">
                     <div class="relative">
-                        <i data-lucide="search" class="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2"></i>
-                        <input 
-                            type="text" 
-                            id="searchInput" 
-                            placeholder="Search products..." 
-                            class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        >
+                        <i data-lucide="search"
+                            class="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2"></i>
+                        <input type="text" id="searchInput" placeholder="Search products..."
+                            class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                     </div>
                 </div>
 
                 <!-- Category Filter -->
                 <div>
-                    <select id="categoryFilter" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <select id="categoryFilter"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                         <option value="">All Categories</option>
                         <option value="trainers">Trainers</option>
                         <option value="clothing">Clothing</option>
@@ -74,7 +76,8 @@
 
                 <!-- Sort -->
                 <div>
-                    <select id="sortFilter" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <select id="sortFilter"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                         <option value="newest">Newest First</option>
                         <option value="oldest">Oldest First</option>
                         <option value="price-low">Price: Low to High</option>
@@ -116,7 +119,8 @@
     </div>
 
     <!-- Add/Edit Product Modal -->
-    <div id="productModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div id="productModal"
+        class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div class="p-6 border-b border-gray-200">
                 <div class="flex justify-between items-center">
@@ -133,30 +137,23 @@
                 <!-- Product Name -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Product Name *</label>
-                    <input 
-                        type="text" 
-                        id="productName" 
-                        required
+                    <input type="text" id="productName" required
                         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="e.g., Nike Air Max 90"
-                    >
+                        placeholder="e.g., Nike Air Max 90">
                 </div>
 
                 <!-- Brand & Category -->
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Brand *</label>
-                        <input 
-                            type="text" 
-                            id="productBrand" 
-                            required
+                        <input type="text" id="productBrand" required
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            placeholder="e.g., Nike"
-                        >
+                            placeholder="e.g., Nike">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Category *</label>
-                        <select id="productCategory" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <select id="productCategory" required
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                             <option value="">Select category</option>
                             <option value="trainers">Trainers</option>
                             <option value="clothing">Clothing</option>
@@ -169,24 +166,15 @@
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Price (£) *</label>
-                        <input 
-                            type="number" 
-                            id="productPrice" 
-                            required
-                            step="0.01"
-                            min="0"
+                        <input type="number" id="productPrice" required step="0.01" min="0"
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            placeholder="99.99"
-                        >
+                            placeholder="99.99">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Size/UK Size</label>
-                        <input 
-                            type="text" 
-                            id="productSize" 
+                        <input type="text" id="productSize"
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            placeholder="e.g., UK 9"
-                        >
+                            placeholder="e.g., UK 9">
                     </div>
                 </div>
 
@@ -194,7 +182,8 @@
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Condition *</label>
-                        <select id="productCondition" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <select id="productCondition" required
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                             <option value="brand-new">Brand New</option>
                             <option value="excellent">Excellent</option>
                             <option value="very-good">Very Good</option>
@@ -204,32 +193,24 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Stock Quantity *</label>
-                        <input 
-                            type="number" 
-                            id="productStock" 
-                            required
-                            min="0"
-                            value="1"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        >
+                        <input type="number" id="productStock" required min="0" value="1"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                     </div>
                 </div>
 
                 <!-- Description -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
-                    <textarea 
-                        id="productDescription" 
-                        rows="4"
+                    <textarea id="productDescription" rows="4"
                         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="Product description..."
-                    ></textarea>
+                        placeholder="Product description..."></textarea>
                 </div>
 
                 <!-- Image Upload -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Product Image</label>
-                    <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-500 transition-colors cursor-pointer" id="imageUploadArea">
+                    <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-500 transition-colors cursor-pointer"
+                        id="imageUploadArea">
                         <i data-lucide="upload" class="w-12 h-12 text-gray-400 mx-auto mb-2"></i>
                         <p class="text-sm text-gray-600">Click to upload or drag and drop</p>
                         <p class="text-xs text-gray-500 mt-1">PNG, JPG up to 10MB</p>
@@ -242,10 +223,12 @@
 
                 <!-- Submit Buttons -->
                 <div class="flex justify-end space-x-4 pt-4 border-t border-gray-200">
-                    <button type="button" id="cancelButton" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium">
+                    <button type="button" id="cancelButton"
+                        class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium">
                         Cancel
                     </button>
-                    <button type="submit" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium flex items-center">
+                    <button type="submit"
+                        class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium flex items-center">
                         <span id="submitButtonText">Add Product</span>
                         <div id="submitSpinner" class="hidden ml-2">
                             <i data-lucide="loader" class="w-5 h-5 animate-spin"></i>
@@ -261,4 +244,5 @@
         lucide.createIcons();
     </script>
 </body>
+
 </html>

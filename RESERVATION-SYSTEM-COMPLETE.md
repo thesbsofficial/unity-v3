@@ -11,15 +11,18 @@ Multi-user reservation system that allows customers to reserve items through che
 ## 📊 SYSTEM COMPONENTS
 
 ### 1. DATABASE SCHEMA
+
 **File:** `database/schema-reservations.sql`
 
 **Tables:**
+
 - `product_reservations`: Stores all reservation records
   - Fields: product_id, order_id, order_number, customer info, expires_at, status, admin_notes
   - Status values: pending, confirmed, cancelled, expired
   - Auto-expiry: 24 hours from reservation time
 
 **Triggers:**
+
 - `update_product_on_reservation`: Sets product status to 'reserved' when reservation created
 - `update_product_on_reservation_status`: Updates product status when reservation updated
   - confirmed → product.status = 'sold'
@@ -32,15 +35,22 @@ Multi-user reservation system that allows customers to reserve items through che
 ### 2. BACKEND APIs
 
 #### A. Create Reservation API
+
 **File:** `functions/api/reservations/create.js`
 **Method:** POST
 **Endpoint:** `/api/reservations/create`
 
 **Request:**
+
 ```json
 {
   "items": [
-    {"id": "product_id", "category": "BN-CLOTHES", "size": "M", "imageUrl": "..."}
+    {
+      "id": "product_id",
+      "category": "BN-CLOTHES",
+      "size": "M",
+      "imageUrl": "..."
+    }
   ],
   "customer": {
     "name": "John Doe",
@@ -52,6 +62,7 @@ Multi-user reservation system that allows customers to reserve items through che
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -68,17 +79,20 @@ Multi-user reservation system that allows customers to reserve items through che
 ```
 
 **Process:**
+
 1. Validates items array and customer info
 2. Checks each product exists and status = 'available'
 3. Creates reservation with 24hr expiry
 4. Trigger auto-updates product status to 'reserved'
 
 #### B. Admin Manage Reservations API
+
 **File:** `functions/api/admin/reservations.js`
 **Methods:** GET, POST
 **Endpoint:** `/api/admin/reservations`
 
 **GET - Fetch Pending:**
+
 ```json
 {
   "success": true,
@@ -103,15 +117,17 @@ Multi-user reservation system that allows customers to reserve items through che
 ```
 
 **POST - Update Status:**
+
 ```json
 {
   "reservation_id": 1,
-  "action": "confirm",  // or "cancel"
+  "action": "confirm", // or "cancel"
   "admin_notes": "Customer collected item"
 }
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -125,10 +141,12 @@ Multi-user reservation system that allows customers to reserve items through che
 ### 3. FRONTEND INTEGRATION
 
 #### A. Checkout Page
+
 **File:** `public/checkout.html`
 **Integration:** Lines ~750-820
 
 **Changes:**
+
 - Generates order ID: `'SBS' + Date.now().toString(36).toUpperCase()`
 - Calls `/api/reservations/create` on order submission
 - Shows error alert if reservation fails
@@ -136,15 +154,18 @@ Multi-user reservation system that allows customers to reserve items through che
 - Clears cart only on success
 
 **Error Handling:**
+
 - Try-catch block with user-friendly messages
 - Re-enables submit button on failure
 - Preserves cart for retry
 
 #### B. Shop Page - Product Cards
+
 **File:** `public/shop.html`
 **Changes:** Lines ~1325-1345
 
 **Features:**
+
 - Displays gold "RESERVED" badge on reserved products
 - Disables "Add to Cart" button for reserved items
 - Button text changes to "Reserved"
@@ -152,6 +173,7 @@ Multi-user reservation system that allows customers to reserve items through che
 - Pulsing animation on badge
 
 **CSS Styling:**
+
 ```css
 .reserved-badge {
   - Gold gradient background
@@ -173,16 +195,20 @@ Multi-user reservation system that allows customers to reserve items through che
 ```
 
 #### C. Admin Dashboard
+
 **File:** `public/admin/reservations/index.html`
 **Size:** 529 lines
 
 **Features:**
+
 - **Statistics Cards:**
+
   - Pending count (orange badge)
   - Confirmed today (green badge)
   - Cancelled today (red badge)
 
 - **Reservation Cards:**
+
   - Product image (100x100px)
   - Product details (title, brand, price)
   - Customer info (name, phone, email, order number)
@@ -194,6 +220,7 @@ Multi-user reservation system that allows customers to reserve items through che
 - **Theme:** SBS black/gold design
 
 **Functions:**
+
 - `loadReservations()`: Fetch and display
 - `confirmReservation(id)`: Confirm prompt → mark sold
 - `cancelReservation(id)`: Reason prompt → unreserve
@@ -203,16 +230,19 @@ Multi-user reservation system that allows customers to reserve items through che
 ---
 
 ### 4. PRODUCTS API UPDATE
+
 **File:** `functions/api/products.js`
 **Changes:** Lines ~80-110
 
 **Key Update:**
+
 - Now queries D1 database for product statuses
 - Creates `dbStatusMap` with cloudflare_image_id → status mapping
 - Priority: D1 status > Cloudflare metadata status
 - Returns correct 'reserved' status for shop.html
 
 **Process:**
+
 1. Fetch images from Cloudflare
 2. Query D1: `SELECT cloudflare_image_id, status FROM products`
 3. Map image IDs to database statuses
@@ -224,6 +254,7 @@ Multi-user reservation system that allows customers to reserve items through che
 ## 🔄 RESERVATION WORKFLOW
 
 ### Customer Flow:
+
 1. **Add to Cart:** Browse shop, add items
 2. **Checkout:** Fill form with delivery zone
 3. **Submit Order:** Creates reservations via API
@@ -231,12 +262,14 @@ Multi-user reservation system that allows customers to reserve items through che
 5. **24hr Hold:** Customer has 24 hours before expiry
 
 ### Admin Flow:
+
 1. **View Dashboard:** `/admin/reservations/`
 2. **Review Pending:** See all reserved items with customer details
 3. **Confirm as Sold:** Customer collected/paid → mark sold
 4. **Cancel/Unreserve:** Customer no-show → return to available
 
 ### Product Status Lifecycle:
+
 ```
 available → reserved (checkout) → sold (admin confirms)
                                → available (admin cancels)
@@ -248,18 +281,21 @@ available → reserved (checkout) → sold (admin confirms)
 ## 🎨 USER EXPERIENCE
 
 ### Shop Page
+
 - Reserved items clearly marked with gold "RESERVED" badge
 - "Add to Cart" button disabled and grayed out
 - Product card slightly dimmed with overlay
 - Badge has pulsing animation for visibility
 
 ### Checkout Page
+
 - Normal checkout flow unchanged
 - User sees success message
 - Cart cleared automatically
 - Order number displayed (SBS123456 format)
 
 ### Admin Dashboard
+
 - Clean card-based interface
 - Real-time expiry countdown (23h 45m remaining)
 - One-click actions with confirmation prompts
@@ -271,24 +307,28 @@ available → reserved (checkout) → sold (admin confirms)
 ## 🚀 DEPLOYMENT CHECKLIST
 
 ### 1. Database Migration
+
 ```bash
 # Apply reservation schema
 wrangler d1 execute sbs-shop-db --file=database/schema-reservations.sql --remote
 ```
 
 ### 2. Verify Products Table
+
 ```bash
 # Check products table has status column
 wrangler d1 execute sbs-shop-db --command="SELECT id, cloudflare_image_id, status FROM products LIMIT 5;" --remote
 ```
 
 ### 3. Deploy to Cloudflare Pages
+
 ```bash
 # Deploy all updated files
 wrangler pages deploy
 ```
 
 ### 4. Test Reservation Flow
+
 - [ ] Add item to cart on shop page
 - [ ] Complete checkout form
 - [ ] Submit order
@@ -302,12 +342,14 @@ wrangler pages deploy
 ## 📁 FILES CREATED/MODIFIED
 
 ### Created:
+
 ✅ `database/schema-reservations.sql` (76 lines)
 ✅ `functions/api/reservations/create.js` (139 lines)
 ✅ `functions/api/admin/reservations.js` (119 lines)
 ✅ `public/admin/reservations/index.html` (529 lines)
 
 ### Modified:
+
 ✅ `functions/api/products.js` (Added D1 status query, ~30 lines)
 ✅ `public/checkout.html` (Integrated reservation API, ~70 lines)
 ✅ `public/shop.html` (Added reserved badge + CSS, ~70 lines)
@@ -319,24 +361,28 @@ wrangler pages deploy
 ## 🔧 TECHNICAL DETAILS
 
 ### Multi-User Support
+
 - Multiple customers can reserve different items simultaneously
 - No conflicts: Each product can only have ONE active reservation
 - Database checks `status = 'available'` before creating reservation
 - Concurrent checkouts handled by D1 transaction isolation
 
 ### 24-Hour Expiry
+
 - Set on reservation creation: `expires_at = datetime('now', '+24 hours')`
 - Admin dashboard shows countdown timer
 - Expired reservations can still be manually cancelled by admin
 - Future enhancement: Auto-cleanup job for expired reservations
 
 ### Product Status Management
+
 - Single source of truth: D1 database `products.status`
 - Triggers ensure consistency between reservations and products
 - Status values: available, reserved, sold, removed
 - Products API queries D1 first, fallback to Cloudflare metadata
 
 ### Error Handling
+
 - Checkout: Try-catch with user alerts, cart preserved on failure
 - API: Validates all inputs, specific error messages
 - Admin: Confirmation prompts prevent accidental actions
@@ -365,6 +411,7 @@ wrangler pages deploy
 ## 📈 ANALYTICS TRACKING
 
 **Checkout Page:**
+
 - Event: `purchase`
 - Properties:
   - `total_amount`: Subtotal + delivery
@@ -400,6 +447,7 @@ wrangler pages deploy
 ## 🚀 FUTURE ENHANCEMENTS (Optional)
 
 ### Phase 2 Ideas:
+
 - [ ] Email notifications (reservation created, expiring soon, expired)
 - [ ] Admin authentication for reservation management
 - [ ] Auto-cleanup job for expired reservations (Cloudflare Workers Cron)
@@ -416,24 +464,28 @@ wrangler pages deploy
 ## ✅ COMPLETION STATUS
 
 **Backend:** ✅ 100% Complete
+
 - Database schema with triggers
 - Create reservation API
 - Admin management API
 - Products API integration
 
 **Frontend:** ✅ 100% Complete
+
 - Checkout integration
 - Shop page badge display
 - Admin dashboard UI
 - Responsive design
 
 **Testing:** ⚠️ Pending
+
 - End-to-end reservation flow
 - Multi-user concurrent reservations
 - 24hr expiry behavior
 - Admin actions (confirm/cancel)
 
 **Deployment:** ⚠️ Pending
+
 - Database migration
 - Cloudflare Pages deploy
 - Environment variables check
@@ -443,6 +495,7 @@ wrangler pages deploy
 ## 📞 SUPPORT
 
 If issues arise during testing:
+
 1. Check browser console for errors
 2. Verify D1 database has reservation tables
 3. Check products table has status column

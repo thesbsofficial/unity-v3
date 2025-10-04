@@ -93,12 +93,12 @@ function renderProducts() {
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
             <!-- Product Image -->
             <div class="aspect-square bg-gray-100 overflow-hidden">
-                ${product.image_url ? 
-                    `<img src="${product.image_url}" alt="${product.name}" class="w-full h-full object-cover">` :
-                    `<div class="w-full h-full flex items-center justify-center">
+                ${product.image_url ?
+            `<img src="${product.image_url}" alt="${product.name}" class="w-full h-full object-cover">` :
+            `<div class="w-full h-full flex items-center justify-center">
                         <i data-lucide="image" class="w-16 h-16 text-gray-300"></i>
                     </div>`
-                }
+        }
             </div>
 
             <!-- Product Details -->
@@ -162,7 +162,7 @@ function filterProducts() {
 
     // Filter
     filteredProducts = products.filter(product => {
-        const matchesSearch = !searchTerm || 
+        const matchesSearch = !searchTerm ||
             product.name.toLowerCase().includes(searchTerm) ||
             (product.brand && product.brand.toLowerCase().includes(searchTerm)) ||
             (product.description && product.description.toLowerCase().includes(searchTerm));
@@ -208,7 +208,7 @@ function updateStats() {
 
 function openModal(product = null) {
     currentProduct = product;
-    
+
     if (product) {
         // Edit mode
         document.getElementById('modalTitle').textContent = 'Edit Product';
@@ -319,14 +319,14 @@ function handleImageUpload(e) {
     }
 }
 
-window.editProduct = async function(productId) {
+window.editProduct = async function (productId) {
     const product = products.find(p => p.id === productId);
     if (product) {
         openModal(product);
     }
 };
 
-window.deleteProduct = async function(productId, productName) {
+window.deleteProduct = async function (productId, productName) {
     if (!confirm(`Are you sure you want to delete "${productName}"?\n\nThis action cannot be undone.`)) {
         return;
     }

@@ -7,7 +7,7 @@
 const SBSCart = {
     // Storage key (unified across all pages)
     storageKey: 'sbs-basket',
-    
+
     // Get cart items
     getItems() {
         try {
@@ -17,7 +17,7 @@ const SBSCart = {
             return [];
         }
     },
-    
+
     // Set cart items
     setItems(items) {
         try {
@@ -29,7 +29,7 @@ const SBSCart = {
             return false;
         }
     },
-    
+
     // Add item to cart
     addItem(item) {
         const cart = this.getItems();
@@ -39,37 +39,37 @@ const SBSCart = {
         });
         return this.setItems(cart);
     },
-    
+
     // Remove item by index
     removeItem(index) {
         const cart = this.getItems();
         cart.splice(index, 1);
         return this.setItems(cart);
     },
-    
+
     // Clear entire cart
     clear() {
         localStorage.removeItem(this.storageKey);
         this.updateAllCounters();
     },
-    
+
     // Get cart count
     getCount() {
         return this.getItems().length;
     },
-    
+
     // Update all cart counters on page
     updateAllCounters() {
         const count = this.getCount();
-        
+
         // Try all possible counter IDs
         const counterIds = ['cart-count', 'basket-count', 'nav-cart-count', 'mobile-cart-count'];
-        
+
         counterIds.forEach(id => {
             const element = document.getElementById(id);
             if (element) {
                 element.textContent = count;
-                
+
                 // Show/hide badge based on count
                 if (count > 0) {
                     element.style.display = 'block';
@@ -80,25 +80,25 @@ const SBSCart = {
                 }
             }
         });
-        
+
         // Dispatch custom event for other components to listen to
-        window.dispatchEvent(new CustomEvent('cart-updated', { 
-            detail: { count, items: this.getItems() } 
+        window.dispatchEvent(new CustomEvent('cart-updated', {
+            detail: { count, items: this.getItems() }
         }));
     },
-    
+
     // Initialize cart system
     init() {
         // Update counters on page load
         this.updateAllCounters();
-        
+
         // Update when localStorage changes in another tab
         window.addEventListener('storage', (e) => {
             if (e.key === this.storageKey) {
                 this.updateAllCounters();
             }
         });
-        
+
         console.log('✅ SBS Cart System initialized');
     }
 };

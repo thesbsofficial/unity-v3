@@ -13,9 +13,11 @@
 
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest" defer></script>
-
-  <!-- Analytics Tracker -->
   <script src="/js/analytics-tracker.js" defer></script>
+  <script src="/js/cart-manager.js" defer></script>
+
+  <!-- Helper System -->
+  <link rel="stylesheet" href="/css/helper.css">
 
   <style>
     /* CSS RESET & VARIABLES */
@@ -1121,8 +1123,11 @@
           alt="👑 KING OF PRE-OWNED - SBS SWORDSBUYSALE" class="hero-image"
           onerror="this.style.display='none'; this.parentNode.innerHTML='<h1>👑 KING OF PRE-OWNED</h1><p>SBS - SWORDSBUYSALE</p>'">
         <div style="text-align: center; margin-top: 2rem; padding: 0 1rem;">
-          <h2 style="font-size: clamp(1.5rem, 4vw, 2.5rem); color: #ffd700; font-weight: 700; margin-bottom: 0.5rem;">Dublin's Premier Streetwear Marketplace</h2>
-          <p style="font-size: clamp(1rem, 2vw, 1.25rem); color: rgba(255, 255, 255, 0.8); max-width: 600px; margin: 0 auto;">Buy & sell premium streetwear, sneakers, and authentic fits. Your story, your style 👑</p>
+          <h2 style="font-size: clamp(1.5rem, 4vw, 2.5rem); color: #ffd700; font-weight: 700; margin-bottom: 0.5rem;">
+            Dublin's Premier Streetwear Marketplace</h2>
+          <p
+            style="font-size: clamp(1rem, 2vw, 1.25rem); color: rgba(255, 255, 255, 0.8); max-width: 600px; margin: 0 auto;">
+            Buy & sell premium streetwear, sneakers, and authentic fits. Your story, your style 👑</p>
         </div>
       </section>
 
@@ -1564,8 +1569,6 @@
         </div>
 
         <div class="about-outro">
-          <p class="about-text outro-text">None of this would be possible without you — every boss who buys, sells, or
-            even just supports has helped make SBS what it is today. Thank you for being part of the journey.</p>
         </div>
       </div>
     </section>
@@ -1738,7 +1741,8 @@
             <span class="faq-icon">+</span>
           </button>
           <div class="faq-answer" id="faq-15" aria-hidden="true">
-            <p>If the item isn't as described (wrong condition, fake, missing parts), we'll address it during collection or reach out to discuss.</p>
+            <p>If the item isn't as described (wrong condition, fake, missing parts), we'll address it during collection
+              or reach out to discuss.</p>
           </div>
         </div>
 
@@ -1803,6 +1807,9 @@
     <section class="footer-bottom">
       <p class="copyright">© 2025 SBS - Dublin's King of Pre-Owned Fashion. All rights reserved.</p>
       <p class="tagline">Built for the culture, by the culture</p>
+      <p style="margin-top: 1rem; font-size: 0.9rem;">
+        <a href="/privacy.html" style="color: var(--primary-gold); text-decoration: none;">Privacy Policy</a>
+      </p>
     </section>
   </footer>
 

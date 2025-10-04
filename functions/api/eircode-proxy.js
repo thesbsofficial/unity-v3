@@ -2,7 +2,7 @@
 export async function onRequest(context) {
     const { request } = context;
     const url = new URL(request.url);
-    
+
     // Allow CORS from our domain
     const corsHeaders = {
         'Access-Control-Allow-Origin': '*',
@@ -18,7 +18,7 @@ export async function onRequest(context) {
     try {
         // Get the action (identity or search)
         const action = url.searchParams.get('action') || 'identity';
-        
+
         if (action === 'identity') {
             // Get session key
             const response = await fetch('https://api-finder.eircode.ie/Latest/findergetidentity', {
@@ -30,7 +30,7 @@ export async function onRequest(context) {
             });
 
             const data = await response.json();
-            
+
             return new Response(JSON.stringify(data), {
                 status: 200,
                 headers: {
@@ -48,8 +48,8 @@ export async function onRequest(context) {
             const clientVersion = url.searchParams.get('clientVersion') || 'e98fe302';
 
             if (!key || !address) {
-                return new Response(JSON.stringify({ 
-                    error: { code: 400, text: 'Missing key or address parameter' } 
+                return new Response(JSON.stringify({
+                    error: { code: 400, text: 'Missing key or address parameter' }
                 }), {
                     status: 400,
                     headers: {
@@ -70,7 +70,7 @@ export async function onRequest(context) {
             });
 
             const data = await response.json();
-            
+
             return new Response(JSON.stringify(data), {
                 status: response.status,
                 headers: {
@@ -80,8 +80,8 @@ export async function onRequest(context) {
             });
         }
 
-        return new Response(JSON.stringify({ 
-            error: { code: 400, text: 'Invalid action. Use action=identity or action=search' } 
+        return new Response(JSON.stringify({
+            error: { code: 400, text: 'Invalid action. Use action=identity or action=search' }
         }), {
             status: 400,
             headers: {
@@ -91,11 +91,11 @@ export async function onRequest(context) {
         });
 
     } catch (error) {
-        return new Response(JSON.stringify({ 
-            error: { 
-                code: 500, 
-                text: error.message 
-            } 
+        return new Response(JSON.stringify({
+            error: {
+                code: 500,
+                text: error.message
+            }
         }), {
             status: 500,
             headers: {

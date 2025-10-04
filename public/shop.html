@@ -419,9 +419,12 @@
         }
 
         @keyframes pulse {
-            0%, 100% {
+
+            0%,
+            100% {
                 box-shadow: 0 4px 15px rgba(255, 215, 0, 0.6);
             }
+
             50% {
                 box-shadow: 0 4px 25px rgba(255, 215, 0, 0.9);
             }
@@ -992,6 +995,7 @@
                 opacity: 0;
                 transform: translateY(20px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -1096,7 +1100,7 @@
         <div class="checkout-content">
             <button class="checkout-close" onclick="closeCheckout()">&times;</button>
             <h2 class="checkout-title">Checkout</h2>
-            
+
             <!-- Order Summary -->
             <div class="checkout-items">
                 <h3>Your Items</h3>
@@ -1106,17 +1110,18 @@
             <!-- Customer Details Form -->
             <form id="checkout-form">
                 <h3 style="margin-bottom: 16px;">Delivery Details</h3>
-                
+
                 <input type="text" name="name" class="checkout-input" placeholder="Full Name *" required>
                 <input type="email" name="email" class="checkout-input" placeholder="Email Address *" required>
                 <input type="tel" name="phone" class="checkout-input" placeholder="Phone Number *" required>
-                
+
                 <input type="text" name="address" class="checkout-input" placeholder="Street Address *" required>
                 <input type="text" name="city" class="checkout-input" placeholder="City *" required>
                 <input type="text" name="eircode" class="checkout-input" placeholder="Eircode (Optional)">
-                
-                <textarea name="notes" class="checkout-input" placeholder="Delivery Notes (Optional)" rows="3"></textarea>
-                
+
+                <textarea name="notes" class="checkout-input" placeholder="Delivery Notes (Optional)"
+                    rows="3"></textarea>
+
                 <div class="checkout-note">
                     💳 Payment on delivery via cash or card
                 </div>
@@ -1232,7 +1237,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             // Track page view
             analytics.trackPageView();
-            
+
             loadProducts();
             updateCartCount();
             renderCart();
@@ -1378,7 +1383,7 @@
 
             // Check if product is reserved
             const isReserved = product.status === 'reserved';
-            
+
             return `
                 <div class="product-card ${isReserved ? 'reserved' : ''}">
                     <div class="product-image" onclick="openImageViewer('${imageUrl}')">
@@ -1536,7 +1541,7 @@
                     <button class="remove-btn" onclick="removeFromCart(${index})">Remove</button>
                 </div>
             `).join('');
-            
+
             // Show checkout button when items exist
             if (cartFooter) {
                 cartFooter.style.display = 'block';
@@ -1562,7 +1567,7 @@
         // CHECKOUT FUNCTION - Redirects to checkout page
         function checkout() {
             const cart = JSON.parse(localStorage.getItem('sbs-basket') || '[]');
-            
+
             if (cart.length === 0) {
                 showToast('Your basket is empty', 'error');
                 return;

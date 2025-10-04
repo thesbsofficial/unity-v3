@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -143,9 +144,20 @@
             display: inline-block;
         }
 
-        .trend-up { background: rgba(34, 197, 94, 0.2); color: var(--success); }
-        .trend-down { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
-        .trend-stable { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
+        .trend-up {
+            background: rgba(34, 197, 94, 0.2);
+            color: var(--success);
+        }
+
+        .trend-down {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+        }
+
+        .trend-stable {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning);
+        }
 
         .content-section {
             display: none;
@@ -194,9 +206,20 @@
             display: inline-block;
         }
 
-        .badge-success { background: rgba(34, 197, 94, 0.2); color: var(--success); }
-        .badge-warning { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
-        .badge-danger { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+        .badge-success {
+            background: rgba(34, 197, 94, 0.2);
+            color: var(--success);
+        }
+
+        .badge-warning {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning);
+        }
+
+        .badge-danger {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+        }
 
         .insights-box {
             background: var(--bg-card);
@@ -231,8 +254,13 @@
         }
 
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
 
         .error {
@@ -257,6 +285,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="header">
         <h1>📊 Analytics Dashboard</h1>
@@ -291,7 +320,7 @@
     <!-- PRODUCTS SECTION -->
     <div id="products-section" class="content-section">
         <div class="metrics-grid" id="product-metrics"></div>
-        
+
         <div class="data-table">
             <div class="table-header">🔥 Hot Products</div>
             <div id="hot-products"></div>
@@ -311,7 +340,7 @@
     <!-- CUSTOMERS SECTION -->
     <div id="customers-section" class="content-section">
         <div class="metrics-grid" id="customer-metrics"></div>
-        
+
         <div class="data-table">
             <div class="table-header">👑 Top Customers</div>
             <div id="top-customers"></div>
@@ -360,7 +389,7 @@
         async function loadAnalytics() {
             const loading = document.getElementById('loading');
             const error = document.getElementById('error');
-            
+
             // Show loading
             loading.style.display = 'block';
             error.style.display = 'none';
@@ -375,7 +404,7 @@
                 }
 
                 loading.style.display = 'none';
-                
+
                 // Show correct section
                 document.getElementById(`${currentView}-section`).classList.add('active');
 
@@ -515,4 +544,5 @@
         loadAnalytics();
     </script>
 </body>
+
 </html>

@@ -14,7 +14,7 @@
 
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    
+
     <!-- Analytics Tracker -->
     <script src="/js/analytics-tracker.js"></script>
 
@@ -1198,7 +1198,8 @@
         <!-- QUICK BUILDER (Hidden by default) -->
         <section class="quick-builder is-gated" id="quick-builder-section" style="position: relative;">
             <div class="container">
-                <button class="sbs-help-btn" data-help="sell-how-to-sell" title="How to sell" style="position: absolute; top: 20px; right: 20px;">?</button>
+                <button class="sbs-help-btn" data-help="sell-how-to-sell" title="How to sell"
+                    style="position: absolute; top: 20px; right: 20px;">?</button>
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
                     <h2 class="section-title" style="margin: 0;"><i data-lucide="settings"
                             class="icon icon-large icon-gold"></i> Quick Sell
@@ -1634,7 +1635,7 @@
         // =================================================================================
         document.addEventListener('DOMContentLoaded', () => {
             analytics.trackPageView();
-            
+
             // Initialize Lucide icons
             if (typeof lucide !== 'undefined') {
                 lucide.createIcons();
@@ -1643,16 +1644,16 @@
             // Initialize accordion functionality
             const accordionHeaders = document.querySelectorAll('.accordion-header');
             accordionHeaders.forEach(header => {
-                header.addEventListener('click', function() {
+                header.addEventListener('click', function () {
                     const accordionItem = this.parentElement;
                     const isActive = accordionItem.classList.contains('active');
-                    
+
                     // Close all accordion items
                     document.querySelectorAll('.accordion-item').forEach(item => {
                         item.classList.remove('active');
                         item.querySelector('.accordion-header').setAttribute('aria-expanded', 'false');
                     });
-                    
+
                     // Toggle clicked item
                     if (!isActive) {
                         accordionItem.classList.add('active');

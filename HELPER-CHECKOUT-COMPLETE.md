@@ -10,11 +10,13 @@
 ### 1. ✅ Helper System (COMPLETE)
 
 **Files Created:**
+
 - `/public/js/helper.js` (340 lines) - Full helper system with 15+ topics
 - `/public/css/helper.css` - Helper button styles
 - `HELPER-SYSTEM-GUIDE.md` - Complete usage documentation
 
 **Features:**
+
 - ❓ Context-aware help buttons for every page
 - 📚 15+ help topics covering shop, sell, admin, dashboard
 - 💾 "Don't show again" with localStorage persistence
@@ -23,9 +25,10 @@
 - 🎨 Beautiful modal UI with animations
 
 **Usage:**
+
 ```html
 <!-- Add to any page -->
-<link rel="stylesheet" href="/css/helper.css">
+<link rel="stylesheet" href="/css/helper.css" />
 <script src="/js/helper.js" defer></script>
 
 <!-- Add helper button -->
@@ -37,7 +40,9 @@
 ### 2. 📋 Complete Planning Documents
 
 **Created:**
+
 1. **`CHECKOUT-SELL-HELPER-PLAN.md`** - Master plan with:
+
    - Complete checkout flow design
    - Sell submission architecture
    - Helper system design
@@ -46,6 +51,7 @@
    - Implementation checklist
 
 2. **`CHECKOUT-HELPER-DEPLOYMENT.md`** - Ready-to-use code:
+
    - Checkout modal JavaScript
    - Checkout styles CSS
    - Integration instructions
@@ -64,12 +70,14 @@
 ### Helper Topics Available:
 
 #### Shop Page (4 topics)
+
 - `shop-how-to-buy` - Complete buying process
 - `shop-size-guide` - Size charts and explanations
 - `shop-condition` - BN vs PO explained
 - `shop-contact` - Contact methods
 
 #### Sell Page (5 topics)
+
 - `sell-how-to-sell` - Selling process
 - `sell-what-we-buy` - Categories accepted
 - `sell-pricing-tips` - Price expectations
@@ -77,11 +85,13 @@
 - `sell-payment` - Payment info
 
 #### Admin Pages (3 topics)
+
 - `admin-quick-start` - Dashboard overview
 - `admin-inventory` - Upload guide
 - `admin-analytics` - Metrics explained
 
 #### Customer Dashboard (2 topics)
+
 - `dashboard-orders` - Order tracking
 - `dashboard-submissions` - Sell requests
 
@@ -90,8 +100,9 @@
 ## 🛒 CHECKOUT FLOW (Ready to Implement)
 
 ### Flow Design:
+
 ```
-User clicks "Checkout" 
+User clicks "Checkout"
   ↓
 Show delivery details modal
   ↓
@@ -111,11 +122,13 @@ Send email notifications
 ```
 
 ### API Integration:
+
 - Uses existing `/api/orders` endpoint
 - Database schema already exists
 - Just needs frontend modal + JavaScript
 
 ### Code Ready:
+
 - Complete checkout modal HTML
 - Form validation
 - API integration
@@ -127,6 +140,7 @@ Send email notifications
 ## 📸 SELL SUBMISSION (Planned)
 
 ### Flow Design:
+
 ```
 User fills Quick Builder
   ↓
@@ -146,6 +160,7 @@ Admin reviews in dashboard
 ```
 
 ### What's Needed:
+
 1. Create `sell_submissions` table (SQL ready in plan)
 2. Create `/functions/api/sell-submissions.js`
 3. Add form handler to sell.html
@@ -156,6 +171,7 @@ Admin reviews in dashboard
 ## 📋 IMPLEMENTATION STATUS
 
 ### ✅ COMPLETED
+
 - [x] Helper system JavaScript
 - [x] Helper system CSS
 - [x] 15+ helper topics written
@@ -166,12 +182,14 @@ Admin reviews in dashboard
 - [x] Deployment guides written
 
 ### 📝 READY TO IMPLEMENT
+
 - [ ] Add helper system to shop.html (2 minutes)
 - [ ] Add helper system to sell.html (2 minutes)
 - [ ] Add checkout modal to shop.html (5 minutes)
 - [ ] Test checkout flow (5 minutes)
 
 ### 📋 NEXT PHASE
+
 - [ ] Create sell_submissions table
 - [ ] Build sell submission API
 - [ ] Add form handler to sell.html
@@ -197,18 +215,20 @@ npx wrangler pages deploy --project-name=unity-v3 --branch=MAIN .
 ### Then Add to Pages:
 
 **shop.html** - Add helper buttons to hero:
+
 ```html
 <section class="hero" style="position: relative;">
-    <button class="sbs-help-btn" data-help="shop-how-to-buy">?</button>
-    <h1>SBS SHOP</h1>
+  <button class="sbs-help-btn" data-help="shop-how-to-buy">?</button>
+  <h1>SBS SHOP</h1>
 </section>
 ```
 
 **sell.html** - Add helper button to form:
+
 ```html
 <div class="container" style="position: relative;">
-    <button class="sbs-help-btn" data-help="sell-how-to-sell">?</button>
-    <!-- form here -->
+  <button class="sbs-help-btn" data-help="sell-how-to-sell">?</button>
+  <!-- form here -->
 </div>
 ```
 
@@ -217,6 +237,7 @@ npx wrangler pages deploy --project-name=unity-v3 --branch=MAIN .
 ## 💡 KEY FEATURES
 
 ### Helper System Benefits:
+
 - ✅ Reduces customer support questions
 - ✅ Improves user experience
 - ✅ Works on mobile perfectly
@@ -225,6 +246,7 @@ npx wrangler pages deploy --project-name=unity-v3 --branch=MAIN .
 - ✅ "Don't show again" for repeat visitors
 
 ### Checkout Flow Benefits:
+
 - ✅ Uses existing API (no backend changes)
 - ✅ Simple collection/delivery options
 - ✅ Clear pricing (+€5 for delivery)
@@ -232,6 +254,7 @@ npx wrangler pages deploy --project-name=unity-v3 --branch=MAIN .
 - ✅ Order number tracking
 
 ### Sell Submission Benefits:
+
 - ✅ Multi-item support
 - ✅ Optional photos (no blocking)
 - ✅ Batch ID tracking
@@ -256,16 +279,19 @@ npx wrangler pages deploy --project-name=unity-v3 --branch=MAIN .
 ## 🎯 NEXT STEPS
 
 ### Immediate (Today):
+
 1. Deploy helper system
 2. Add helper buttons to shop.html and sell.html
 3. Test on mobile and desktop
 
 ### Short-term (This Week):
+
 1. Implement checkout modal in shop.html
 2. Test complete order flow
 3. Build sell submission API
 
 ### Medium-term (Next Week):
+
 1. Create admin review dashboard
 2. Add email notifications
 3. Build seller payment tracking

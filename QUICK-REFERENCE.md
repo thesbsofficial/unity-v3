@@ -9,6 +9,7 @@
 ## 🎯 MAIN CHANGES
 
 ### 1. RESERVATION SYSTEM (NEW)
+
 - ✅ Customers can reserve items during checkout
 - ✅ Products show gold "RESERVED" badge on shop page
 - ✅ Admin reviews reservations in orders page
@@ -16,6 +17,7 @@
 - ✅ Can mark as sold or cancel/unreserve
 
 ### 2. CHECKOUT PAGE
+
 - ✅ "Dublin County" → **"Bordering Cities"**
 - ✅ "Surrounding Counties" → **"Further Counties"**
 - ✅ **No prices shown** (removed entirely)
@@ -24,6 +26,7 @@
 - ✅ Added **payment methods**: Cash, Card, Bank Transfer, **Crypto** 🪙
 
 ### 3. ADMIN ORDERS PAGE
+
 - ✅ Reservations now show directly in orders/customers page
 - ✅ No need for separate reservations navigation
 - ✅ All customer orders unified in one view
@@ -33,11 +36,13 @@
 ## 📍 WHERE TO FIND THINGS
 
 ### Customer Side:
+
 - **Shop:** `/shop.html` - See RESERVED badges
 - **Checkout:** `/checkout.html` - Reserve items
 - **Cart:** Click "Checkout" to reserve
 
 ### Admin Side:
+
 - **Orders:** `/admin/orders/` - View ALL orders + reservations
 - **Reservations Dashboard:** `/admin/reservations/` - Detailed reservation management
 - **Inventory:** `/admin/inventory/` - Manage products
@@ -47,12 +52,14 @@
 ## 🎨 NEW FEATURES
 
 ### Delivery Schedule Info:
+
 ```
 ⏰ Orders before 6pm → Delivered after 6pm same day
 ⏰ Orders after 6pm → Delivered next working day
 ```
 
 ### Payment Options Now Include:
+
 ```
 💳 Cash on Delivery
 💳 Card on Delivery
@@ -61,6 +68,7 @@
 ```
 
 ### Zone Names Changed:
+
 ```
 OLD                    → NEW
 ─────────────────────────────────────────
@@ -81,6 +89,7 @@ Surrounding Counties  → Further Counties
 ## 🔧 WHAT WAS REMOVED
 
 From Checkout:
+
 - ❌ Price displays (€15, €20, €25, etc.)
 - ❌ Order summary (Subtotal, Delivery, Total)
 - ❌ Clickable delivery zone selection
@@ -92,6 +101,7 @@ From Checkout:
 ## 📱 TESTING
 
 Test the flow:
+
 1. Go to shop → Add item to cart
 2. Click checkout
 3. Fill form → Submit

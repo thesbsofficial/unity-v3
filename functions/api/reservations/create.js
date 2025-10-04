@@ -17,9 +17,9 @@ export async function onRequestPost(context) {
         const { items, customer, order_number } = await request.json();
 
         if (!items || !Array.isArray(items) || items.length === 0) {
-            return new Response(JSON.stringify({ 
-                success: false, 
-                error: 'No items to reserve' 
+            return new Response(JSON.stringify({
+                success: false,
+                error: 'No items to reserve'
             }), {
                 status: 400,
                 headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -27,9 +27,9 @@ export async function onRequestPost(context) {
         }
 
         if (!customer || !customer.name || !customer.phone) {
-            return new Response(JSON.stringify({ 
-                success: false, 
-                error: 'Customer information required' 
+            return new Response(JSON.stringify({
+                success: false,
+                error: 'Customer information required'
             }), {
                 status: 400,
                 headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -88,9 +88,9 @@ export async function onRequestPost(context) {
         }
 
         if (reservations.length === 0) {
-            return new Response(JSON.stringify({ 
-                success: false, 
-                error: 'No products could be reserved (already reserved or sold)' 
+            return new Response(JSON.stringify({
+                success: false,
+                error: 'No products could be reserved (already reserved or sold)'
             }), {
                 status: 400,
                 headers: { ...corsHeaders, 'Content-Type': 'application/json' }

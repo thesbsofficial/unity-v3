@@ -9,41 +9,51 @@
 ## 📊 What We Activated
 
 ### Frontend Tracking (LIVE)
+
 ✅ **shop.html** - E-commerce shop page
+
 - Page view tracking on load
 - Add to cart tracking with full product metadata
 - Session management
 - Auto-flush every 5 seconds
 
 ✅ **index.html** - Landing page
+
 - Page view tracking
 - Session tracking
 - Visitor analytics
 
 ✅ **sell.html** - Sell request page
+
 - Page view tracking
 - Session tracking
 
 ### Backend APIs (DEPLOYED)
+
 ✅ **POST /api/analytics/track** - Event ingestion
+
 - Receives events from frontend tracker
 - Batch insert into analytics_events table
 - Stores: event_type, session_id, user_id, product_id, metadata, value
 
 ✅ **POST /api/analytics/sync** - Data aggregation
+
 - Aggregates raw events → daily summaries
 - Calculates conversion rates, AOV, abandonment rates
 - Updates product performance metrics
 - Processes search analytics
 
 ✅ **GET /api/admin/analytics?period=7d** - Dashboard data
+
 - Returns daily summaries for charts
 - Top products by revenue
 - Top search terms
 - Growth rate calculations
 
 ### Admin Dashboard (READY)
+
 ✅ **Admin Analytics Page** - `/admin/analytics/index.html`
+
 - Stats cards: Visitors, Revenue, Orders, Conversion Rate
 - Period filters: 24h, 7d, 30d
 - Revenue trend chart (Chart.js)
@@ -57,18 +67,20 @@
 ## 📈 Current Tracking Events
 
 ### Active Events
-| Event Type | Where | Data Collected |
-|------------|-------|----------------|
-| `page_view` | shop.html, index.html, sell.html | session_id, page path, user_agent |
-| `add_to_cart` | shop.html | product_id, product_name, category, brand, size, price, quantity |
+
+| Event Type    | Where                            | Data Collected                                                   |
+| ------------- | -------------------------------- | ---------------------------------------------------------------- |
+| `page_view`   | shop.html, index.html, sell.html | session_id, page path, user_agent                                |
+| `add_to_cart` | shop.html                        | product_id, product_name, category, brand, size, price, quantity |
 
 ### Pending Events
-| Event Type | Status | Where Needed |
-|------------|--------|--------------|
-| `product_view` | ⏳ TODO | shop.html - modify openImageViewer() |
-| `search` | ⏳ TODO | Shop search (not implemented yet) |
-| `checkout_start` | ⏳ TODO | Checkout flow (not implemented yet) |
-| `purchase` | ⏳ TODO | Order completion (not implemented yet) |
+
+| Event Type       | Status  | Where Needed                           |
+| ---------------- | ------- | -------------------------------------- |
+| `product_view`   | ⏳ TODO | shop.html - modify openImageViewer()   |
+| `search`         | ⏳ TODO | Shop search (not implemented yet)      |
+| `checkout_start` | ⏳ TODO | Checkout flow (not implemented yet)    |
+| `purchase`       | ⏳ TODO | Order completion (not implemented yet) |
 
 ---
 
@@ -137,6 +149,7 @@ CREATE TABLE analytics_searches (
 ## 🚀 How to Use
 
 ### 1. View Live Analytics
+
 1. Visit: https://thesbsofficial.com/admin/login.html
 2. Login with admin credentials
 3. Navigate to Analytics dashboard
@@ -144,10 +157,11 @@ CREATE TABLE analytics_searches (
 5. View charts, stats, top products
 
 ### 2. Monitor Real-Time Events
+
 ```sql
 -- Check latest events
-SELECT * FROM analytics_events 
-ORDER BY created_at DESC 
+SELECT * FROM analytics_events
+ORDER BY created_at DESC
 LIMIT 20;
 
 -- Count events by type today
@@ -157,7 +171,7 @@ WHERE DATE(created_at) = DATE('now')
 GROUP BY event_type;
 
 -- Today's cart adds
-SELECT product_id, category, brand, 
+SELECT product_id, category, brand,
        JSON_EXTRACT(metadata, '$.size') as size,
        COUNT(*) as adds
 FROM analytics_events
@@ -167,6 +181,7 @@ GROUP BY product_id;
 ```
 
 ### 3. Run Manual Sync
+
 - Visit admin analytics page
 - Click "Sync Now" button
 - System aggregates all events since last sync
@@ -178,17 +193,20 @@ GROUP BY product_id;
 ## 🎨 What Data You'll See
 
 ### Visitor Metrics
+
 - Unique visitors (by session_id)
 - Total page views
 - Traffic by page (shop, index, sell)
 
 ### E-Commerce Metrics
+
 - Products added to cart
 - Most popular products
 - Popular sizes per category
 - Popular brands
 
 ### Conversion Analysis
+
 - Cart additions vs page views
 - Conversion funnel visualization
 - Abandonment rates (when checkout implemented)
@@ -198,6 +216,7 @@ GROUP BY product_id;
 ## 🔧 Technical Details
 
 ### Analytics Tracker Class
+
 **File:** `/public/js/analytics-tracker.js`
 
 ```javascript
@@ -207,7 +226,15 @@ const analytics = new SBSAnalytics();
 // Track events
 analytics.trackPageView();
 analytics.trackProductView({ product_id, name, category, brand, price });
-analytics.trackAddToCart({ product_id, name, category, brand, size, price, quantity });
+analytics.trackAddToCart({
+  product_id,
+  name,
+  category,
+  brand,
+  size,
+  price,
+  quantity,
+});
 analytics.trackSearch(query, resultsCount);
 analytics.trackPurchase({ order_id, total, items });
 
@@ -217,11 +244,12 @@ analytics.trackPurchase({ order_id, total, items });
 ```
 
 ### Event Flow
+
 ```
-Frontend → analytics.track() → Event Queue → Auto-flush (5s) → 
-POST /api/analytics/track → D1 Database (analytics_events) → 
-Manual Sync → /api/analytics/sync → Aggregation → 
-Daily Summaries + Product Performance → 
+Frontend → analytics.track() → Event Queue → Auto-flush (5s) →
+POST /api/analytics/track → D1 Database (analytics_events) →
+Manual Sync → /api/analytics/sync → Aggregation →
+Daily Summaries + Product Performance →
 Admin Dashboard → GET /api/admin/analytics → Charts & Tables
 ```
 
@@ -229,30 +257,33 @@ Admin Dashboard → GET /api/admin/analytics → Charts & Tables
 
 ## ✅ Deployment Status
 
-| Component | Status | Notes |
-|-----------|--------|-------|
-| Frontend Tracker | ✅ LIVE | Collecting page views & cart data |
-| Track API | ✅ LIVE | Receiving events |
-| Sync API | ✅ LIVE | Ready for aggregation |
-| Admin Dashboard | ✅ LIVE | Charts & tables ready |
-| Database Tables | ✅ CREATED | Via analytics-schema.sql |
-| Page Views | ✅ ACTIVE | shop, index, sell |
-| Cart Tracking | ✅ ACTIVE | shop.html |
-| Product Views | ⏳ TODO | Need openImageViewer modification |
-| Search Tracking | ⏳ TODO | Search not implemented |
-| Purchase Tracking | ⏳ TODO | Checkout not implemented |
+| Component         | Status     | Notes                             |
+| ----------------- | ---------- | --------------------------------- |
+| Frontend Tracker  | ✅ LIVE    | Collecting page views & cart data |
+| Track API         | ✅ LIVE    | Receiving events                  |
+| Sync API          | ✅ LIVE    | Ready for aggregation             |
+| Admin Dashboard   | ✅ LIVE    | Charts & tables ready             |
+| Database Tables   | ✅ CREATED | Via analytics-schema.sql          |
+| Page Views        | ✅ ACTIVE  | shop, index, sell                 |
+| Cart Tracking     | ✅ ACTIVE  | shop.html                         |
+| Product Views     | ⏳ TODO    | Need openImageViewer modification |
+| Search Tracking   | ⏳ TODO    | Search not implemented            |
+| Purchase Tracking | ⏳ TODO    | Checkout not implemented          |
 
 ---
 
 ## 📝 Next Steps
 
 ### Immediate (Add More Tracking)
+
 1. **Product View Tracking** (5 min)
+
    - Modify `openImageViewer()` in shop.html to accept product data
    - Add `analytics.trackProductView()` call
    - Track which products get most views
 
 2. **Search Tracking** (WHEN SEARCH ADDED)
+
    - Add search input to shop.html
    - Track searches: `analytics.trackSearch(query, results.length)`
    - See what customers search for
@@ -263,6 +294,7 @@ Admin Dashboard → GET /api/admin/analytics → Charts & Tables
    - Calculate true conversion rates
 
 ### Testing
+
 1. Visit shop: https://thesbsofficial.com/shop.html
 2. Browse products (page view tracked)
 3. Add items to cart (cart event tracked)
@@ -271,6 +303,7 @@ Admin Dashboard → GET /api/admin/analytics → Charts & Tables
 6. View aggregated data in charts
 
 ### Monitoring
+
 - Check event collection daily
 - Run sync daily (or automate)
 - Monitor top products
@@ -282,18 +315,22 @@ Admin Dashboard → GET /api/admin/analytics → Charts & Tables
 ## 🐛 Known Issues
 
 ### Admin Dashboard Backend
+
 ⚠️ **Admin APIs have import errors**
+
 - Files: `/functions/api/admin/*.js`
 - Issue: Import non-existent `../../lib/auth-helpers`
 - Temporary: Excluded from deployment
 - Fix needed: Implement auth-helpers or inline the functions
 
 **Admin Features Affected:**
+
 - Login API (has placeholder but import error)
 - Stats API (has placeholder but import error)
 - Products CRUD API (has placeholder but import error)
 
 **Workaround:**
+
 - Analytics dashboard UI works (HTML/CSS/JS)
 - Analytics APIs work (track, sync, analytics)
 - Admin login/auth needs fixing before full admin panel works
@@ -303,18 +340,21 @@ Admin Dashboard → GET /api/admin/analytics → Charts & Tables
 ## 💡 Analytics Insights You Can Get
 
 ### Product Intelligence
+
 - Which products get viewed most?
 - Which sizes sell best per category?
 - Which brands are most popular?
 - View-to-cart conversion by product
 
 ### Customer Behavior
+
 - Most visited pages
 - Average session duration (via event timestamps)
 - Cart abandonment patterns
 - Popular shopping times (when checkout added)
 
 ### Business Metrics
+
 - Daily revenue trends
 - Average order value
 - Conversion rate over time
@@ -329,7 +369,7 @@ Admin Dashboard → GET /api/admin/analytics → Charts & Tables
 ✅ **Database tables created** - 4 tables ready for data  
 ✅ **Admin dashboard built** - Charts and tables ready  
 ⏳ **First sync completed** - Waiting for enough events  
-⏳ **Data visualization working** - Need to run first sync  
+⏳ **Data visualization working** - Need to run first sync
 
 ---
 

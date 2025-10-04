@@ -6,7 +6,7 @@
 // Checkout function - called when user clicks "Proceed to Checkout"
 function checkout() {
     const basket = JSON.parse(localStorage.getItem('sbs-basket')) || [];
-    
+
     if (basket.length === 0) {
         // Use showToast if available, otherwise alert
         if (typeof showToast === 'function') {
@@ -16,7 +16,7 @@ function checkout() {
         }
         return;
     }
-    
+
     // Show checkout modal
     showCheckoutModal(basket);
 }
@@ -26,7 +26,7 @@ function showCheckoutModal(items) {
     // Remove existing modal if any
     const existing = document.getElementById('checkout-modal');
     if (existing) existing.remove();
-    
+
     // Create modal
     const modal = document.createElement('div');
     modal.id = 'checkout-modal';
@@ -114,13 +114,13 @@ function showCheckoutModal(items) {
             </div>
         </div>
     `;
-    
+
     document.body.appendChild(modal);
     document.body.style.overflow = 'hidden';
-    
+
     // Initial total calculation
     updateCheckoutTotal();
-    
+
     // Focus first input
     setTimeout(() => {
         const firstInput = modal.querySelector('input[name="name"]');
@@ -132,7 +132,7 @@ function showCheckoutModal(items) {
 function updateCheckoutTotal() {
     const deliveryRadio = document.querySelector('input[name="delivery"]:checked');
     if (!deliveryRadio) return;
-    
+
     const deliveryFee = deliveryRadio.value === 'delivery' ? 5 : 0;
     const totalElement = document.getElementById('checkout-total-amount');
     if (totalElement) {
@@ -143,20 +143,20 @@ function updateCheckoutTotal() {
 // Submit order to API
 async function submitOrder(event) {
     event.preventDefault();
-    
+
     const form = event.target;
     const submitBtn = document.getElementById('checkout-submit-btn');
     const basket = JSON.parse(localStorage.getItem('sbs-basket')) || [];
-    
+
     // Disable button
     submitBtn.disabled = true;
     submitBtn.textContent = 'Processing...';
-    
+
     try {
         const formData = new FormData(form);
         const deliveryMethod = formData.get('delivery');
         const totalAmount = deliveryMethod === 'delivery' ? 5 : 0;
-        
+
         // Prepare order data
         const orderData = {
             items: basket.map(item => ({
@@ -173,7 +173,7 @@ async function submitOrder(event) {
             delivery_method: deliveryMethod,
             total_amount: totalAmount
         };
-        
+
         // Submit to API
         const response = await fetch('/api/orders', {
             method: 'POST',
@@ -182,24 +182,24 @@ async function submitOrder(event) {
             },
             body: JSON.stringify(orderData)
         });
-        
+
         const data = await response.json();
-        
+
         if (data.success && data.order) {
             // Clear basket
             localStorage.removeItem('sbs-basket');
-            
+
             // Show success message
             showOrderConfirmation(data.order);
-            
+
             // Close checkout modal
             closeCheckout();
-            
+
             // Update cart count
             if (typeof updateCartCount === 'function') {
                 updateCartCount();
             }
-            
+
             // Reload page after delay
             setTimeout(() => {
                 location.reload();
@@ -209,11 +209,11 @@ async function submitOrder(event) {
         }
     } catch (error) {
         console.error('Checkout error:', error);
-        
+
         // Re-enable button
         submitBtn.disabled = false;
         submitBtn.textContent = 'Confirm Order';
-        
+
         // Show error
         alert('Order submission failed. Please try again or contact us via WhatsApp:\n\n+353 87 123 4567');
     }
@@ -243,7 +243,7 @@ function showOrderConfirmation(order) {
             </div>
         </div>
     `;
-    
+
     document.body.appendChild(modal);
 }
 

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -205,6 +206,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <h1>🗺️ Postcoder API Test</h1>
@@ -266,7 +268,7 @@
     <script>
         const API_KEY = 'PCWK7-LY7KM-NKNXC-L8U7K';
         const BASE_URL = 'https://ws.postcoder.com/pcw';
-        
+
         let stats = {
             total: 0,
             successful: 0,
@@ -283,7 +285,7 @@
         async function testEircodeLookup() {
             const eircode = document.getElementById('eircode').value.trim().toUpperCase();
             const resultsDiv = document.getElementById('eircode-results');
-            
+
             if (!eircode) {
                 resultsDiv.style.display = 'block';
                 resultsDiv.innerHTML = '<div class="error">❌ Please enter an Eircode</div>';
@@ -292,7 +294,7 @@
 
             resultsDiv.style.display = 'block';
             resultsDiv.innerHTML = '<div class="loading">⏳ Looking up Eircode...</div>';
-            
+
             stats.total++;
             updateStats();
 
@@ -303,7 +305,7 @@
                 if (data && data.length > 0) {
                     stats.successful++;
                     updateStats();
-                    
+
                     let html = `<h3>✅ Found ${data.length} address${data.length > 1 ? 'es' : ''}</h3>`;
                     data.forEach((addr, index) => {
                         html += `
@@ -331,10 +333,10 @@
 
         // Test 2: Address Autocomplete (live search with longer delay to avoid rate limits)
         let autocompleteTimeout;
-        document.getElementById('address-search').addEventListener('input', function(e) {
+        document.getElementById('address-search').addEventListener('input', function (e) {
             clearTimeout(autocompleteTimeout);
             const query = e.target.value.trim();
-            
+
             if (query.length < 5) {
                 document.getElementById('autocomplete-results').style.display = 'none';
                 return;
@@ -348,7 +350,7 @@
             const resultsDiv = document.getElementById('autocomplete-results');
             resultsDiv.style.display = 'block';
             resultsDiv.innerHTML = '<div class="loading">⏳ Searching addresses...</div>';
-            
+
             stats.total++;
             updateStats();
 
@@ -359,7 +361,7 @@
                 if (data && data.predictions && data.predictions.length > 0) {
                     stats.successful++;
                     updateStats();
-                    
+
                     let html = `<h3>✅ Found ${data.predictions.length} suggestions</h3>`;
                     data.predictions.forEach((pred) => {
                         html += `
@@ -384,7 +386,7 @@
         async function selectAddress(refs) {
             const resultsDiv = document.getElementById('autocomplete-results');
             resultsDiv.innerHTML = '<div class="loading">⏳ Getting full address details...</div>';
-            
+
             stats.total++;
             updateStats();
 
@@ -395,7 +397,7 @@
                 if (data && data.length > 0) {
                     stats.successful++;
                     updateStats();
-                    
+
                     const addr = data[0];
                     resultsDiv.innerHTML = `
                         <div class="success">
@@ -424,7 +426,7 @@
         async function testLocationSearch() {
             const location = document.getElementById('location').value.trim();
             const resultsDiv = document.getElementById('location-results');
-            
+
             if (!location) {
                 resultsDiv.style.display = 'block';
                 resultsDiv.innerHTML = '<div class="error">❌ Please enter a location</div>';
@@ -433,7 +435,7 @@
 
             resultsDiv.style.display = 'block';
             resultsDiv.innerHTML = '<div class="loading">⏳ Searching location...</div>';
-            
+
             stats.total++;
             updateStats();
 
@@ -445,7 +447,7 @@
                 if (data && data.predictions && data.predictions.length > 0) {
                     stats.successful++;
                     updateStats();
-                    
+
                     let html = `<h3>✅ Found ${data.predictions.length} locations</h3>`;
                     data.predictions.slice(0, 10).forEach((pred) => {
                         html += `
@@ -481,4 +483,5 @@
         });
     </script>
 </body>
+
 </html>

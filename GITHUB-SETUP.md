@@ -3,6 +3,7 @@
 ## Instructions
 
 ### Step 1: Create Repository on GitHub
+
 1. Go to https://github.com/new
 2. **Repository name:** `sbs-unity-v3`
 3. **Description:** Dublin's Premier Streetwear Platform - E-commerce site with buy/sell features
@@ -11,6 +12,7 @@
 6. Click **"Create repository"**
 
 ### Step 2: Connect Local Repository
+
 Once created, GitHub will show you commands. Run these in your terminal:
 
 ```bash
@@ -24,7 +26,9 @@ git push -u origin MAIN
 ```
 
 ### Step 3: Verify Repository
+
 After pushing, check:
+
 - ✅ All files uploaded
 - ✅ README.md displays properly
 - ✅ No secrets/credentials visible (check .gitignore is working)
@@ -35,6 +39,7 @@ After pushing, check:
 ## ⚠️ SECURITY CHECKLIST
 
 ### Files That Should NOT Appear on GitHub:
+
 - ❌ `*.env` files
 - ❌ `cloudflare.env`
 - ❌ `WORKING-VERSION/` directory
@@ -42,6 +47,7 @@ After pushing, check:
 - ❌ Any files with API tokens or passwords
 
 ### Files That SHOULD Appear:
+
 - ✅ `README.md` (main documentation)
 - ✅ `public/` directory (HTML, CSS, JS)
 - ✅ `functions/` directory (API endpoints)
@@ -93,15 +99,19 @@ After successful push, your repository will contain:
 ## 🎯 Post-Upload Tasks
 
 ### Configure GitHub Settings
+
 1. **Settings > General**
+
    - Set default branch to `MAIN`
    - Enable "Automatically delete head branches" (for PRs)
 
 2. **Settings > Security**
+
    - Enable Dependabot alerts
    - Enable secret scanning (if available)
 
 3. **Settings > Secrets and variables**
+
    - Add production secrets:
      - `CLOUDFLARE_API_TOKEN`
      - `RESEND_API_KEY`

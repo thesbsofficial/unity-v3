@@ -618,14 +618,12 @@
                 <form id="loginForm">
                     <div class="form-group">
                         <label for="social_handle">Social Media Handle *</label>
-                        <div class="input-with-prefix">
-                            <span class="prefix">@</span>
-                            <input type="text" id="social_handle" name="social_handle" placeholder="your_handle"
-                                required autocomplete="username">
-                        </div>
-                        <div class="form-help">Your Instagram, TikTok, or other social handle</div>
+                        <input type="text" id="social_handle" name="social_handle" placeholder="e.g. @your_instagram"
+                            required
+                            pattern="^@?([a-zA-Z0-9_](?:(?:[a-zA-Z0-9_]|(?:\.(?!\.))){0,28}(?:[a-zA-Z0-9_]))?)$"
+                            title="Enter your social media handle (e.g., @your_username)">
+                        <small class="form-hint">Use your @username, not an email.</small>
                     </div>
-
                     <div class="form-group">
                         <label for="password">Password *</label>
                         <input type="password" id="password" name="password" placeholder="Enter your password" required

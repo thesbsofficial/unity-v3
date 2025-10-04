@@ -246,15 +246,15 @@ function formatProductName(filename) {
 
 function generateDescription(filename, category) {
     const baseDesc = formatProductName(filename);
-    const categoryDescs = {
-        'tshirts': 'Premium streetwear t-shirt from SBS Unity Dublin collection',
-        'hoodies': 'Heavy-weight hoodie crafted for Dublin streets',
-        'jackets': 'Street-ready jacket with signature SBS styling',
-        'pants': 'Comfortable streetwear bottoms for everyday wear',
-        'accessories': 'Essential SBS accessory to complete your look',
-        'footwear': 'Street-certified footwear from Dublin\'s finest',
-        'clothing': 'Authentic SBS Unity streetwear piece'
+    const categoryDescriptions = {
+        'tshirts': 'Premium streetwear t-shirt from the SBS Dublin collection',
+        'hoodies': 'Heavyweight hoodie from the SBS Dublin collection',
+        'hats': 'Exclusive SBS cap',
+        'accessories': 'Authentic accessory from SBS',
+        'sneakers': 'Rare and authentic sneakers from SBS',
+        'clothing': 'Authentic SBS streetwear piece'
     };
+    const description = categoryDescriptions[category] || `Authentic ${category} from SBS`;
 
-    return categoryDescs[category] || categoryDescs['clothing'];
+    return `${description}. Elevate your style with this premium ${category} from SBS, designed for comfort and durability. Perfect for any occasion, this ${category} is a must-have in your wardrobe.`;
 }

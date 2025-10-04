@@ -14,13 +14,13 @@
  * - LocalStorage Management
  */
 
-(function() {
+(function () {
     'use strict';
 
     // ============================================================================
     // 🔧 CONFIGURATION
     // ============================================================================
-    
+
     const CONFIG = {
         API_BASE: window.location.origin,
         STORAGE_PREFIX: 'sbs-',
@@ -34,7 +34,7 @@
     // ============================================================================
     // 🗄️ STORAGE MANAGER - Centralized Storage Operations
     // ============================================================================
-    
+
     const Storage = {
         // Generic get/set
         get(key, useSession = false) {
@@ -42,7 +42,7 @@
             const fullKey = key.startsWith('sbs') ? key : CONFIG.STORAGE_PREFIX + key;
             const data = storage.getItem(fullKey);
             if (!data) return null;
-            
+
             try {
                 const parsed = JSON.parse(data);
                 // Check expiry if exists
@@ -85,7 +85,7 @@
     // ============================================================================
     // 🔐 AUTH MODULE - User Authentication & Session Management
     // ============================================================================
-    
+
     const Auth = {
         isLoggedIn() {
             const user = Storage.get(CONFIG.USER_STORAGE_KEY, true);
@@ -136,7 +136,7 @@
     // ============================================================================
     // 🛒 CART MODULE - Shopping Basket Management
     // ============================================================================
-    
+
     const Cart = {
         get() {
             return Storage.get(CONFIG.CART_STORAGE_KEY) || [];
@@ -182,7 +182,7 @@
         },
 
         getTotal() {
-            return this.get().reduce((sum, item) => 
+            return this.get().reduce((sum, item) =>
                 sum + (item.price * (item.quantity || 1)), 0
             );
         },
@@ -200,11 +200,11 @@
     // ============================================================================
     // 🌐 API CLIENT - Unified HTTP Request Handler
     // ============================================================================
-    
+
     const API = {
         async request(endpoint, options = {}) {
-            const url = endpoint.startsWith('http') 
-                ? endpoint 
+            const url = endpoint.startsWith('http')
+                ? endpoint
                 : `${CONFIG.API_BASE}${endpoint}`;
 
             const defaultOptions = {
@@ -254,7 +254,7 @@
     // ============================================================================
     // 💬 UI MODULE - User Interface Helpers
     // ============================================================================
-    
+
     const UI = {
         // Toast notifications
         showToast(message, type = 'info', duration = CONFIG.TOAST_DURATION) {
@@ -267,7 +267,7 @@
             toast.id = 'sbs-toast';
             toast.className = `sbs-toast sbs-toast-${type}`;
             toast.textContent = message;
-            
+
             // Add styles if not exist
             if (!document.getElementById('sbs-toast-styles')) {
                 const style = document.createElement('style');
@@ -297,7 +297,7 @@
             }
 
             document.body.appendChild(toast);
-            
+
             setTimeout(() => {
                 toast.style.animation = 'slideIn 0.3s ease-out reverse';
                 setTimeout(() => toast.remove(), 300);
@@ -381,10 +381,10 @@
             const modal = this.createModal(content, className);
             document.body.appendChild(modal);
             document.body.style.overflow = 'hidden';
-            
+
             // Cleanup on close
             modal.addEventListener('click', (e) => {
-                if (e.target === modal || e.target.classList.contains('sbs-modal-close') || 
+                if (e.target === modal || e.target.classList.contains('sbs-modal-close') ||
                     e.target.classList.contains('sbs-modal-overlay')) {
                     document.body.style.overflow = '';
                 }
@@ -403,7 +403,7 @@
             const spinner = document.createElement('div');
             spinner.className = 'sbs-loading';
             spinner.innerHTML = '<div class="sbs-spinner"></div>';
-            
+
             if (!document.getElementById('sbs-loading-styles')) {
                 const style = document.createElement('style');
                 style.id = 'sbs-loading-styles';
@@ -437,7 +437,7 @@
     // ============================================================================
     // ❓ HELPER MODULE - Context-Aware Help System
     // ============================================================================
-    
+
     const Helper = {
         content: {
             // Shop helps
@@ -533,7 +533,7 @@
             `;
 
             const modal = UI.showModal(content, 'helper-modal');
-            
+
             // Handle "don't show again"
             modal.addEventListener('click', (e) => {
                 if (e.target.closest('.sbs-modal-close') || e.target.classList.contains('sbs-modal-overlay')) {
@@ -561,11 +561,11 @@
     // ============================================================================
     // 🛍️ CHECKOUT MODULE - Complete Checkout Flow
     // ============================================================================
-    
+
     const Checkout = {
         async start() {
             const basket = Cart.get();
-            
+
             if (basket.length === 0) {
                 UI.showToast('Your basket is empty!', 'warning');
                 return;
@@ -573,7 +573,7 @@
 
             const content = this.buildCheckoutForm(basket);
             UI.showModal(content, 'checkout-modal');
-            
+
             // Attach form handler
             document.getElementById('checkout-form').addEventListener('submit', (e) => {
                 e.preventDefault();
@@ -725,7 +725,7 @@
                     Cart.clear();
                     document.querySelector('.sbs-modal').remove();
                     document.body.style.overflow = '';
-                    
+
                     UI.showModal(`
                         <div style="text-align: center;">
                             <div style="font-size: 64px; margin-bottom: 16px;">✅</div>
@@ -749,7 +749,7 @@
     // ============================================================================
     // 🚀 INITIALIZATION
     // ============================================================================
-    
+
     const SBS = {
         Auth,
         Cart,
@@ -762,16 +762,16 @@
 
         init() {
             console.log('🎯 SBS Core System Initialized');
-            
+
             // Update cart count on load
             Cart.updateCount();
-            
+
             // Initialize helper system
             Helper.init();
-            
+
             // Expose global checkout function
             window.checkout = () => Checkout.start();
-            
+
             // Add helper button styles
             if (!document.getElementById('sbs-helper-btn-styles')) {
                 const style = document.createElement('style');

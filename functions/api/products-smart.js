@@ -23,12 +23,12 @@ export async function onRequest(context) {
 
     try {
         console.log('🚀 SBS API: Fetching smart inventory from D1...');
-        
+
         const db = env.DB;
-        
+
         // 📊 GET ACTIVE PRODUCTS FROM D1
         const statusFilter = includeHidden ? "status IN ('active', 'hidden')" : "status = 'active'";
-        
+
         const dbProducts = await db.prepare(`
             SELECT 
                 id,
@@ -62,7 +62,7 @@ export async function onRequest(context) {
         const deliveryHash = env.CLOUDFLARE_IMAGES_HASH || env.CLOUDFLARE_DELIVERY_HASH;
 
         let cfImagesMap = {};
-        
+
         if (accountId && apiToken) {
             const apiUrl = `https://api.cloudflare.com/client/v4/accounts/${accountId}/images/v1`;
             const response = await fetch(apiUrl, {
@@ -75,7 +75,7 @@ export async function onRequest(context) {
             if (response.ok) {
                 const data = await response.json();
                 const images = Array.isArray(data.result) ? data.result : data.result?.images || [];
-                
+
                 // Map images by ID
                 images.forEach(img => {
                     cfImagesMap[img.id] = img;
@@ -115,8 +115,8 @@ export async function onRequest(context) {
                 thumbnail: thumbUrl,
                 uploaded: product.created_at,
                 // Analytics insights
-                days_listed: product.sold_at 
-                    ? product.days_to_sell 
+                days_listed: product.sold_at
+                    ? product.days_to_sell
                     : Math.floor((Date.now() - new Date(product.created_at).getTime()) / (1000 * 60 * 60 * 24)),
                 is_hot: product.views_count > 20 && !product.sold_at,
                 is_fast_mover: product.days_to_sell && product.days_to_sell < 7,
@@ -189,7 +189,7 @@ async function discoverFromCloudflare(env, corsHeaders, includeHidden) {
     const products = images.map(image => {
         const meta = image.meta || image.metadata || {};
         const variants = image.variants || [];
-        
+
         let imageUrl = variants.find(v => v.includes('/public')) || variants[0];
         let thumbUrl = variants.find(v => v.includes('/thumb')) || variants[0];
 

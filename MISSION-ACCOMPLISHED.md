@@ -124,7 +124,7 @@
    Customer Shop:           ✅ PRICE-FREE
    Seller Form:             ✅ PRICE-FREE
    Admin Panel:             ✅ PRICE-FREE
-   
+
    OVERALL STATUS:          🎊 100% PRICE-FREE 🎊
 
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓

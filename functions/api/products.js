@@ -120,7 +120,7 @@ export async function onRequest(context) {
 
                     // Get status - D1 database has priority (updated by reservation system)
                     let status = dbStatusMap[image.id] || (meta.status || 'active').toLowerCase();
-                    
+
                     // For public view: hide if status is hidden or sold
                     // For reservation system: show 'reserved' status
                     if (!includeHidden && (status === 'hidden' || status === 'sold')) {

@@ -68,14 +68,14 @@ function renderOverview(overview, today) {
     // Unique Visitors
     document.getElementById('uniqueVisitors').textContent = formatNumber(overview.total_visitors);
     document.getElementById('visitorGrowth').textContent = formatGrowth(overview.visitor_growth);
-    
+
     // Revenue
     document.getElementById('totalRevenue').textContent = formatNumber(overview.total_revenue);
     document.getElementById('revenueGrowth').textContent = formatGrowth(overview.revenue_growth);
-    
+
     // Orders
     document.getElementById('totalOrders').textContent = formatNumber(overview.total_orders);
-    
+
     // Conversion Rate
     document.getElementById('conversionRate').textContent = formatNumber(overview.avg_conversion_rate);
 }
@@ -85,10 +85,10 @@ function renderCharts(data) {
     if (charts.revenue) {
         charts.revenue.destroy();
     }
-    
+
     const revenueTrend = data.daily_trend.reverse();
     const revenueCtx = document.getElementById('revenueChart').getContext('2d');
-    
+
     charts.revenue = new Chart(revenueCtx, {
         type: 'line',
         data: {
@@ -136,7 +136,7 @@ function renderCharts(data) {
     }, { visitors: 0, views: 0, cartAdds: 0, checkouts: 0, purchases: 0 });
 
     const funnelCtx = document.getElementById('funnelChart').getContext('2d');
-    
+
     charts.funnel = new Chart(funnelCtx, {
         type: 'bar',
         data: {
@@ -178,7 +178,7 @@ function renderCharts(data) {
 
 function renderTopProducts(products) {
     const table = document.getElementById('topProductsTable');
-    
+
     if (!products || products.length === 0) {
         table.innerHTML = `
             <tr>
@@ -222,7 +222,7 @@ function renderTopProducts(products) {
 
 function renderTopSearches(searches) {
     const table = document.getElementById('topSearchesTable');
-    
+
     if (!searches || searches.length === 0) {
         table.innerHTML = `
             <tr>
@@ -255,7 +255,7 @@ function renderTopSearches(searches) {
             </td>
         </tr>
     `).join('');
-    
+
     lucide.createIcons();
 }
 
@@ -263,7 +263,7 @@ async function syncAnalytics() {
     // Disable button
     syncButton.disabled = true;
     syncButtonText.textContent = 'Syncing...';
-    
+
     const icon = syncButton.querySelector('i');
     icon.classList.add('animate-spin');
 

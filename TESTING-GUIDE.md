@@ -10,11 +10,13 @@
 **Easiest way to generate test data:**
 
 1. **Visit the test page:**
+
    ```
    https://thesbsofficial.com/test-analytics.html
    ```
 
 2. **Click the buttons to generate events:**
+
    - 📊 Generate 10 Page Views
    - 👁️ Generate 5 Product Views
    - 🛒 Generate 3 Cart Additions
@@ -36,20 +38,24 @@
 **Test the actual checkout flow:**
 
 1. **Go to shop:**
+
    ```
    https://thesbsofficial.com/shop.html
    ```
 
 2. **Browse products:**
+
    - Analytics tracks page view ✅
    - Click product images to view (tracked)
 
 3. **Add items to cart:**
+
    - Click "Add to Basket" on products
    - Analytics tracks each cart addition ✅
    - Cart shows total price
 
 4. **Checkout:**
+
    - Click basket icon (top right)
    - Click "Proceed to Checkout"
    - Fill in delivery details:
@@ -87,8 +93,8 @@ Check your Cloudflare D1 database:
 
 ```sql
 -- See latest events
-SELECT * FROM analytics_events 
-ORDER BY created_at DESC 
+SELECT * FROM analytics_events
+ORDER BY created_at DESC
 LIMIT 20;
 
 -- Count events by type today
@@ -98,7 +104,7 @@ WHERE DATE(created_at) = DATE('now')
 GROUP BY event_type;
 
 -- Today's purchases
-SELECT 
+SELECT
     JSON_EXTRACT(metadata, '$.order_id') as order_id,
     value as total,
     created_at
@@ -107,7 +113,7 @@ WHERE event_type = 'purchase'
 AND DATE(created_at) = DATE('now');
 
 -- Cart additions with product info
-SELECT 
+SELECT
     product_id,
     category,
     brand,
@@ -130,13 +136,13 @@ console.log(window.SBSAnalytics);
 
 // See session ID
 const analytics = new SBSAnalytics();
-console.log('Session ID:', analytics.sessionId);
+console.log("Session ID:", analytics.sessionId);
 
 // Manually track a test event
-analytics.track('test_event', { test: 'data' });
+analytics.track("test_event", { test: "data" });
 
 // Check queue
-console.log('Event queue:', analytics.eventQueue);
+console.log("Event queue:", analytics.eventQueue);
 ```
 
 ---
@@ -145,19 +151,19 @@ console.log('Event queue:', analytics.eventQueue);
 
 ### Current Events (LIVE)
 
-| Event | Where | Data Captured |
-|-------|-------|---------------|
-| `page_view` | All pages | page path, session_id, timestamp |
-| `add_to_cart` | Shop | product_id, category, brand, size, price, quantity |
-| `checkout_start` | Checkout modal | item_count, total |
-| `purchase` | Order submission | order_id, total, items array, payment_method |
+| Event            | Where            | Data Captured                                      |
+| ---------------- | ---------------- | -------------------------------------------------- |
+| `page_view`      | All pages        | page path, session_id, timestamp                   |
+| `add_to_cart`    | Shop             | product_id, category, brand, size, price, quantity |
+| `checkout_start` | Checkout modal   | item_count, total                                  |
+| `purchase`       | Order submission | order_id, total, items array, payment_method       |
 
 ### Simulated Events (Test Page Only)
 
-| Event | Test Generator | Data Captured |
-|-------|----------------|---------------|
+| Event          | Test Generator         | Data Captured                            |
+| -------------- | ---------------------- | ---------------------------------------- |
 | `product_view` | Generate Product Views | product_id, name, category, brand, price |
-| `search` | Generate Searches | query, results_count |
+| `search`       | Generate Searches      | query, results_count                     |
 
 ---
 
@@ -166,11 +172,13 @@ console.log('Event queue:', analytics.eventQueue);
 **Complete end-to-end test (5 minutes):**
 
 1. **Generate background data** (test-analytics.html):
+
    - Click "Generate Full Customer Journey" (creates realistic session)
    - Click "Generate 10 Page Views"
    - Click "Generate 3 Cart Additions"
 
 2. **Real shopping experience** (shop.html):
+
    - Browse products
    - Add 2-3 items to cart
    - View cart (check total)
@@ -187,6 +195,7 @@ console.log('Event queue:', analytics.eventQueue);
    - Submit order
 
 3. **Check analytics** (admin/analytics):
+
    - Login if needed
    - Click "Sync Now"
    - Verify:
@@ -209,22 +218,26 @@ console.log('Event queue:', analytics.eventQueue);
 ### In Analytics Dashboard:
 
 **Stats Cards:**
+
 - Unique Visitors: 1-5 (depending on sessions)
 - Revenue: Sum of all purchases (e.g. €500+)
 - Orders: Number of purchases
 - Conversion Rate: % of visitors who purchased
 
 **Charts:**
+
 - Revenue trend showing today's purchases
 - Conversion funnel (views → cart → purchase)
 
 **Tables:**
+
 - Top products by revenue
 - Top search terms (if searches generated)
 
 ### In Database:
 
 **analytics_events table:**
+
 ```
 | id | event_type    | product_id      | category  | value | created_at          |
 |----|---------------|-----------------|-----------|-------|---------------------|
@@ -235,6 +248,7 @@ console.log('Event queue:', analytics.eventQueue);
 ```
 
 **analytics_daily_summary table (after sync):**
+
 ```
 | date       | unique_visitors | total_purchases | total_revenue | conversion_rate |
 |------------|-----------------|-----------------|---------------|-----------------|
@@ -246,18 +260,21 @@ console.log('Event queue:', analytics.eventQueue);
 ## ⚠️ Important Notes
 
 ### Order Processing
+
 - Orders are **NOT saved to database yet** (orders API not built)
 - Order data logged to browser console for now
 - Analytics purchase tracking WORKS ✅
 - Customer details collected but not persisted
 
 ### Next Steps for Full Functionality
+
 1. Build `/api/orders` endpoint to save orders
 2. Build admin orders management page
 3. Add email notifications to customers
 4. Add order status tracking
 
 ### For Now (Testing)
+
 - Focus on analytics tracking ✅
 - Verify events are captured ✅
 - Check dashboard displays data ✅
@@ -287,6 +304,7 @@ console.log('Event queue:', analytics.eventQueue);
 ## 📞 What's Working vs Not
 
 ### ✅ Working (LIVE)
+
 - Analytics tracking on all pages
 - Cart functionality with prices
 - Checkout modal with customer form
@@ -296,6 +314,7 @@ console.log('Event queue:', analytics.eventQueue);
 - Charts and stats display
 
 ### ⏳ Not Built Yet
+
 - Orders API endpoint
 - Orders database table
 - Admin orders management page
@@ -304,6 +323,7 @@ console.log('Event queue:', analytics.eventQueue);
 - Payment processing
 
 ### 🎯 Current Purpose
+
 Test and verify analytics system works correctly before building full order management system.
 
 ---

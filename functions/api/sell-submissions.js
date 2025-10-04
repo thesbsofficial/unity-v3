@@ -96,7 +96,7 @@ async function generateBatchId(db) {
 
     // Generate random 5-digit number
     const random = Math.floor(10000 + Math.random() * 90000);
-    
+
     const batchId = `BATCH-${dateStr}-${random}`;
 
     // Check if exists (very unlikely but just in case)

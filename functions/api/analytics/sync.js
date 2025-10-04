@@ -28,13 +28,13 @@ export async function onRequestPost(context) {
 
         const startTime = Date.now();
         const today = new Date().toISOString().split('T')[0];
-        
+
         console.log(`📊 Starting analytics sync for ${today}`);
 
         // ═══════════════════════════════════════════════════════════════
         // SYNC DAILY SUMMARY
         // ═══════════════════════════════════════════════════════════════
-        
+
         const summary = await env.DB.prepare(`
             SELECT 
                 COUNT(DISTINCT session_id) as unique_visitors,
@@ -53,7 +53,7 @@ export async function onRequestPost(context) {
         `).bind(today).first();
 
         // Calculate conversion rates
-        const conversionRate = summary.unique_visitors > 0 
+        const conversionRate = summary.unique_visitors > 0
             ? ((summary.orders_completed / summary.unique_visitors) * 100).toFixed(2)
             : 0;
 
@@ -170,7 +170,7 @@ export async function onRequestPost(context) {
         // ═══════════════════════════════════════════════════════════════
         // SYNC PRODUCT PERFORMANCE
         // ═══════════════════════════════════════════════════════════════
-        
+
         const productStats = await env.DB.prepare(`
             SELECT 
                 product_id,
@@ -190,16 +190,16 @@ export async function onRequestPost(context) {
         `).bind(today).all();
 
         for (const product of productStats.results || []) {
-            const viewToCartRate = product.views > 0 
-                ? ((product.cart_adds / product.views) * 100).toFixed(2) 
+            const viewToCartRate = product.views > 0
+                ? ((product.cart_adds / product.views) * 100).toFixed(2)
                 : 0;
-            
-            const cartToPurchaseRate = product.cart_adds > 0 
-                ? ((product.purchases / product.cart_adds) * 100).toFixed(2) 
+
+            const cartToPurchaseRate = product.cart_adds > 0
+                ? ((product.purchases / product.cart_adds) * 100).toFixed(2)
                 : 0;
-            
-            const overallConversionRate = product.views > 0 
-                ? ((product.purchases / product.views) * 100).toFixed(2) 
+
+            const overallConversionRate = product.views > 0
+                ? ((product.purchases / product.views) * 100).toFixed(2)
                 : 0;
 
             await env.DB.prepare(`
@@ -241,7 +241,7 @@ export async function onRequestPost(context) {
 
         // Log sync completion
         const duration = Date.now() - startTime;
-        
+
         await env.DB.prepare(`
             INSERT INTO analytics_sync_log
             (sync_type, sync_date, status, events_processed, records_updated, duration_ms, started_at, completed_at)
@@ -275,7 +275,7 @@ export async function onRequestPost(context) {
 
     } catch (error) {
         console.error('❌ Analytics sync error:', error);
-        
+
         return jsonResponse({
             success: false,
             error: error.message

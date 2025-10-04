@@ -3,14 +3,17 @@
 ## ✅ NEW FEATURES ADDED
 
 ### 1. DELIVERY COSTS NOW VISIBLE
+
 **File:** `public/checkout.html`
 
 **Changes:**
+
 - ✅ All delivery zone costs now displayed prominently
 - ✅ Hover effects on zone boxes for better UX
 - ✅ Clear pricing structure visible to customers
 
 **Delivery Zone Pricing:**
+
 ```
 North Dublin - €15
 South Dublin - €20
@@ -20,6 +23,7 @@ Further Counties - €35
 ```
 
 **Additional Info:**
+
 - Gold note: "💰 Payment on delivery - We'll confirm your exact delivery cost when we contact you"
 - Zones are informational (not selectable)
 - Clean, card-style design with hover effects
@@ -27,18 +31,22 @@ Further Counties - €35
 ---
 
 ### 2. ACCOUNT REGISTRATION OPTION (NEW!)
+
 **Feature:** Optional account creation during checkout
 
 **How It Works:**
 
 #### Step 1: Checkbox
+
 - ✨ **"Create an Account (Optional)"** checkbox
 - Located after delivery notes
 - Eye-catching gold border and gradient background
 - Clear explanation: "Save your details for faster checkout next time"
 
 #### Step 2: Password Fields (Conditional)
+
 When checkbox is checked:
+
 - Password field appears (min. 8 characters)
 - Confirm password field
 - Real-time validation
@@ -47,7 +55,9 @@ When checkbox is checked:
   - Passwords don't match
 
 #### Step 3: Auto-Fill
+
 All customer data from the form is automatically used:
+
 - Name
 - Email
 - Phone
@@ -57,11 +67,13 @@ All customer data from the form is automatically used:
 - Eircode
 
 **Customer only needs to:**
+
 1. ✅ Check the box
 2. ✅ Enter a password
 3. ✅ Confirm password
 
 #### Step 4: Account Creation
+
 - Happens automatically after successful order
 - Calls `/api/auth/register` endpoint
 - Password is securely hashed
@@ -73,6 +85,7 @@ All customer data from the form is automatically used:
 ## 🎨 USER INTERFACE
 
 ### Account Creation Section:
+
 ```
 ┌─────────────────────────────────────────────┐
 │ ☑ ✨ Create an Account (Optional)          │
@@ -94,6 +107,7 @@ All customer data from the form is automatically used:
 ```
 
 ### Success Message (When Account Created):
+
 ```
 ┌─────────────────────────────────────────────┐
 │ 🎉 Items Reserved Successfully!             │
@@ -118,50 +132,57 @@ All customer data from the form is automatically used:
 ### JavaScript Functions Added:
 
 #### 1. Checkbox Toggle Handler
+
 ```javascript
-document.getElementById('create-account-checkbox').addEventListener('change', function() {
+document
+  .getElementById("create-account-checkbox")
+  .addEventListener("change", function () {
     if (checked) {
-        // Show password fields
-        // Make fields required
+      // Show password fields
+      // Make fields required
     } else {
-        // Hide password fields
-        // Remove required validation
-        // Clear values
+      // Hide password fields
+      // Remove required validation
+      // Clear values
     }
-});
+  });
 ```
 
 #### 2. Password Validation
+
 ```javascript
 function validatePasswords() {
-    // Check if account creation enabled
-    // Validate password length (min 8 chars)
-    // Validate passwords match
-    // Display error messages
-    // Return true/false
+  // Check if account creation enabled
+  // Validate password length (min 8 chars)
+  // Validate passwords match
+  // Display error messages
+  // Return true/false
 }
 ```
 
 #### 3. Account Creation (During Checkout)
+
 ```javascript
 if (createAccount) {
-    const accountData = {
-        name: orderData.customer.name,
-        email: orderData.customer.email,
-        phone: orderData.customer.phone,
-        password: password,
-        address: { /* auto-filled */ }
-    };
-    
-    const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        body: JSON.stringify(accountData)
-    });
-    
-    if (response.ok) {
-        // Store auth token
-        // Show success message
-    }
+  const accountData = {
+    name: orderData.customer.name,
+    email: orderData.customer.email,
+    phone: orderData.customer.phone,
+    password: password,
+    address: {
+      /* auto-filled */
+    },
+  };
+
+  const response = await fetch("/api/auth/register", {
+    method: "POST",
+    body: JSON.stringify(accountData),
+  });
+
+  if (response.ok) {
+    // Store auth token
+    // Show success message
+  }
 }
 ```
 
@@ -170,36 +191,39 @@ if (createAccount) {
 ## 📊 DELIVERY COST DISPLAY
 
 ### CSS Updates:
+
 ```css
 .zone-info-box {
-    background: #1a1a1a;
-    border: 2px solid #333;
-    padding: 15px;
-    border-radius: 8px;
-    transition: all 0.3s ease;
+  background: #1a1a1a;
+  border: 2px solid #333;
+  padding: 15px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
 }
 
 .zone-info-box:hover {
-    border-color: var(--primary-gold);
-    box-shadow: 0 0 15px rgba(255, 215, 0, 0.2);
+  border-color: var(--primary-gold);
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.2);
 }
 
 .zone-info-box strong {
-    color: var(--primary-gold);
-    font-weight: 700;
-    font-size: 16px;
+  color: var(--primary-gold);
+  font-weight: 700;
+  font-size: 16px;
 }
 ```
 
 ### Before vs After:
 
 **BEFORE:**
+
 ```
 North Dublin
 Santry, Swords, Malahide, Howth
 ```
 
 **AFTER:**
+
 ```
 North Dublin - €15
 Santry, Swords, Malahide, Howth
@@ -210,6 +234,7 @@ Santry, Swords, Malahide, Howth
 ## 🎯 USER BENEFITS
 
 ### For Customers:
+
 1. ✅ **See delivery costs upfront** - No surprises
 2. ✅ **Optional account creation** - Not forced
 3. ✅ **One-step registration** - Just add password
@@ -218,6 +243,7 @@ Santry, Swords, Malahide, Howth
 6. ✅ **Secure** - Password hashed, token stored
 
 ### For Business:
+
 1. ✅ **Build customer database** - More registered users
 2. ✅ **Reduce friction** - Account creation is optional
 3. ✅ **Better UX** - Auto-fill all details
@@ -229,12 +255,14 @@ Santry, Swords, Malahide, Howth
 ## 🔐 SECURITY FEATURES
 
 ### Password Requirements:
+
 - ✅ Minimum 8 characters
 - ✅ Must match confirmation
 - ✅ Validated client-side before submission
 - ✅ Securely hashed server-side (bcrypt/argon2)
 
 ### Data Protection:
+
 - ✅ HTTPS only
 - ✅ Auth token stored in localStorage
 - ✅ Password never logged or displayed
@@ -245,11 +273,13 @@ Santry, Swords, Malahide, Howth
 ## 📝 FORM FLOW
 
 ### Old Flow:
+
 1. Fill delivery details
 2. Submit order
 3. See success message
 
 ### New Flow:
+
 1. Fill delivery details
 2. **[Optional] Check "Create Account"**
 3. **[Optional] Enter password (8+ chars)**
@@ -267,6 +297,7 @@ Santry, Swords, Malahide, Howth
 **Status:** ✅ LIVE IN PRODUCTION
 
 **Build Output:**
+
 ```
 ✨ Compiled Worker successfully
 ✨ Uploaded 1 file
@@ -278,12 +309,14 @@ Santry, Swords, Malahide, Howth
 ## 🧪 TESTING CHECKLIST
 
 ### Delivery Costs:
+
 - [x] All zones show pricing
 - [x] Hover effects work
 - [x] Gold text displays correctly
 - [ ] Test: Verify prices match business rates
 
 ### Account Creation:
+
 - [x] Checkbox toggles password fields
 - [x] Password fields hidden by default
 - [x] Required validation works
@@ -295,6 +328,7 @@ Santry, Swords, Malahide, Howth
 - [ ] Test: Account created → success message appears
 
 ### Form Submission:
+
 - [ ] Test: Submit without account → order only
 - [ ] Test: Submit with account → order + account
 - [ ] Test: Account creation fails → order still succeeds
@@ -310,6 +344,7 @@ Santry, Swords, Malahide, Howth
 **Method:** POST
 
 **Request Body:**
+
 ```json
 {
   "name": "John Doe",
@@ -326,6 +361,7 @@ Santry, Swords, Malahide, Howth
 ```
 
 **Response (Success):**
+
 ```json
 {
   "success": true,
@@ -340,6 +376,7 @@ Santry, Swords, Malahide, Howth
 ```
 
 **Response (Error):**
+
 ```json
 {
   "success": false,
@@ -354,6 +391,7 @@ Santry, Swords, Malahide, Howth
 ## ✅ VERIFICATION
 
 **Delivery Costs Visible:**
+
 ```
 ✅ North Dublin - €15 (displayed)
 ✅ South Dublin - €20 (displayed)
@@ -365,6 +403,7 @@ Santry, Swords, Malahide, Howth
 ```
 
 **Account Creation:**
+
 ```
 ✅ Checkbox displays
 ✅ Password fields toggle
@@ -380,11 +419,13 @@ Santry, Swords, Malahide, Howth
 ## 🎉 SUCCESS METRICS
 
 **Before:**
+
 - ❌ Delivery costs hidden
 - ❌ No account creation option
 - ❌ Manual registration required
 
 **After:**
+
 - ✅ All delivery costs visible upfront
 - ✅ One-click account creation
 - ✅ Auto-fill all customer details

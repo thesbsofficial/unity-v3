@@ -10,17 +10,19 @@
 ### ✅ ACTIVE FILES (Keep These)
 
 #### Frontend Pages
+
 ```
 public/
   ├── index.html          ✅ ACTIVE - Landing page
   ├── shop.html           ✅ ACTIVE - E-commerce shop
   ├── sell.html           ✅ ACTIVE - Sell form
   ├── login.html          ✅ ACTIVE - Customer login
-  ├── register.html       ✅ ACTIVE - Customer registration  
+  ├── register.html       ✅ ACTIVE - Customer registration
   └── test-analytics.html ✅ ACTIVE - Analytics testing tool
 ```
 
 #### Admin Dashboard
+
 ```
 admin/
   ├── index.html          ✅ ACTIVE - Admin home
@@ -35,6 +37,7 @@ admin/
 ```
 
 #### JavaScript
+
 ```
 public/js/
   ├── analytics-tracker.js ✅ ACTIVE - Analytics tracking class
@@ -44,12 +47,14 @@ public/js/
 ```
 
 #### CSS
+
 ```
 public/css/
   └── helper.css           ✅ ACTIVE - Helper styles
 ```
 
 #### Backend APIs
+
 ```
 functions/api/
   ├── products.js          ✅ ACTIVE - Product listings
@@ -65,6 +70,7 @@ functions/api/
 ```
 
 #### Database
+
 ```
 database/
   └── analytics-schema.sql ✅ ACTIVE - Analytics tables
@@ -75,17 +81,24 @@ database/
 ## ⚠️ PROBLEMATIC FILES
 
 ### Admin API Files (Import Errors)
+
 **Location:** `functions/api/admin/*.js`
 
 **Problem:** Import non-existent auth-helpers
+
 ```javascript
-import { hashPassword, verifyPassword, generateSessionToken } from '../../lib/auth-helpers';
+import {
+  hashPassword,
+  verifyPassword,
+  generateSessionToken,
+} from "../../lib/auth-helpers";
 // ❌ This file doesn't exist!
 ```
 
 **Status:** Cannot deploy (build fails)
 
 **Options:**
+
 1. **Fix:** Create `functions/lib/auth-helpers.js` with these functions
 2. **Fix:** Move functions inline to each API file
 3. **Remove:** Delete these files (admin login not functional anyway)
@@ -97,6 +110,7 @@ import { hashPassword, verifyPassword, generateSessionToken } from '../../lib/au
 ## 🗑️ OBSOLETE FILES TO DELETE
 
 ### Documentation (Old/Redundant)
+
 ```
 ❌ DELETE - Superseded by newer docs:
 - PHASE-2-ADMIN-DASHBOARD.md      → Use ANALYTICS-ACTIVATED.md
@@ -107,6 +121,7 @@ import { hashPassword, verifyPassword, generateSessionToken } from '../../lib/au
 ```
 
 ### Old API Files (If Found)
+
 ```
 ❌ DELETE if exist:
 - functions/api/products-old.js
@@ -115,6 +130,7 @@ import { hashPassword, verifyPassword, generateSessionToken } from '../../lib/au
 ```
 
 ### Backup/Temp Folders
+
 ```
 ❌ DELETE:
 - PRODUCTION-READY-BACKUP-2025-10-03-0549/ (old backup)
@@ -123,6 +139,7 @@ import { hashPassword, verifyPassword, generateSessionToken } from '../../lib/au
 ```
 
 ### Unused Frontend Files
+
 ```
 ❌ CHECK & DELETE if exist:
 - public/dashboard.html (replaced by admin/)
@@ -132,6 +149,7 @@ import { hashPassword, verifyPassword, generateSessionToken } from '../../lib/au
 ```
 
 ### Duplicate JS Files
+
 ```
 ❌ CHECK for duplicates:
 - public/js/shop.js vs inline in shop.html
@@ -144,11 +162,13 @@ import { hashPassword, verifyPassword, generateSessionToken } from '../../lib/au
 ## 📦 FILES TO CONSOLIDATE
 
 ### Documentation Merge
+
 **Combine these into one comprehensive doc:**
+
 ```
 Merge into "SYSTEM-STATUS.md":
   ✓ ANALYTICS-ACTIVATED.md
-  ✓ CHECKOUT-COMPLETE.md  
+  ✓ CHECKOUT-COMPLETE.md
   ✓ DEBUG-REPORT-ANALYTICS-FIX.md
   ✓ TESTING-GUIDE.md
 
@@ -158,7 +178,9 @@ Keep separate:
 ```
 
 ### Code Consolidation
+
 **Already Unified (Good!):**
+
 - ✅ Shop, cart, checkout all in `shop.html`
 - ✅ Admin logic split properly (inventory.js, analytics.js)
 - ✅ Taxonomy shared across admin and shop
@@ -168,6 +190,7 @@ Keep separate:
 ## 🔍 FILES TO INVESTIGATE
 
 ### Check These Files
+
 ```bash
 # List all files in project
 ls -R > file-inventory.txt
@@ -183,6 +206,7 @@ find . -type f | rev | cut -d/ -f1 | rev | sort | uniq -d
 ```
 
 ### In Admin APIs Folder
+
 ```
 functions/api/admin/
   ├── login.js      ⚠️  BROKEN - Remove or fix?
@@ -191,7 +215,8 @@ functions/api/admin/
   └── products.js   ⚠️  BROKEN - Remove or fix?
 ```
 
-**Decision Needed:** 
+**Decision Needed:**
+
 - Option A: Delete all (admin not functional)
 - Option B: Fix auth-helpers imports
 - Option C: Inline auth functions
@@ -201,6 +226,7 @@ functions/api/admin/
 ## 🎯 CLEANUP ACTION PLAN
 
 ### Phase 1: Safe Deletions (Do Now)
+
 ```bash
 # Delete obsolete docs
 rm PHASE-2-ADMIN-DASHBOARD.md
@@ -216,6 +242,7 @@ rm COMMUNITY-SALE-FEATURE-PLAN.md
 ```
 
 ### Phase 2: Remove Broken Admin APIs (Do Now)
+
 ```bash
 # These cause deployment errors
 rm functions/api/admin/login.js
@@ -228,6 +255,7 @@ mkdir -p functions/api/admin
 ```
 
 ### Phase 3: Consolidate Docs (Optional)
+
 ```bash
 # Merge testing docs
 cat TESTING-GUIDE.md DEBUG-REPORT-ANALYTICS-FIX.md > COMPREHENSIVE-TESTING.md
@@ -236,6 +264,7 @@ rm DEBUG-REPORT-ANALYTICS-FIX.md
 ```
 
 ### Phase 4: Verify Cleanup
+
 ```bash
 # Check no broken imports
 grep -r "import.*from.*admin" functions/
@@ -252,6 +281,7 @@ tree -L 3
 ## 📊 BEFORE/AFTER COMPARISON
 
 ### Before Cleanup
+
 ```
 Total Files: ~150
 Documentation: 25+ MD files
@@ -261,6 +291,7 @@ Broken Files: 4 admin APIs
 ```
 
 ### After Cleanup
+
 ```
 Total Files: ~130
 Documentation: 10-15 MD files (consolidated)
@@ -328,6 +359,7 @@ unity-v3/
 ## 🚨 DANGER ZONE - Don't Delete These!
 
 **Critical Files - NEVER DELETE:**
+
 ```
 ❌ DO NOT DELETE:
 - wrangler.toml (Cloudflare config)
@@ -369,6 +401,7 @@ npx wrangler pages deploy public --project-name=unity-v3 --branch=MAIN
 ## ✅ BENEFITS OF CLEANUP
 
 ### Before:
+
 - ❌ 4 broken files causing deployment errors
 - ❌ 15+ obsolete documentation files
 - ❌ Confusing folder structure
@@ -376,6 +409,7 @@ npx wrangler pages deploy public --project-name=unity-v3 --branch=MAIN
 - ❌ Build failures requiring manual file moving
 
 ### After:
+
 - ✅ All files working
 - ✅ Clean, organized docs
 - ✅ Clear structure

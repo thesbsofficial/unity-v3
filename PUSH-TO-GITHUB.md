@@ -7,9 +7,11 @@
 ## 📝 STEPS TO CREATE GITHUB REPO
 
 ### 1. Create Repository on GitHub
+
 Go to: **https://github.com/new**
 
 Fill in:
+
 - **Repository name:** `sbs-unity-v3`
 - **Description:** Dublin's Premier Streetwear Platform
 - **Visibility:** Private (recommended)
@@ -38,9 +40,10 @@ git push -u origin MAIN
 ### 3. Verify Upload
 
 Check on GitHub that you see:
+
 - ✅ README.md displays with formatting
 - ✅ About 180 files uploaded
-- ✅ No *.env files visible
+- ✅ No \*.env files visible
 - ✅ All folders: public/, functions/, database/, docs/
 
 ---
@@ -48,6 +51,7 @@ Check on GitHub that you see:
 ## 🔒 SECURITY: No Secrets Exposed
 
 Your `.gitignore` is configured to exclude:
+
 - ❌ `*.env` files
 - ❌ `cloudflare.env`
 - ❌ `WORKING-VERSION/` folders
@@ -77,7 +81,7 @@ Your `.gitignore` is configured to exclude:
 ✅ Zero console errors  
 ✅ Mobile optimized  
 ✅ Documentation complete  
-✅ Ready for GitHub  
+✅ Ready for GitHub
 
 ---
 

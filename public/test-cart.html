@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -28,7 +29,7 @@
             padding: 20px;
             border-radius: 12px;
             margin-bottom: 20px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
         .header h1 {
@@ -45,7 +46,7 @@
             padding: 20px;
             border-radius: 12px;
             margin-bottom: 20px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
         .section h2 {
@@ -230,6 +231,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <!-- Header -->
@@ -375,7 +377,7 @@
         function addTestItem() {
             const product = TEST_PRODUCTS[Math.floor(Math.random() * TEST_PRODUCTS.length)];
             const cart = getCart();
-            
+
             const item = {
                 id: product.id,
                 category: product.category,
@@ -466,7 +468,7 @@
         // Test checkout
         function testCheckout() {
             const cart = getCart();
-            
+
             if (cart.length === 0) {
                 log('❌ Checkout failed: Cart is empty', 'error');
                 alert('Cart is empty! Add some items first.');
@@ -474,10 +476,10 @@
             }
 
             const total = cart.reduce((sum, item) => sum + (item.price || 0), 0);
-            
+
             log(`🛒 Checkout test: ${cart.length} items, Total: €${total.toFixed(2)}`, 'success');
             alert(`Checkout Test:\n\nItems: ${cart.length}\nTotal: €${total.toFixed(2)}\n\nIn real checkout, this would open the modal with these items.`);
-            
+
             // Simulate what checkout function does
             log('✅ Checkout would succeed with current cart', 'success');
         }
@@ -535,10 +537,10 @@
                 <strong>Found ${keys.length} localStorage keys:</strong>
                 <ul style="margin-left: 20px; margin-top: 10px;">
                     ${keys.map(key => {
-                        const value = localStorage.getItem(key);
-                        const size = new Blob([value]).size;
-                        return `<li><strong>${key}</strong> (${(size / 1024).toFixed(2)} KB)</li>`;
-                    }).join('')}
+                const value = localStorage.getItem(key);
+                const size = new Blob([value]).size;
+                return `<li><strong>${key}</strong> (${(size / 1024).toFixed(2)} KB)</li>`;
+            }).join('')}
                 </ul>
             `;
             log(`Listed ${keys.length} storage keys`, 'info');
@@ -560,7 +562,7 @@
             log('🚀 Cart Debug Tool loaded', 'success');
             refreshStats();
             viewCart();
-            
+
             // Check if correct storage key exists
             if (localStorage.getItem(STORAGE_KEY)) {
                 log(`✅ Using correct storage key: '${STORAGE_KEY}'`, 'success');
@@ -578,4 +580,5 @@
         setInterval(refreshStats, 2000);
     </script>
 </body>
+
 </html>
