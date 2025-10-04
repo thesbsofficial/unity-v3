@@ -1,13 +1,12 @@
 /**
  * 📊 Analytics Tracking API
  * POST /api/analytics/track
- * Receives and stores analytics events from frontend
+ * Accepts batches of analytics events from the frontend and persists them to D1.
  */
 
 export async function onRequestPost(context) {
     const { request, env } = context;
 
-    // CORS headers
     const corsHeaders = {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'POST, OPTIONS',
@@ -15,67 +14,81 @@ export async function onRequestPost(context) {
         'Content-Type': 'application/json'
     };
 
-    // Handle preflight
     if (request.method === 'OPTIONS') {
         return new Response(null, { headers: corsHeaders });
     }
 
     try {
-        const { events } = await request.json();
+        const body = await request.json();
+        const events = body?.events;
 
-        if (!events || !Array.isArray(events) || events.length === 0) {
+        if (!Array.isArray(events) || events.length === 0) {
             return new Response(JSON.stringify({
                 success: false,
-                error: 'Invalid events data'
-            }), {
-                status: 400,
-                headers: corsHeaders
-            });
+                error: 'Invalid events payload'
+            }), { status: 400, headers: corsHeaders });
         }
 
-        console.log(`📊 Tracking ${events.length} events`);
+        const ip = request.headers.get('CF-Connecting-IP') ||
+            (request.headers.get('X-Forwarded-For') || '').split(',')[0] ||
+            'unknown';
+        const userAgent = request.headers.get('User-Agent') || 'unknown';
 
-        // Insert all events into database
-        const insertPromises = events.map(event => {
-            return env.DB.prepare(`
-                INSERT INTO analytics_events 
-                (event_type, session_id, user_id, product_id, category, brand, metadata, value, user_agent, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
-            `).bind(
-                event.event_type,
-                event.session_id,
-                event.user_id || null,
-                event.product_id || null,
-                event.category || null,
-                event.brand || null,
-                JSON.stringify(event), // Store full event as JSON in metadata
-                event.value || 0,
-                event.user_agent || event.userAgent || null
-            ).run();
-        });
+        let successCount = 0;
+        const errors = [];
 
-        // Execute all inserts
-        await Promise.all(insertPromises);
+        for (const rawEvent of events) {
+            try {
+                const eventType = rawEvent?.type || rawEvent?.event_type || 'unknown';
+                const eventPath = rawEvent?.path || rawEvent?.page_url || null;
+                const sessionId = rawEvent?.session_id || rawEvent?.sessionId || body?.sessionId || null;
+                const userId = rawEvent?.user_id || rawEvent?.userId || null;
 
-        return new Response(JSON.stringify({
-            success: true,
-            tracked: events.length,
+                const serializedEvent = JSON.stringify(rawEvent?.data ?? rawEvent ?? {});
+
+                await env.DB.prepare(`
+                    INSERT INTO analytics_events (event_type, event_data, user_id, session_id, ip_address, user_agent, path)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                `).bind(
+                    eventType,
+                    serializedEvent,
+                    userId,
+                    sessionId,
+                    ip,
+                    userAgent,
+                    eventPath
+                ).run();
+
+                successCount++;
+            } catch (insertError) {
+                console.error('❌ Analytics insert failure:', insertError);
+                errors.push({
+                    type: rawEvent?.type || rawEvent?.event_type,
+                    message: insertError.message
+                });
+            }
+        }
+
+        const responsePayload = {
+            success: errors.length === 0,
+            tracked: successCount,
+            failed: errors.length,
             timestamp: new Date().toISOString()
-        }), {
-            status: 200,
+        };
+
+        if (errors.length > 0) {
+            responsePayload.errors = errors.slice(0, 3);
+        }
+
+        return new Response(JSON.stringify(responsePayload), {
+            status: errors.length === 0 ? 200 : 207,
             headers: corsHeaders
         });
-
     } catch (error) {
         console.error('❌ Analytics tracking error:', error);
-
         return new Response(JSON.stringify({
             success: false,
-            error: error.message,
-            timestamp: new Date().toISOString()
-        }), {
-            status: 500,
-            headers: corsHeaders
-        });
+            error: error.message || 'Failed to track analytics'
+        }), { status: 500, headers: corsHeaders });
     }
 }
