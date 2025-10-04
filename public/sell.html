@@ -1593,6 +1593,25 @@
                                     contacted by phone and my chosen social app regarding this submission</label>
                             </div>
 
+                            <!-- Preferred Offer (Optional) -->
+                            <div style="margin-bottom: 1rem;">
+                                <label for="qb-asking-price"
+                                    style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Ideal price (optional)</label>
+                                <input type="number" class="form-input" id="qb-asking-price" min="0" step="0.01"
+                                    placeholder="e.g. 250">
+                                <small style="display: block; margin-top: 0.25rem; color: var(--text-secondary);">
+                                    Let us know your target total offer (EUR). We’ll factor this into the quote.
+                                </small>
+                            </div>
+
+                            <!-- Extra Notes -->
+                            <div style="margin-bottom: 1rem;">
+                                <label for="qb-seller-notes"
+                                    style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Anything else we should know? (optional)</label>
+                                <textarea class="form-textarea" id="qb-seller-notes" rows="3"
+                                    placeholder="Drop-off preference, timing, extra context..."></textarea>
+                            </div>
+
                             <!-- Save Profile Toggle -->
                             <div
                                 style="padding: 1rem; background: rgba(255, 193, 7, 0.1); border-left: 3px solid var(--primary-gold); border-radius: 4px;">
@@ -2038,6 +2057,8 @@
             const phoneInput = document.getElementById('qb-phone');
             const igInput = document.getElementById('qb-ig-handle');
             const snapInput = document.getElementById('qb-snap-handle');
+            const askingPriceInput = document.getElementById('qb-asking-price');
+            const sellerNotesInput = document.getElementById('qb-seller-notes');
             const validationFeedback = document.getElementById('qb-validation-feedback');
             const validationList = document.getElementById('qb-validation-list');
 
@@ -2356,6 +2377,22 @@
 
                 const contactChannel = socialChannel.value;
                 let socialHandle = contactChannel === 'instagram' ? igInput.value : snapInput.value;
+                const askingPriceRaw = askingPriceInput.value ? Number(askingPriceInput.value) : null;
+                const askingPrice = askingPriceRaw && askingPriceRaw > 0 ? askingPriceRaw : null;
+                const sellerNotes = sellerNotesInput.value.trim();
+
+                let submissionUserId = null;
+                try {
+                    const storedUser = sessionStorage.getItem('sbs_user');
+                    if (storedUser) {
+                        const parsedUser = JSON.parse(storedUser);
+                        if (parsedUser && typeof parsedUser.id !== 'undefined') {
+                            submissionUserId = parsedUser.id;
+                        }
+                    }
+                } catch (error) {
+                    console.warn('Unable to read stored user for submission payload:', error);
+                }
 
                 if (saveProfile) {
                     localStorage.setItem('sbs-address', address.value);
@@ -2373,11 +2410,14 @@
                     return text;
                 }).join('\n');
 
+                const priceLine = askingPrice ? `💶 ASKING PRICE: €${askingPrice.toFixed(2)}\n` : '';
+                const notesLine = sellerNotes ? `📝 EXTRA NOTES: ${sellerNotes}\n` : '';
+
                 const message = `🔥 SELLING MULTIPLE ITEMS TO SBS 🔥
 
 📸 PICTURES: [I have ${items.reduce((acc, item) => acc + item.photoCount, 0)} photos ready]
 📍 MY LOCATION: ${address.value}, ${city.value}${eircodeText}
-
+${priceLine}${notesLine}
 📋 ITEMS:
 ${itemsText}
 
@@ -2389,12 +2429,12 @@ ${itemsText}
                 document.getElementById('qb-message-output').scrollIntoView({ behavior: 'smooth' });
 
                 // ALSO submit to API for tracking
-                submitToAPI(items, contactChannel, phone, email, address.value, city.value, eircode.value, socialHandle);
+                submitToAPI(items, contactChannel, phone, email, address.value, city.value, eircode.value, socialHandle, askingPrice, sellerNotes, submissionUserId);
             });
         }
 
         // Submit to API for database tracking
-        async function submitToAPI(itemsList, contactChannel, phone, email, addressValue, cityValue, eircodeValue, socialHandle) {
+        async function submitToAPI(itemsList, contactChannel, phone, email, addressValue, cityValue, eircodeValue, socialHandle, sellerPrice, sellerMessage, userId) {
             try {
                 const submissionData = {
                     items: itemsList.map(item => ({
@@ -2411,8 +2451,10 @@ ${itemsText}
                     address: addressValue,
                     city: cityValue,
                     eircode: eircodeValue || null,
-                    notes: 'Submitted via Quick Builder',
-                    user_id: null
+                    notes: sellerMessage ? `Quick Builder — ${sellerMessage}` : 'Submitted via Quick Builder',
+                    user_id: typeof userId === 'number' || (userId && !Number.isNaN(Number(userId))) ? Number(userId) : null,
+                    seller_price: sellerPrice || null,
+                    seller_message: sellerMessage || null
                 };
 
                 const response = await fetch('/api/sell-submissions', {

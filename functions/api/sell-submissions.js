@@ -5,11 +5,22 @@
  * Handles seller submissions with batch ID system
  */
 
+import { extractSessionToken, validateSession } from '../lib/sessions.js';
+
 export async function onRequestPost(context) {
     const { request, env } = context;
 
     try {
         const data = await request.json();
+
+        // Attach authenticated user automatically when available
+        const sessionToken = extractSessionToken(request);
+        if (sessionToken) {
+            const session = await validateSession(env, sessionToken);
+            if (session?.user_id) {
+                data.user_id = session.user_id;
+            }
+        }
 
         // Validate required fields
         if (!data.items || !Array.isArray(data.items) || data.items.length === 0) {
@@ -29,8 +40,15 @@ export async function onRequestPost(context) {
         // Generate unique batch ID
         const batchId = await generateBatchId(env.DB);
 
-        // Prepare items JSON
+        // Prepare items JSON and derived fields
         const itemsJson = JSON.stringify(data.items);
+        const itemCount = Array.isArray(data.items) ? data.items.length : 0;
+        const sellerPrice = typeof data.seller_price === 'number' && !Number.isNaN(data.seller_price)
+            ? Number(data.seller_price)
+            : null;
+        const sellerMessage = typeof data.seller_message === 'string' && data.seller_message.trim().length > 0
+            ? data.seller_message.trim()
+            : null;
 
         // Insert into database
         const result = await env.DB.prepare(`
@@ -39,6 +57,7 @@ export async function onRequestPost(context) {
                 user_id,
                 status,
                 items_json,
+                item_count,
                 contact_phone,
                 contact_channel,
                 contact_handle,
@@ -47,13 +66,16 @@ export async function onRequestPost(context) {
                 city,
                 eircode,
                 notes,
+                seller_price,
+                seller_message,
                 created_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
         `).bind(
             batchId,
             data.user_id || null,
             'pending',
             itemsJson,
+            itemCount,
             data.contact_phone,
             data.contact_channel,
             data.contact_handle,
@@ -61,7 +83,9 @@ export async function onRequestPost(context) {
             data.address || null,
             data.city || null,
             data.eircode || null,
-            data.notes || null
+            data.notes || null,
+            sellerPrice,
+            sellerMessage
         ).run();
 
         // Success response
@@ -70,7 +94,7 @@ export async function onRequestPost(context) {
             batch_id: batchId,
             submission_id: result.meta.last_row_id,
             message: `Submission received! Batch ID: ${batchId}`,
-            items_count: data.items.length
+            items_count: itemCount
         }, { status: 201 });
 
     } catch (error) {
@@ -119,35 +143,178 @@ async function generateBatchId(db) {
 export async function onRequestGet(context) {
     const { request, env } = context;
     const url = new URL(request.url);
-    const status = url.searchParams.get('status');
+    const statusFilter = url.searchParams.get('status');
     const batchId = url.searchParams.get('batch_id');
+    const limitParam = parseInt(url.searchParams.get('limit'), 10);
+    const offsetParam = parseInt(url.searchParams.get('offset'), 10);
+
+    const maxLimit = 1500;
+    const limit = Number.isFinite(limitParam)
+        ? Math.min(Math.max(limitParam, 10), maxLimit)
+        : 200;
+    const offset = Number.isFinite(offsetParam) && offsetParam >= 0 ? offsetParam : 0;
 
     try {
-        let query = 'SELECT * FROM sell_submissions';
-        const params = [];
+        const sessionToken = extractSessionToken(request);
+        const session = await validateSession(env, sessionToken);
 
-        if (batchId) {
-            query += ' WHERE batch_id = ?';
-            params.push(batchId);
-        } else if (status) {
-            query += ' WHERE status = ?';
-            params.push(status);
+        if (!session) {
+            return Response.json({
+                success: false,
+                error: 'Unauthorized'
+            }, { status: 401 });
         }
 
-        query += ' ORDER BY created_at DESC LIMIT 100';
+        const identityClauses = [];
+        const identityBindings = [];
 
-        const result = await env.DB.prepare(query).bind(...params).all();
+        if (session.user_id) {
+            identityClauses.push('user_id = ?');
+            identityBindings.push(session.user_id);
+        }
+        if (session.social_handle) {
+            identityClauses.push('LOWER(contact_handle) = LOWER(?)');
+            identityBindings.push(session.social_handle);
+        }
+        if (session.instagram) {
+            identityClauses.push('LOWER(contact_handle) = LOWER(?)');
+            identityBindings.push(session.instagram);
+        }
+        if (session.snapchat) {
+            identityClauses.push('LOWER(contact_handle) = LOWER(?)');
+            identityBindings.push(session.snapchat);
+        }
+        if (session.email) {
+            identityClauses.push('LOWER(contact_email) = LOWER(?)');
+            identityBindings.push(session.email);
+        }
+        if (session.phone) {
+            identityClauses.push(`REPLACE(REPLACE(REPLACE(contact_phone, ' ', ''), '-', ''), '+', '') = REPLACE(REPLACE(REPLACE(?, ' ', ''), '-', ''), '+', '')`);
+            identityBindings.push(session.phone);
+        }
 
-        // Parse items_json for each submission
-        const submissions = result.results.map(sub => ({
-            ...sub,
-            items: JSON.parse(sub.items_json)
-        }));
+        if (identityClauses.length === 0) {
+            return Response.json({
+                success: true,
+                submissions: [],
+                summary: [],
+                total: 0,
+                pagination: {
+                    page: 1,
+                    limit,
+                    total_pages: 0
+                }
+            });
+        }
+
+        const filters = [`(${identityClauses.join(' OR ')})`];
+        const bindings = [...identityBindings];
+
+        if (statusFilter) {
+            filters.push('status = ?');
+            bindings.push(statusFilter);
+        }
+
+        if (batchId) {
+            filters.push('batch_id = ?');
+            bindings.push(batchId);
+        }
+
+        const whereClause = filters.length ? `WHERE ${filters.join(' AND ')}` : '';
+
+        const query = `
+            SELECT
+                id,
+                batch_id,
+                user_id,
+                status,
+                items_json,
+                item_count,
+                contact_phone,
+                contact_channel,
+                contact_handle,
+                contact_email,
+                address,
+                city,
+                eircode,
+                notes,
+                seller_price,
+                seller_message,
+                estimated_value,
+                offered_price,
+                offer_message,
+                offer_sent_at,
+                offer_expires_at,
+                seller_response,
+                seller_response_message,
+                seller_response_at,
+                final_price,
+                admin_notes,
+                created_at,
+                updated_at
+            FROM sell_submissions
+            ${whereClause}
+            ORDER BY datetime(created_at) DESC
+            LIMIT ? OFFSET ?
+        `;
+
+        const submissionsResult = await env.DB.prepare(query)
+            .bind(...bindings, limit, offset)
+            .all();
+
+        const countQuery = `
+            SELECT
+                COUNT(*) as total,
+                COALESCE(SUM(json_array_length(items_json)), 0) as total_items
+            FROM sell_submissions
+            ${whereClause}
+        `;
+
+        const countResult = await env.DB.prepare(countQuery)
+            .bind(...bindings)
+            .first();
+
+        const summaryQuery = `
+            SELECT
+                status,
+                COUNT(*) as count,
+                COALESCE(SUM(json_array_length(items_json)), 0) as items
+            FROM sell_submissions
+            ${whereClause}
+            GROUP BY status
+        `;
+
+        const summaryResult = await env.DB.prepare(summaryQuery)
+            .bind(...bindings)
+            .all();
+
+        const submissions = submissionsResult.results.map((row) => {
+            const { items_json, item_count, ...rest } = row;
+            const items = parseItems(items_json);
+            const normalizedCount = Number.isFinite(Number(item_count)) ? Number(item_count) : items.length;
+            return {
+                ...rest,
+                item_count: normalizedCount,
+                items
+            };
+        });
+
+        const total = Number(countResult?.total || 0);
+        const page = Math.floor(offset / limit) + 1;
+        const totalPages = total === 0 ? 0 : Math.ceil(total / limit);
 
         return Response.json({
             success: true,
             submissions,
-            count: submissions.length
+            total,
+            total_items: Number(countResult?.total_items || 0),
+            summary: summaryResult.results,
+            pagination: {
+                page,
+                limit,
+                offset,
+                total_pages: totalPages
+            }
         });
 
     } catch (error) {
@@ -156,5 +323,16 @@ export async function onRequestGet(context) {
             success: false,
             error: 'Failed to fetch submissions'
         }, { status: 500 });
+    }
+}
+
+function parseItems(itemsJson) {
+    if (!itemsJson) return [];
+    try {
+        const parsed = JSON.parse(itemsJson);
+        return Array.isArray(parsed) ? parsed : [];
+    } catch (error) {
+        console.warn('Failed to parse items_json:', error);
+        return [];
     }
 }

@@ -1,9 +1,9 @@
-------formdata-undici-025876879117
+------formdata-undici-078727998812
 Content-Disposition: form-data; name="metadata"
 
-{"main_module":"functionsWorker-0.7724876471591032.js"}
-------formdata-undici-025876879117
-Content-Disposition: form-data; name="functionsWorker-0.7724876471591032.js"; filename="functionsWorker-0.7724876471591032.js"
+{"main_module":"functionsWorker-0.7147950824920812.js"}
+------formdata-undici-078727998812
+Content-Disposition: form-data; name="functionsWorker-0.7147950824920812.js"; filename="functionsWorker-0.7147950824920812.js"
 Content-Type: application/javascript+module
 
 var __defProp = Object.defineProperty;
@@ -140,7 +140,7 @@ function generateRecoveryCodes(count = 8) {
 var PBKDF2_ITERATIONS, BASE32_ALPHABET;
 var init_security = __esm({
   "lib/security.js"() {
-    init_functionsRoutes_0_6521821362017705();
+    init_functionsRoutes_0_5548676847482719();
     PBKDF2_ITERATIONS = 21e4;
     __name(base64FromBytes, "base64FromBytes");
     __name(bytesFromBase64, "bytesFromBase64");
@@ -431,7 +431,7 @@ async function runAdminDiagnostics(env) {
 var ADMIN_CONSTANTS;
 var init_admin = __esm({
   "lib/admin.js"() {
-    init_functionsRoutes_0_6521821362017705();
+    init_functionsRoutes_0_5548676847482719();
     init_security();
     __name(isAdminSession, "isAdminSession");
     __name(verifyAdminAuth, "verifyAdminAuth");
@@ -671,7 +671,7 @@ async function onRequestOptions(context) {
 }
 var init_activity = __esm({
   "api/admin/activity.js"() {
-    init_functionsRoutes_0_6521821362017705();
+    init_functionsRoutes_0_5548676847482719();
     init_admin();
     __name(jsonResponse, "jsonResponse");
     __name(onRequestGet, "onRequestGet");
@@ -817,7 +817,7 @@ function jsonResponse2(data, status = 200) {
 }
 var init_analytics = __esm({
   "api/admin/analytics.js"() {
-    init_functionsRoutes_0_6521821362017705();
+    init_functionsRoutes_0_5548676847482719();
     __name(onRequestGet2, "onRequestGet");
     __name(jsonResponse2, "jsonResponse");
   }
@@ -1063,7 +1063,7 @@ async function onRequestOptions2(context) {
 }
 var init_auth = __esm({
   "api/admin/auth.js"() {
-    init_functionsRoutes_0_6521821362017705();
+    init_functionsRoutes_0_5548676847482719();
     init_security();
     init_admin();
     __name(jsonResponse3, "jsonResponse");
@@ -1194,7 +1194,7 @@ async function onRequestDelete({ request, env }) {
 }
 var init_delete_image = __esm({
   "api/admin/delete-image.js"() {
-    init_functionsRoutes_0_6521821362017705();
+    init_functionsRoutes_0_5548676847482719();
     __name(sha256b64, "sha256b64");
     __name(onRequestDelete, "onRequestDelete");
   }
@@ -1204,7 +1204,7 @@ var init_delete_image = __esm({
 var NotificationService, notification_service_default;
 var init_notification_service = __esm({
   "lib/notification-service.js"() {
-    init_functionsRoutes_0_6521821362017705();
+    init_functionsRoutes_0_5548676847482719();
     NotificationService = class {
       static {
         __name(this, "NotificationService");
@@ -1736,7 +1736,7 @@ async function onRequestDelete2(context) {
 var BASE_HEADERS;
 var init_orders = __esm({
   "api/admin/orders.js"() {
-    init_functionsRoutes_0_6521821362017705();
+    init_functionsRoutes_0_5548676847482719();
     init_notification_service();
     init_admin();
     init_security();
@@ -2119,7 +2119,7 @@ function generateSKU(category, brand) {
 }
 var init_products = __esm({
   "api/admin/products.js"() {
-    init_functionsRoutes_0_6521821362017705();
+    init_functionsRoutes_0_5548676847482719();
     init_admin();
     __name(jsonResponse5, "jsonResponse");
     __name(onRequestGet5, "onRequestGet");
@@ -2249,7 +2249,7 @@ async function onRequestPatch({ request, env }) {
 }
 var init_update_image_metadata = __esm({
   "api/admin/update-image-metadata.js"() {
-    init_functionsRoutes_0_6521821362017705();
+    init_functionsRoutes_0_5548676847482719();
     __name(sha256b642, "sha256b64");
     __name(onRequestPatch, "onRequestPatch");
   }
@@ -2454,7 +2454,7 @@ async function onRequestPost4({ request, env }) {
 }
 var init_upload_image = __esm({
   "api/admin/upload-image.js"() {
-    init_functionsRoutes_0_6521821362017705();
+    init_functionsRoutes_0_5548676847482719();
     __name(sha256b643, "sha256b64");
     __name(onRequestPost4, "onRequestPost");
   }
@@ -2692,7 +2692,7 @@ function jsonResponse6(data, status = 200) {
 }
 var init_sync = __esm({
   "api/analytics/sync.js"() {
-    init_functionsRoutes_0_6521821362017705();
+    init_functionsRoutes_0_5548676847482719();
     __name(onRequestPost5, "onRequestPost");
     __name(jsonResponse6, "jsonResponse");
   }
@@ -2711,59 +2711,70 @@ async function onRequestPost6(context) {
     return new Response(null, { headers: corsHeaders });
   }
   try {
-    const { events } = await request.json();
-    if (!events || !Array.isArray(events) || events.length === 0) {
+    const body = await request.json();
+    const events = body?.events;
+    if (!Array.isArray(events) || events.length === 0) {
       return new Response(JSON.stringify({
         success: false,
-        error: "Invalid events data"
-      }), {
-        status: 400,
-        headers: corsHeaders
-      });
+        error: "Invalid events payload"
+      }), { status: 400, headers: corsHeaders });
     }
-    console.log(`\u{1F4CA} Tracking ${events.length} events`);
-    const insertPromises = events.map((event) => {
-      return env.DB.prepare(`
-                INSERT INTO analytics_events 
-                (event_type, session_id, user_id, product_id, category, brand, metadata, value, user_agent, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
-            `).bind(
-        event.event_type,
-        event.session_id,
-        event.user_id || null,
-        event.product_id || null,
-        event.category || null,
-        event.brand || null,
-        JSON.stringify(event),
-        // Store full event as JSON in metadata
-        event.value || 0,
-        event.user_agent || event.userAgent || null
-      ).run();
-    });
-    await Promise.all(insertPromises);
-    return new Response(JSON.stringify({
-      success: true,
-      tracked: events.length,
+    const ip = request.headers.get("CF-Connecting-IP") || (request.headers.get("X-Forwarded-For") || "").split(",")[0] || "unknown";
+    const userAgent = request.headers.get("User-Agent") || "unknown";
+    let successCount = 0;
+    const errors = [];
+    for (const rawEvent of events) {
+      try {
+        const eventType = rawEvent?.type || rawEvent?.event_type || "unknown";
+        const eventPath = rawEvent?.path || rawEvent?.page_url || null;
+        const sessionId = rawEvent?.session_id || rawEvent?.sessionId || body?.sessionId || null;
+        const userId = rawEvent?.user_id || rawEvent?.userId || null;
+        const serializedEvent = JSON.stringify(rawEvent?.data ?? rawEvent ?? {});
+        await env.DB.prepare(`
+                    INSERT INTO analytics_events (event_type, event_data, user_id, session_id, ip_address, user_agent, path)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                `).bind(
+          eventType,
+          serializedEvent,
+          userId,
+          sessionId,
+          ip,
+          userAgent,
+          eventPath
+        ).run();
+        successCount++;
+      } catch (insertError) {
+        console.error("\u274C Analytics insert failure:", insertError);
+        errors.push({
+          type: rawEvent?.type || rawEvent?.event_type,
+          message: insertError.message
+        });
+      }
+    }
+    const responsePayload = {
+      success: errors.length === 0,
+      tracked: successCount,
+      failed: errors.length,
       timestamp: (/* @__PURE__ */ new Date()).toISOString()
-    }), {
-      status: 200,
+    };
+    if (errors.length > 0) {
+      responsePayload.errors = errors.slice(0, 3);
+    }
+    return new Response(JSON.stringify(responsePayload), {
+      status: errors.length === 0 ? 200 : 207,
       headers: corsHeaders
     });
   } catch (error) {
     console.error("\u274C Analytics tracking error:", error);
     return new Response(JSON.stringify({
       success: false,
-      error: error.message,
-      timestamp: (/* @__PURE__ */ new Date()).toISOString()
-    }), {
-      status: 500,
-      headers: corsHeaders
-    });
+      error: error.message || "Failed to track analytics"
+    }), { status: 500, headers: corsHeaders });
   }
 }
 var init_track = __esm({
   "api/analytics/track.js"() {
-    init_functionsRoutes_0_6521821362017705();
+    init_functionsRoutes_0_5548676847482719();
     __name(onRequestPost6, "onRequestPost");
   }
 });
@@ -2951,7 +2962,7 @@ function buildRegistrationEmailHtml({ caseId, socialHandle, socialChannel, city 
 }
 var init_submit = __esm({
   "api/cases/submit.js"() {
-    init_functionsRoutes_0_6521821362017705();
+    init_functionsRoutes_0_5548676847482719();
     __name(onRequestPost7, "onRequestPost");
     __name(getNextCaseNumber, "getNextCaseNumber");
     __name(sendRegistrationEmail, "sendRegistrationEmail");
@@ -3019,7 +3030,7 @@ async function onRequestPost8(context) {
 }
 var init_upload_photos = __esm({
   "api/cases/upload-photos.js"() {
-    init_functionsRoutes_0_6521821362017705();
+    init_functionsRoutes_0_5548676847482719();
     __name(onRequestPost8, "onRequestPost");
   }
 });
@@ -3127,7 +3138,7 @@ async function onRequestPost9(context) {
 }
 var init_create = __esm({
   "api/reservations/create.js"() {
-    init_functionsRoutes_0_6521821362017705();
+    init_functionsRoutes_0_5548676847482719();
     __name(onRequestPost9, "onRequestPost");
   }
 });
@@ -3235,7 +3246,7 @@ async function onRequest(context) {
 }
 var init_reservations = __esm({
   "api/admin/reservations.js"() {
-    init_functionsRoutes_0_6521821362017705();
+    init_functionsRoutes_0_5548676847482719();
     __name(onRequest, "onRequest");
   }
 });
@@ -3531,7 +3542,7 @@ async function handleDeleteSubmission(context, submissionId, adminId) {
 }
 var init_sell_requests = __esm({
   "api/admin/sell-requests.js"() {
-    init_functionsRoutes_0_6521821362017705();
+    init_functionsRoutes_0_5548676847482719();
     init_admin();
     init_admin();
     __name(onRequest2, "onRequest");
@@ -3542,11 +3553,94 @@ var init_sell_requests = __esm({
   }
 });
 
+// lib/sessions.js
+async function validateSession(env, token) {
+  if (!token) return null;
+  const tokenHash = await hashToken(token);
+  const result = await env.DB.prepare(`
+        SELECT 
+            s.id as session_id,
+            s.user_id,
+            s.csrf_secret,
+            s.expires_at,
+            s.invalidated_at,
+            s.ip_address,
+            s.user_agent,
+            u.social_handle,
+            u.email,
+            u.phone,
+            u.instagram,
+            u.snapchat,
+            u.preferred_contact,
+            u.first_name,
+            u.last_name,
+            u.role,
+            u.totp_secret,
+            u.email_verified_at,
+            u.email_verification_required,
+            u.locked_until,
+            a.user_id as is_allowlisted
+        FROM sessions s
+        INNER JOIN users u ON s.user_id = u.id
+        LEFT JOIN admin_allowlist a ON u.id = a.user_id
+        WHERE s.token_hash = ?
+            AND s.expires_at > datetime('now')
+            AND s.invalidated_at IS NULL
+    `).bind(tokenHash).first();
+  if (!result) return null;
+  if (result.locked_until) {
+    const lockedUntil = new Date(result.locked_until);
+    if (lockedUntil > /* @__PURE__ */ new Date()) {
+      return null;
+    }
+  }
+  await env.DB.prepare(`
+        UPDATE sessions 
+        SET last_seen_at = CURRENT_TIMESTAMP 
+        WHERE id = ?
+    `).bind(result.session_id).run();
+  return result;
+}
+function parseCookies(cookieHeader) {
+  if (!cookieHeader) return {};
+  return cookieHeader.split(";").reduce((cookies, cookie) => {
+    const [name, ...rest] = cookie.trim().split("=");
+    if (name) {
+      cookies[name] = rest.join("=");
+    }
+    return cookies;
+  }, {});
+}
+function extractSessionToken(request) {
+  const cookieHeader = request.headers.get("Cookie");
+  const cookies = parseCookies(cookieHeader);
+  return cookies[SESSION_COOKIE_NAME] || null;
+}
+var SESSION_COOKIE_NAME, SESSION_TTL_SECONDS;
+var init_sessions = __esm({
+  "lib/sessions.js"() {
+    init_functionsRoutes_0_5548676847482719();
+    init_security();
+    SESSION_COOKIE_NAME = "sbs_session";
+    SESSION_TTL_SECONDS = 30 * 24 * 60 * 60;
+    __name(validateSession, "validateSession");
+    __name(parseCookies, "parseCookies");
+    __name(extractSessionToken, "extractSessionToken");
+  }
+});
+
 // api/sell-submissions.js
 async function onRequestPost10(context) {
   const { request, env } = context;
   try {
     const data = await request.json();
+    const sessionToken = extractSessionToken(request);
+    if (sessionToken) {
+      const session = await validateSession(env, sessionToken);
+      if (session?.user_id) {
+        data.user_id = session.user_id;
+      }
+    }
     if (!data.items || !Array.isArray(data.items) || data.items.length === 0) {
       return Response.json({
         success: false,
@@ -3561,12 +3655,16 @@ async function onRequestPost10(context) {
     }
     const batchId = await generateBatchId(env.DB);
     const itemsJson = JSON.stringify(data.items);
+    const itemCount = Array.isArray(data.items) ? data.items.length : 0;
+    const sellerPrice = typeof data.seller_price === "number" && !Number.isNaN(data.seller_price) ? Number(data.seller_price) : null;
+    const sellerMessage = typeof data.seller_message === "string" && data.seller_message.trim().length > 0 ? data.seller_message.trim() : null;
     const result = await env.DB.prepare(`
             INSERT INTO sell_submissions (
                 batch_id,
                 user_id,
                 status,
                 items_json,
+                item_count,
                 contact_phone,
                 contact_channel,
                 contact_handle,
@@ -3575,13 +3673,16 @@ async function onRequestPost10(context) {
                 city,
                 eircode,
                 notes,
+                seller_price,
+                seller_message,
                 created_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
         `).bind(
       batchId,
       data.user_id || null,
       "pending",
       itemsJson,
+      itemCount,
       data.contact_phone,
       data.contact_channel,
       data.contact_handle,
@@ -3589,14 +3690,16 @@ async function onRequestPost10(context) {
       data.address || null,
       data.city || null,
       data.eircode || null,
-      data.notes || null
+      data.notes || null,
+      sellerPrice,
+      sellerMessage
     ).run();
     return Response.json({
       success: true,
       batch_id: batchId,
       submission_id: result.meta.last_row_id,
       message: `Submission received! Batch ID: ${batchId}`,
-      items_count: data.items.length
+      items_count: itemCount
     }, { status: 201 });
   } catch (error) {
     console.error("Sell submission error:", error);
@@ -3626,28 +3729,151 @@ async function generateBatchId(db) {
 async function onRequestGet6(context) {
   const { request, env } = context;
   const url = new URL(request.url);
-  const status = url.searchParams.get("status");
+  const statusFilter = url.searchParams.get("status");
   const batchId = url.searchParams.get("batch_id");
+  const limitParam = parseInt(url.searchParams.get("limit"), 10);
+  const offsetParam = parseInt(url.searchParams.get("offset"), 10);
+  const maxLimit = 1500;
+  const limit = Number.isFinite(limitParam) ? Math.min(Math.max(limitParam, 10), maxLimit) : 200;
+  const offset = Number.isFinite(offsetParam) && offsetParam >= 0 ? offsetParam : 0;
   try {
-    let query = "SELECT * FROM sell_submissions";
-    const params = [];
-    if (batchId) {
-      query += " WHERE batch_id = ?";
-      params.push(batchId);
-    } else if (status) {
-      query += " WHERE status = ?";
-      params.push(status);
+    const sessionToken = extractSessionToken(request);
+    const session = await validateSession(env, sessionToken);
+    if (!session) {
+      return Response.json({
+        success: false,
+        error: "Unauthorized"
+      }, { status: 401 });
     }
-    query += " ORDER BY created_at DESC LIMIT 100";
-    const result = await env.DB.prepare(query).bind(...params).all();
-    const submissions = result.results.map((sub) => ({
-      ...sub,
-      items: JSON.parse(sub.items_json)
-    }));
+    const identityClauses = [];
+    const identityBindings = [];
+    if (session.user_id) {
+      identityClauses.push("user_id = ?");
+      identityBindings.push(session.user_id);
+    }
+    if (session.social_handle) {
+      identityClauses.push("LOWER(contact_handle) = LOWER(?)");
+      identityBindings.push(session.social_handle);
+    }
+    if (session.instagram) {
+      identityClauses.push("LOWER(contact_handle) = LOWER(?)");
+      identityBindings.push(session.instagram);
+    }
+    if (session.snapchat) {
+      identityClauses.push("LOWER(contact_handle) = LOWER(?)");
+      identityBindings.push(session.snapchat);
+    }
+    if (session.email) {
+      identityClauses.push("LOWER(contact_email) = LOWER(?)");
+      identityBindings.push(session.email);
+    }
+    if (session.phone) {
+      identityClauses.push(`REPLACE(REPLACE(REPLACE(contact_phone, ' ', ''), '-', ''), '+', '') = REPLACE(REPLACE(REPLACE(?, ' ', ''), '-', ''), '+', '')`);
+      identityBindings.push(session.phone);
+    }
+    if (identityClauses.length === 0) {
+      return Response.json({
+        success: true,
+        submissions: [],
+        summary: [],
+        total: 0,
+        pagination: {
+          page: 1,
+          limit,
+          total_pages: 0
+        }
+      });
+    }
+    const filters = [`(${identityClauses.join(" OR ")})`];
+    const bindings = [...identityBindings];
+    if (statusFilter) {
+      filters.push("status = ?");
+      bindings.push(statusFilter);
+    }
+    if (batchId) {
+      filters.push("batch_id = ?");
+      bindings.push(batchId);
+    }
+    const whereClause = filters.length ? `WHERE ${filters.join(" AND ")}` : "";
+    const query = `
+            SELECT
+                id,
+                batch_id,
+                user_id,
+                status,
+                items_json,
+                item_count,
+                contact_phone,
+                contact_channel,
+                contact_handle,
+                contact_email,
+                address,
+                city,
+                eircode,
+                notes,
+                seller_price,
+                seller_message,
+                estimated_value,
+                offered_price,
+                offer_message,
+                offer_sent_at,
+                offer_expires_at,
+                seller_response,
+                seller_response_message,
+                seller_response_at,
+                final_price,
+                admin_notes,
+                created_at,
+                updated_at
+            FROM sell_submissions
+            ${whereClause}
+            ORDER BY datetime(created_at) DESC
+            LIMIT ? OFFSET ?
+        `;
+    const submissionsResult = await env.DB.prepare(query).bind(...bindings, limit, offset).all();
+    const countQuery = `
+            SELECT
+                COUNT(*) as total,
+                COALESCE(SUM(json_array_length(items_json)), 0) as total_items
+            FROM sell_submissions
+            ${whereClause}
+        `;
+    const countResult = await env.DB.prepare(countQuery).bind(...bindings).first();
+    const summaryQuery = `
+            SELECT
+                status,
+                COUNT(*) as count,
+                COALESCE(SUM(json_array_length(items_json)), 0) as items
+            FROM sell_submissions
+            ${whereClause}
+            GROUP BY status
+        `;
+    const summaryResult = await env.DB.prepare(summaryQuery).bind(...bindings).all();
+    const submissions = submissionsResult.results.map((row) => {
+      const { items_json, item_count, ...rest } = row;
+      const items = parseItems(items_json);
+      const normalizedCount = Number.isFinite(Number(item_count)) ? Number(item_count) : items.length;
+      return {
+        ...rest,
+        item_count: normalizedCount,
+        items
+      };
+    });
+    const total = Number(countResult?.total || 0);
+    const page = Math.floor(offset / limit) + 1;
+    const totalPages = total === 0 ? 0 : Math.ceil(total / limit);
     return Response.json({
       success: true,
       submissions,
-      count: submissions.length
+      total,
+      total_items: Number(countResult?.total_items || 0),
+      summary: summaryResult.results,
+      pagination: {
+        page,
+        limit,
+        offset,
+        total_pages: totalPages
+      }
     });
   } catch (error) {
     console.error("Fetch submissions error:", error);
@@ -3657,12 +3883,24 @@ async function onRequestGet6(context) {
     }, { status: 500 });
   }
 }
+function parseItems(itemsJson) {
+  if (!itemsJson) return [];
+  try {
+    const parsed = JSON.parse(itemsJson);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (error) {
+    console.warn("Failed to parse items_json:", error);
+    return [];
+  }
+}
 var init_sell_submissions = __esm({
   "api/sell-submissions.js"() {
-    init_functionsRoutes_0_6521821362017705();
+    init_functionsRoutes_0_5548676847482719();
+    init_sessions();
     __name(onRequestPost10, "onRequestPost");
     __name(generateBatchId, "generateBatchId");
     __name(onRequestGet6, "onRequestGet");
+    __name(parseItems, "parseItems");
   }
 });
 
@@ -4060,7 +4298,7 @@ function generateCustomerInsights(topCustomers, locations) {
 }
 var init_analytics_v2 = __esm({
   "api/analytics-v2.js"() {
-    init_functionsRoutes_0_6521821362017705();
+    init_functionsRoutes_0_5548676847482719();
     __name(onRequest3, "onRequest");
     __name(getOverviewAnalytics, "getOverviewAnalytics");
     __name(getProductAnalytics, "getProductAnalytics");
@@ -4161,7 +4399,7 @@ async function onRequest4(context) {
 }
 var init_eircode_proxy = __esm({
   "api/eircode-proxy.js"() {
-    init_functionsRoutes_0_6521821362017705();
+    init_functionsRoutes_0_5548676847482719();
     __name(onRequest4, "onRequest");
   }
 });
@@ -4173,7 +4411,7 @@ function getSizesForCategory(category) {
 var SIZES;
 var init_taxonomy = __esm({
   "../public/js/taxonomy.js"() {
-    init_functionsRoutes_0_6521821362017705();
+    init_functionsRoutes_0_5548676847482719();
     SIZES = {
       "BN-CLOTHES": [
         "XS",
@@ -4413,7 +4651,7 @@ async function onRequest5(context) {
 }
 var init_products2 = __esm({
   "api/products.js"() {
-    init_functionsRoutes_0_6521821362017705();
+    init_functionsRoutes_0_5548676847482719();
     init_taxonomy();
     __name(onRequest5, "onRequest");
   }
@@ -4659,7 +4897,7 @@ async function discoverFromCloudflare(env, corsHeaders, includeHidden) {
 }
 var init_products_smart = __esm({
   "api/products-smart.js"() {
-    init_functionsRoutes_0_6521821362017705();
+    init_functionsRoutes_0_5548676847482719();
     init_taxonomy();
     __name(onRequest6, "onRequest");
     __name(discoverFromCloudflare, "discoverFromCloudflare");
@@ -4821,7 +5059,7 @@ async function cleanupExpiredTokens(db) {
 var enc;
 var init_email = __esm({
   "lib/email.js"() {
-    init_functionsRoutes_0_6521821362017705();
+    init_functionsRoutes_0_5548676847482719();
     enc = new TextEncoder();
     __name(generateToken, "generateToken");
     __name(hashToken3, "hashToken");
@@ -4924,7 +5162,7 @@ async function sendBeautifulVerificationEmail(apiKey, email, name, token, siteUr
 }
 var init_resend_wrapper = __esm({
   "lib/resend-wrapper.js"() {
-    init_functionsRoutes_0_6521821362017705();
+    init_functionsRoutes_0_5548676847482719();
     __name(sendBeautifulVerificationEmail, "sendBeautifulVerificationEmail");
   }
 });
@@ -5305,6 +5543,73 @@ async function onRequest7(context) {
         );
       }
     }
+    if (path === "/api/analytics/track" && method === "POST") {
+      try {
+        if (!env.DB) {
+          console.error("Analytics: DB binding not available");
+          return json({
+            success: false,
+            error: "Database not configured",
+            hint: "DB binding missing in environment"
+          }, 500, headers);
+        }
+        const body = await request.json();
+        const events = body.events;
+        if (!Array.isArray(events) || events.length === 0) {
+          return json({ success: false, error: "No events to track" }, 400, headers);
+        }
+        console.log(`\u{1F4CA} Tracking ${events.length} events`);
+        const ip = ipOf(request);
+        const ua = request.headers.get("User-Agent") || "unknown";
+        const userId = session?.user_id || null;
+        const sessionId = session?.session_id || body.sessionId || null;
+        let successCount = 0;
+        const errors = [];
+        for (const event of events) {
+          try {
+            const eventType = event.type || "unknown";
+            const eventPath = event.path || null;
+            const eventData = JSON.stringify(event.data || event || {});
+            await env.DB.prepare(
+              `INSERT INTO analytics_events (event_type, event_data, user_id, session_id, ip_address, user_agent, path)
+               VALUES (?, ?, ?, ?, ?, ?, ?)`
+            ).bind(
+              eventType,
+              eventData,
+              userId,
+              sessionId,
+              ip,
+              ua,
+              eventPath
+            ).run();
+            successCount++;
+          } catch (insertError) {
+            console.error(`\u274C Failed to insert event ${event.type}:`, insertError.message);
+            errors.push({
+              event: event.type,
+              error: insertError.message
+            });
+          }
+        }
+        if (successCount === events.length) {
+          return json({ success: true, tracked: successCount }, 200, headers);
+        } else {
+          return json({
+            success: true,
+            tracked: successCount,
+            failed: errors.length,
+            errors: errors.slice(0, 3)
+            // Only return first 3 errors
+          }, 200, headers);
+        }
+      } catch (error) {
+        console.error("\u274C Analytics tracking error:", error.message);
+        return json({
+          success: false,
+          error: error.message || "Failed to track analytics"
+        }, 500, headers);
+      }
+    }
     if (!session) return json({ success: false, error: "Unauthorized" }, 401, headers);
     if (path === "/api/users/me" && method === "GET") {
       const csrfToken = await csrfTokenFromSecret(session.csrf_secret);
@@ -5339,7 +5644,7 @@ async function onRequest7(context) {
               <li><a href="/admin/requests/" target="_blank">\u{1F4CB} Requests</a></li>
               <li><a href="/admin/customers/" target="_blank">\u{1F465} Customers</a></li>
               <li><a href="/admin/data/" target="_blank">\u{1F4BE} Data</a></li>
-              <li><a href="/admin/logs/" target="_blank">\uFFFD Logs & Analytics</a></li>
+              <li><a href="/admin/analytics.html" target="_blank">\u{1F4CA} Logs & Analytics</a></li>
               <li><a href="/admin/security/" target="_blank">\u{1F512} Security</a></li>
               <li><a href="/admin/audit/" target="_blank">\u{1F4DC} Audit</a></li>
             </ul>
@@ -5369,6 +5674,168 @@ async function onRequest7(context) {
           200,
           headers
         );
+      }
+      if (path === "/api/admin/analytics-dashboard" && method === "GET") {
+        try {
+          const totalUsers = await env.DB.prepare("SELECT COUNT(*) as count FROM users").first();
+          const activeUsers = await env.DB.prepare("SELECT COUNT(*) as count FROM users WHERE is_active = 1").first();
+          const newUsersToday = await env.DB.prepare(
+            "SELECT COUNT(*) as count FROM users WHERE DATE(created_at) = DATE('now')"
+          ).first();
+          const totalProducts = await env.DB.prepare("SELECT COUNT(*) as count FROM products").first();
+          const activeProducts = await env.DB.prepare(
+            "SELECT COUNT(*) as count FROM products WHERE status = 'active'"
+          ).first();
+          const soldProducts = await env.DB.prepare(
+            "SELECT COUNT(*) as count FROM products WHERE status = 'sold'"
+          ).first();
+          const topProducts = await env.DB.prepare(
+            "SELECT id, brand, category, size, views_count, price FROM products ORDER BY views_count DESC LIMIT 5"
+          ).all();
+          const totalOrders = await env.DB.prepare("SELECT COUNT(*) as count FROM orders").first();
+          const pendingOrders = await env.DB.prepare(
+            "SELECT COUNT(*) as count FROM orders WHERE status = 'pending'"
+          ).first();
+          const completedOrders = await env.DB.prepare(
+            "SELECT COUNT(*) as count FROM orders WHERE status = 'completed'"
+          ).first();
+          const totalRevenue = await env.DB.prepare(
+            "SELECT COALESCE(SUM(total_amount), 0) as total FROM orders WHERE status = 'completed'"
+          ).first();
+          const recentOrders = await env.DB.prepare(
+            "SELECT order_number, total_amount, status, created_at FROM orders ORDER BY created_at DESC LIMIT 10"
+          ).all();
+          const totalSellCases = await env.DB.prepare("SELECT COUNT(*) as count FROM sell_cases").first();
+          const pendingSellCases = await env.DB.prepare(
+            "SELECT COUNT(*) as count FROM sell_cases WHERE status = 'pending'"
+          ).first();
+          let analyticsEvents = { results: [] };
+          let eventCounts = {};
+          try {
+            analyticsEvents = await env.DB.prepare(
+              "SELECT event_type, COUNT(*) as count FROM analytics_events GROUP BY event_type ORDER BY count DESC LIMIT 10"
+            ).all();
+            analyticsEvents.results.forEach((row) => {
+              eventCounts[row.event_type] = row.count;
+            });
+          } catch (e) {
+            console.log("Analytics events table not yet available:", e.message);
+          }
+          const categoryPerformance = await env.DB.prepare(`
+            SELECT 
+              category,
+              COUNT(*) as total,
+              SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) as active,
+              SUM(CASE WHEN status = 'sold' THEN 1 ELSE 0 END) as sold,
+              COALESCE(SUM(views_count), 0) as total_views
+            FROM products
+            GROUP BY category
+            ORDER BY total DESC
+          `).all();
+          return json({
+            success: true,
+            dashboard: {
+              users: {
+                total: totalUsers.count,
+                active: activeUsers.count,
+                new_today: newUsersToday.count
+              },
+              products: {
+                total: totalProducts.count,
+                active: activeProducts.count,
+                sold: soldProducts.count,
+                top_products: topProducts.results || []
+              },
+              orders: {
+                total: totalOrders.count,
+                pending: pendingOrders.count,
+                completed: completedOrders.count,
+                revenue: totalRevenue.total || 0,
+                recent: recentOrders.results || []
+              },
+              sell_cases: {
+                total: totalSellCases.count,
+                pending: pendingSellCases.count
+              },
+              events: eventCounts,
+              categories: categoryPerformance.results || []
+            },
+            timestamp: (/* @__PURE__ */ new Date()).toISOString()
+          }, 200, headers);
+        } catch (error) {
+          console.error("Dashboard analytics error:", error);
+          return json({
+            success: false,
+            error: "Failed to load dashboard analytics",
+            details: error.message
+          }, 500, headers);
+        }
+      }
+      if (path === "/api/admin/analytics-events" && method === "GET") {
+        try {
+          const { results } = await env.DB.prepare(
+            "SELECT id, event_type, path, user_id, timestamp, event_data FROM analytics_events ORDER BY timestamp DESC LIMIT 100"
+          ).all();
+          return json({ success: true, events: results || [] }, 200, headers);
+        } catch (error) {
+          return json({
+            success: true,
+            events: [],
+            message: "Analytics events table not yet created. Events will appear after first deployment with schema."
+          }, 200, headers);
+        }
+      }
+      if (path === "/api/admin/users" && method === "GET") {
+        try {
+          const { results } = await env.DB.prepare(`
+            SELECT 
+              id,
+              social_handle,
+              email,
+              email_verified,
+              first_name,
+              last_name,
+              role,
+              is_active,
+              is_allowlisted,
+              created_at,
+              last_login
+            FROM users
+            ORDER BY created_at DESC
+          `).all();
+          const activeSessions = await env.DB.prepare(`
+            SELECT user_id, COUNT(*) as session_count
+            FROM sessions
+            WHERE expires_at > datetime('now')
+            GROUP BY user_id
+          `).all();
+          const sessionMap = {};
+          activeSessions.results?.forEach((s) => {
+            sessionMap[s.user_id] = s.session_count;
+          });
+          const users = results.map((user) => ({
+            ...user,
+            active_sessions: sessionMap[user.id] || 0,
+            is_logged_in: (sessionMap[user.id] || 0) > 0,
+            full_name: [user.first_name, user.last_name].filter(Boolean).join(" ") || "N/A"
+          }));
+          return json({
+            success: true,
+            users,
+            total: users.length,
+            active: users.filter((u) => u.is_active === 1).length,
+            logged_in: users.filter((u) => u.is_logged_in).length,
+            verified: users.filter((u) => u.email_verified === 1).length,
+            timestamp: (/* @__PURE__ */ new Date()).toISOString()
+          }, 200, headers);
+        } catch (error) {
+          console.error("Users management error:", error);
+          return json({
+            success: false,
+            error: "Failed to fetch users",
+            details: error.message
+          }, 500, headers);
+        }
       }
       if (path === "/api/admin/health-check" && method === "GET") {
         const checks = [];
@@ -6027,7 +6494,7 @@ async function onRequest7(context) {
 var enc2, json, b64, b64toBuf, randB32, timingSafeEq, COOKIE_NAME, cookieAttrs, setCookie, clearCookie, isAdmin, ipOf;
 var init_path = __esm({
   "api/[[path]].js"() {
-    init_functionsRoutes_0_6521821362017705();
+    init_functionsRoutes_0_5548676847482719();
     init_notification_service();
     enc2 = new TextEncoder();
     json = /* @__PURE__ */ __name((data, status = 200, headers = {}) => new Response(JSON.stringify(data), {
@@ -6064,10 +6531,10 @@ var init_path = __esm({
   }
 });
 
-// ../.wrangler/tmp/pages-PKZ1WZ/functionsRoutes-0.6521821362017705.mjs
+// ../.wrangler/tmp/pages-dcSkYB/functionsRoutes-0.5548676847482719.mjs
 var routes;
-var init_functionsRoutes_0_6521821362017705 = __esm({
-  "../.wrangler/tmp/pages-PKZ1WZ/functionsRoutes-0.6521821362017705.mjs"() {
+var init_functionsRoutes_0_5548676847482719 = __esm({
+  "../.wrangler/tmp/pages-dcSkYB/functionsRoutes-0.5548676847482719.mjs"() {
     init_activity();
     init_activity();
     init_analytics();
@@ -6330,10 +6797,10 @@ var init_functionsRoutes_0_6521821362017705 = __esm({
 });
 
 // ../node_modules/wrangler/templates/pages-template-worker.ts
-init_functionsRoutes_0_6521821362017705();
+init_functionsRoutes_0_5548676847482719();
 
 // ../node_modules/path-to-regexp/dist.es2015/index.js
-init_functionsRoutes_0_6521821362017705();
+init_functionsRoutes_0_5548676847482719();
 function lexer(str) {
   var tokens = [];
   var i = 0;
@@ -6782,4 +7249,4 @@ export {
   pages_template_worker_default as default
 };
 
-------formdata-undici-025876879117--
+------formdata-undici-078727998812--

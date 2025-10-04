@@ -356,6 +356,192 @@
             line-height: 1.8;
         }
 
+        .status-summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .status-summary-card {
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 1.25rem;
+            background: rgba(255, 255, 255, 0.02);
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .status-summary-card.primary {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.18), rgba(255, 215, 0, 0.05));
+            border-color: rgba(255, 215, 0, 0.45);
+        }
+
+        .status-summary-card h3 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .status-summary-metric {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--text-primary);
+        }
+
+        .status-summary-meta {
+            margin-top: 0.5rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .submission-filter-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .submission-filter-bar button {
+            border: 1px solid var(--border-subtle);
+            background: rgba(255, 255, 255, 0.02);
+            color: var(--text-primary);
+            padding: 0.5rem 0.9rem;
+            border-radius: 999px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+
+        .submission-filter-bar button:hover {
+            border-color: var(--primary-gold);
+            color: var(--primary-gold);
+        }
+
+        .submission-filter-bar button.active {
+            background: var(--primary-gold);
+            border-color: var(--primary-gold);
+            color: var(--primary-black);
+            font-weight: 600;
+        }
+
+        .submission-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .submission-card-header {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .submission-card-header h3 {
+            font-size: 1.15rem;
+            font-weight: 700;
+        }
+
+        .submission-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.2rem;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .submission-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .submission-values {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .submission-value {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-subtle);
+            border-radius: 10px;
+            padding: 0.85rem 1rem;
+        }
+
+        .submission-value strong {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.25rem;
+        }
+
+        .submission-items {
+            margin-top: 1.25rem;
+            border: 1px solid var(--border-subtle);
+            border-radius: 10px;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .submission-items ul {
+            margin-top: 0.75rem;
+            padding-left: 1.25rem;
+            line-height: 1.65;
+        }
+
+        .submission-note,
+        .submission-offer,
+        .submission-outcome {
+            border-radius: 10px;
+            padding: 1rem;
+            margin-top: 1rem;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .submission-note {
+            background: rgba(255, 215, 0, 0.08);
+            border-left: 3px solid var(--primary-gold);
+            color: var(--primary-gold);
+        }
+
+        .submission-offer {
+            background: rgba(33, 150, 243, 0.08);
+            border-left: 3px solid #2196f3;
+        }
+
+        .submission-outcome {
+            background: rgba(76, 175, 80, 0.08);
+            border-left: 3px solid var(--success-green);
+        }
+
+        .submission-empty {
+            text-align: center;
+            padding: 2.5rem 1rem;
+            color: var(--text-secondary);
+        }
+
+        .submission-load-more {
+            text-align: center;
+            margin-top: 2rem;
+        }
+
+        .submission-load-more button {
+            min-width: 220px;
+        }
+
         .empty-state {
             text-align: center;
             padding: 3rem 1rem;
@@ -612,6 +798,153 @@
                 .replace(/'/g, '&#39;');
         }
 
+        const STATUS_CONFIG = {
+            pending: {
+                label: 'Pending Review',
+                badgeClass: 'badge badge-pending',
+                summaryBg: 'rgba(255, 152, 0, 0.18)',
+                summaryBorder: 'rgba(255, 152, 0, 0.4)',
+                icon: '⏳'
+            },
+            reviewing: {
+                label: 'Under Review',
+                badgeClass: 'badge badge-reviewing',
+                summaryBg: 'rgba(33, 150, 243, 0.14)',
+                summaryBorder: 'rgba(33, 150, 243, 0.35)',
+                icon: '🔍'
+            },
+            offer_sent: {
+                label: 'Offer Sent',
+                badgeClass: 'badge badge-offered',
+                summaryBg: 'rgba(156, 39, 176, 0.14)',
+                summaryBorder: 'rgba(156, 39, 176, 0.35)',
+                icon: '💬'
+            },
+            offer_pending: {
+                label: 'Offer Pending',
+                badgeClass: 'badge badge-offered',
+                summaryBg: 'rgba(255, 193, 7, 0.16)',
+                summaryBorder: 'rgba(255, 193, 7, 0.4)',
+                icon: '⏱️'
+            },
+            offer_accepted: {
+                label: 'Offer Accepted',
+                badgeClass: 'badge badge-delivered',
+                summaryBg: 'rgba(76, 175, 80, 0.16)',
+                summaryBorder: 'rgba(76, 175, 80, 0.4)',
+                icon: '✅'
+            },
+            completed: {
+                label: 'Completed',
+                badgeClass: 'badge badge-delivered',
+                summaryBg: 'rgba(76, 175, 80, 0.16)',
+                summaryBorder: 'rgba(76, 175, 80, 0.4)',
+                icon: '🏁'
+            },
+            rejected: {
+                label: 'Declined',
+                badgeClass: 'badge badge-pending',
+                summaryBg: 'rgba(244, 67, 54, 0.16)',
+                summaryBorder: 'rgba(244, 67, 54, 0.45)',
+                icon: '🚫'
+            },
+            cancelled: {
+                label: 'Cancelled',
+                badgeClass: 'badge badge-pending',
+                summaryBg: 'rgba(158, 158, 158, 0.14)',
+                summaryBorder: 'rgba(158, 158, 158, 0.35)',
+                icon: '🗑️'
+            }
+        };
+
+        const STATUS_ORDER = ['pending', 'reviewing', 'offer_sent', 'offer_pending', 'offer_accepted', 'completed', 'rejected', 'cancelled'];
+
+        const currencyFormatter = new Intl.NumberFormat('en-IE', {
+            style: 'currency',
+            currency: 'EUR',
+            minimumFractionDigits: 2
+        });
+
+        const dateFormatter = new Intl.DateTimeFormat('en-IE', {
+            dateStyle: 'medium',
+            timeStyle: 'short'
+        });
+
+        let submissionsState = {
+            entries: [],
+            summary: [],
+            filter: 'all',
+            visible: 20
+        };
+
+        function normaliseStatus(value) {
+            return String(value || 'pending').toLowerCase();
+        }
+
+        function getStatusConfig(status) {
+            const key = normaliseStatus(status);
+            if (STATUS_CONFIG[key]) {
+                return STATUS_CONFIG[key];
+            }
+            const label = key
+                .split('_')
+                .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+                .join(' ');
+            return {
+                label,
+                badgeClass: 'badge badge-reviewing',
+                summaryBg: 'rgba(255, 255, 255, 0.08)',
+                summaryBorder: 'rgba(255, 255, 255, 0.2)',
+                icon: '•'
+            };
+        }
+
+        function formatCurrency(value) {
+            if (value === null || value === undefined || value === '') return '—';
+            const numberValue = Number(value);
+            if (!Number.isFinite(numberValue)) return '—';
+            return currencyFormatter.format(numberValue);
+        }
+
+        function formatDateTime(value) {
+            if (!value) return '—';
+            const parsed = new Date(value);
+            if (Number.isNaN(parsed.getTime())) return escapeHTML(String(value));
+            return dateFormatter.format(parsed);
+        }
+
+        function computeSummaryFromEntries(entries) {
+            const map = new Map();
+            entries.forEach(entry => {
+                const key = normaliseStatus(entry.status);
+                const items = Array.isArray(entry.items) ? entry.items.length : Number(entry.item_count) || 0;
+                const current = map.get(key) || { status: key, count: 0, items: 0 };
+                current.count += 1;
+                current.items += items;
+                map.set(key, current);
+            });
+            return Array.from(map.values());
+        }
+
+        function getFilteredSubmissions() {
+            if (submissionsState.filter === 'all') {
+                return submissionsState.entries;
+            }
+            return submissionsState.entries.filter(entry => normaliseStatus(entry.status) === submissionsState.filter);
+        }
+
+        function setSubmissionFilter(status) {
+            submissionsState.filter = status || 'all';
+            submissionsState.visible = 20;
+            renderSubmissionFilters();
+            renderSubmissionList();
+        }
+
+        function loadMoreSubmissions() {
+            submissionsState.visible += 20;
+            renderSubmissionList();
+        }
+
         function showProfileMessage(type, text) {
             const messageDiv = document.getElementById('profile-message');
             if (!messageDiv) return;
@@ -726,19 +1059,49 @@
                 </div>
             `;
 
-            // Load data (placeholder - will need API endpoints)
-            setTimeout(() => {
-                document.getElementById('recentOrders').innerHTML = `
+            const recentOrdersEl = document.getElementById('recentOrders');
+            if (recentOrdersEl) {
+                recentOrdersEl.innerHTML = `
                     <div class="empty-state">
                         <p>No orders yet. <a href="/shop.html" style="color: var(--primary-gold);">Start shopping!</a></p>
                     </div>
                 `;
-                document.getElementById('recentSubmissions').innerHTML = `
+            }
+
+            const recentSubmissionsEl = document.getElementById('recentSubmissions');
+            if (!recentSubmissionsEl) return;
+
+            try {
+                const response = await fetch('/api/sell-submissions?limit=5', {
+                    method: 'GET',
+                    headers: {
+                        'X-CSRF-Token': token || ''
+                    },
+                    credentials: 'include'
+                });
+
+                const data = await response.json();
+
+                if (!response.ok || !data.success || !(data.submissions || []).length) {
+                    recentSubmissionsEl.innerHTML = `
+                        <div class="empty-state">
+                            <p>No submissions yet. <a href="/sell.html" style="color: var(--primary-gold);">Sell your items!</a></p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const previews = (data.submissions || []).slice(0, 3).map(renderSubmissionPreview).join('');
+                recentSubmissionsEl.innerHTML = previews;
+
+            } catch (error) {
+                console.error('Recent submissions load error:', error);
+                recentSubmissionsEl.innerHTML = `
                     <div class="empty-state">
-                        <p>No submissions yet. <a href="/sell.html" style="color: var(--primary-gold);">Sell your items!</a></p>
+                        <p>We couldn't fetch your submissions right now. Try refreshing the page shortly.</p>
                     </div>
                 `;
-            }, 500);
+            }
         }
 
         // Load Orders
@@ -764,11 +1127,398 @@
                 <div class="section">
                     <div class="section-header">
                         <h2 class="section-title">My Sell Submissions</h2>
+                        <button type="button" class="btn-outline" id="refreshSubmissionsBtn">🔄 Refresh</button>
                     </div>
-                    <div class="empty-state">
+                    <div id="submissionsLoading" class="loading">
+                        <div class="spinner"></div>
+                        <p style="margin-top: 0.5rem;">Fetching your submissions...</p>
+                    </div>
+                    <div id="submissionsContainer" style="display: none;">
+                        <div id="submissionsSummary"></div>
+                        <div id="submissionsFilters" class="submission-filter-bar"></div>
+                        <div id="submissionsList"></div>
+                        <div id="submissionsLoadMore" class="submission-load-more" style="display: none;">
+                            <button type="button" class="btn-outline" id="submissionsLoadMoreBtn">Show more</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            const refreshBtn = document.getElementById('refreshSubmissionsBtn');
+            if (refreshBtn) {
+                refreshBtn.addEventListener('click', () => loadSubmissions());
+            }
+
+            try {
+                const token = sessionStorage.getItem('sbs_csrf_token');
+                const response = await fetch('/api/sell-submissions?limit=1500', {
+                    method: 'GET',
+                    headers: {
+                        'X-CSRF-Token': token || ''
+                    },
+                    credentials: 'include'
+                });
+
+                const data = await response.json();
+
+                if (!response.ok || !data.success) {
+                    throw new Error(data.error || 'Failed to load sell submissions');
+                }
+
+                submissionsState = {
+                    entries: (data.submissions || []).map(entry => ({
+                        ...entry,
+                        items: Array.isArray(entry.items) ? entry.items : []
+                    })),
+                    summary: Array.isArray(data.summary) ? data.summary : [],
+                    filter: 'all',
+                    visible: 20
+                };
+
+                const loadingBlock = document.getElementById('submissionsLoading');
+                if (loadingBlock) loadingBlock.style.display = 'none';
+
+                const container = document.getElementById('submissionsContainer');
+                if (container) container.style.display = 'block';
+
+                renderSubmissionSummary();
+                renderSubmissionFilters();
+                renderSubmissionList();
+
+                const loadMoreBtn = document.getElementById('submissionsLoadMoreBtn');
+                if (loadMoreBtn) {
+                    loadMoreBtn.addEventListener('click', () => {
+                        loadMoreSubmissions();
+                    });
+                }
+
+            } catch (error) {
+                console.error('Load submissions error:', error);
+                const loadingBlock = document.getElementById('submissionsLoading');
+                if (loadingBlock) {
+                    loadingBlock.innerHTML = `
+                        <div class="submission-empty">
+                            <p style="color: var(--danger-red); font-weight: 600;">${escapeHTML(error.message || 'Failed to load submissions.')}</p>
+                            <button type="button" class="btn-outline" style="margin-top: 1rem;" id="retrySubmissionsBtn">Retry</button>
+                        </div>
+                    `;
+
+                    const retryBtn = document.getElementById('retrySubmissionsBtn');
+                    if (retryBtn) {
+                        retryBtn.addEventListener('click', () => loadSubmissions());
+                    }
+                }
+            }
+        }
+
+        function renderSubmissionSummary() {
+            const summaryEl = document.getElementById('submissionsSummary');
+            const filtersEl = document.getElementById('submissionsFilters');
+            const loadMoreEl = document.getElementById('submissionsLoadMore');
+            const listEl = document.getElementById('submissionsList');
+
+            if (!summaryEl) return;
+
+            if (!submissionsState.entries.length) {
+                summaryEl.innerHTML = `
+                    <div class="submission-empty">
                         <p>You haven't submitted any items yet.</p>
                         <a href="/sell.html" class="btn-gold" style="display: inline-block; margin-top: 1rem;">Sell Items</a>
                     </div>
+                `;
+
+                if (filtersEl) filtersEl.style.display = 'none';
+                if (listEl) {
+                    listEl.innerHTML = `
+                        <div class="submission-empty">
+                            <p>Your submission history will appear here once you send us items to review.</p>
+                        </div>
+                    `;
+                }
+                if (loadMoreEl) loadMoreEl.style.display = 'none';
+                return;
+            }
+
+            if (filtersEl) filtersEl.style.display = 'flex';
+
+            const summaryData = submissionsState.summary.length
+                ? submissionsState.summary.map(item => ({
+                    status: normaliseStatus(item.status),
+                    count: Number(item.count || 0),
+                    items: Number(item.items || 0)
+                }))
+                : computeSummaryFromEntries(submissionsState.entries);
+
+            const totalSubmissions = submissionsState.entries.length;
+            const totalItems = submissionsState.entries.reduce((acc, entry) => {
+                if (Array.isArray(entry.items)) return acc + entry.items.length;
+                const count = Number(entry.item_count) || 0;
+                return acc + count;
+            }, 0);
+
+            const orderedStatuses = STATUS_ORDER.filter(status =>
+                summaryData.some(item => item.status === status)
+            );
+
+            const additionalStatuses = summaryData
+                .map(item => item.status)
+                .filter(status => !orderedStatuses.includes(status));
+
+            const combinedStatuses = [...orderedStatuses, ...new Set(additionalStatuses)];
+
+            const cardsHtml = combinedStatuses.map(statusKey => {
+                const summaryItem = summaryData.find(item => item.status === statusKey);
+                if (!summaryItem) return '';
+                const config = getStatusConfig(statusKey);
+                const count = summaryItem.count;
+                const items = summaryItem.items;
+                return `
+                    <div class="status-summary-card" style="background: ${config.summaryBg}; border-color: ${config.summaryBorder};">
+                        <h3>${config.icon} ${config.label}</h3>
+                        <div class="status-summary-metric">${count}</div>
+                        <div class="status-summary-meta">${items} item${items === 1 ? '' : 's'}</div>
+                    </div>
+                `;
+            }).join('');
+
+            summaryEl.innerHTML = `
+                <div class="status-summary-grid">
+                    <div class="status-summary-card primary">
+                        <h3>📦 Total Submissions</h3>
+                        <div class="status-summary-metric">${totalSubmissions}</div>
+                        <div class="status-summary-meta">${totalItems} item${totalItems === 1 ? '' : 's'} total</div>
+                    </div>
+                    ${cardsHtml}
+                </div>
+            `;
+        }
+
+        function renderSubmissionFilters() {
+            const filtersEl = document.getElementById('submissionsFilters');
+            if (!filtersEl) return;
+
+            if (!submissionsState.entries.length) {
+                filtersEl.innerHTML = '';
+                filtersEl.style.display = 'none';
+                return;
+            }
+
+            const statusCounts = new Map();
+            submissionsState.entries.forEach(entry => {
+                const key = normaliseStatus(entry.status);
+                statusCounts.set(key, (statusCounts.get(key) || 0) + 1);
+            });
+
+            const sortedStatuses = STATUS_ORDER.filter(status => statusCounts.has(status));
+            statusCounts.forEach((_, key) => {
+                if (!sortedStatuses.includes(key)) {
+                    sortedStatuses.push(key);
+                }
+            });
+
+            const buttons = [`<button type="button" data-status="all" class="${submissionsState.filter === 'all' ? 'active' : ''}">All (${submissionsState.entries.length})</button>`]
+                .concat(sortedStatuses.map(status => {
+                    const config = getStatusConfig(status);
+                    const count = statusCounts.get(status) || 0;
+                    return `<button type="button" data-status="${status}" class="${submissionsState.filter === status ? 'active' : ''}">${config.icon} ${config.label} (${count})</button>`;
+                }));
+
+            filtersEl.innerHTML = buttons.join('');
+
+            filtersEl.querySelectorAll('button').forEach(button => {
+                button.addEventListener('click', () => {
+                    setSubmissionFilter(button.dataset.status);
+                });
+            });
+        }
+
+        function renderSubmissionList() {
+            const listEl = document.getElementById('submissionsList');
+            const loadMoreEl = document.getElementById('submissionsLoadMore');
+            if (!listEl) return;
+
+            const filtered = getFilteredSubmissions();
+
+            if (!filtered.length) {
+                listEl.innerHTML = `
+                    <div class="submission-empty">
+                        <p>No submissions in this filter yet.</p>
+                        <a href="/sell.html" class="btn-gold" style="display: inline-block; margin-top: 1rem;">Sell Items</a>
+                    </div>
+                `;
+                if (loadMoreEl) loadMoreEl.style.display = 'none';
+                return;
+            }
+
+            const visible = filtered.slice(0, submissionsState.visible);
+            listEl.innerHTML = visible.map(renderSubmissionCard).join('');
+
+            if (loadMoreEl) {
+                loadMoreEl.style.display = filtered.length > submissionsState.visible ? 'block' : 'none';
+            }
+        }
+
+        function renderSubmissionCard(submission) {
+            const statusKey = normaliseStatus(submission.status);
+            const statusConfig = getStatusConfig(statusKey);
+            const batchLabel = submission.batch_id ? escapeHTML(submission.batch_id) : `Submission #${escapeHTML(String(submission.id || ''))}`;
+            const createdAt = formatDateTime(submission.created_at);
+            const updatedAt = submission.updated_at && submission.updated_at !== submission.created_at
+                ? formatDateTime(submission.updated_at)
+                : null;
+
+            const items = Array.isArray(submission.items) ? submission.items : [];
+            const itemCount = items.length || Number(submission.item_count) || 0;
+
+            const itemsList = items.slice(0, 6).map((item, idx) => {
+                const brand = escapeHTML(item.brand || 'Unknown');
+                const category = escapeHTML(item.category || 'Item');
+                const size = item.size ? ` — Size ${escapeHTML(item.size)}` : '';
+                const condition = escapeHTML(item.condition || 'Condition N/A');
+                const defects = item.defects ? `<span style="color: var(--warning-orange);"> • Issues: ${escapeHTML(item.defects)}</span>` : '';
+                return `<li><strong>${idx + 1}.</strong> ${brand} ${category}${size} • ${condition}${defects}</li>`;
+            }).join('');
+
+            const hiddenItemsCount = Math.max(itemCount - 6, 0);
+            const moreItemsHint = hiddenItemsCount > 0
+                ? `<p style="color: var(--text-secondary); margin-top: 0.5rem;">+ ${hiddenItemsCount} more item${hiddenItemsCount === 1 ? '' : 's'}.</p>`
+                : '';
+
+            const contactBits = [];
+            if (submission.contact_channel) {
+                const channel = escapeHTML(submission.contact_channel);
+                const handle = submission.contact_handle ? ` • ${escapeHTML(submission.contact_handle)}` : '';
+                contactBits.push(`${channel}${handle}`);
+            } else if (submission.contact_handle) {
+                contactBits.push(escapeHTML(submission.contact_handle));
+            }
+            if (submission.contact_phone) {
+                contactBits.push(escapeHTML(submission.contact_phone));
+            }
+            if (submission.contact_email) {
+                contactBits.push(escapeHTML(submission.contact_email));
+            }
+
+            const metaBits = [];
+            metaBits.push(`📅 ${createdAt}`);
+            if (updatedAt) metaBits.push(`🔁 Updated ${updatedAt}`);
+            metaBits.push(`🧾 ${itemCount} item${itemCount === 1 ? '' : 's'}`);
+            if (submission.city || submission.eircode) {
+                const city = submission.city ? escapeHTML(submission.city) : '';
+                const eir = submission.eircode ? ` ${escapeHTML(submission.eircode)}` : '';
+                metaBits.push(`📍 ${city}${eir}`.trim());
+            }
+            if (contactBits.length) {
+                metaBits.push(`📣 ${contactBits.join(' • ')}`);
+            }
+
+            const sellerNotes = submission.seller_message ? `
+                <div class="submission-note">
+                    <strong>Your Notes</strong>
+                    <p style="margin-top: 0.4rem;">${escapeHTML(submission.seller_message)}</p>
+                </div>
+            ` : '';
+
+            const extraNotes = submission.notes && submission.notes !== submission.seller_message ? `
+                <div class="submission-note" style="background: rgba(255, 255, 255, 0.03); border-left-color: rgba(255, 255, 255, 0.2); color: var(--text-secondary);">
+                    <strong>Submission Notes</strong>
+                    <p style="margin-top: 0.4rem;">${escapeHTML(submission.notes)}</p>
+                </div>
+            ` : '';
+
+            const offerSection = submission.offer_message || submission.offer_sent_at || submission.offer_expires_at || submission.offered_price ? `
+                <div class="submission-offer">
+                    <strong>SBS Offer</strong>
+                    ${submission.offer_message ? `<p style="margin-top: 0.4rem;">${escapeHTML(submission.offer_message)}</p>` : '<p style="margin-top: 0.4rem;">We have reviewed your items and shared an offer.</p>'}
+                    ${submission.offer_sent_at ? `<p style="margin-top: 0.5rem; color: var(--text-secondary);">Sent ${formatDateTime(submission.offer_sent_at)}</p>` : ''}
+                    ${submission.offer_expires_at ? `<p style="margin-top: 0.25rem; color: var(--text-secondary);">Expires ${formatDateTime(submission.offer_expires_at)}</p>` : ''}
+                </div>
+            ` : '';
+
+            const responseSection = submission.seller_response || submission.seller_response_message || submission.seller_response_at ? `
+                <div class="submission-offer" style="background: rgba(255, 215, 0, 0.12); border-left-color: var(--primary-gold);">
+                    <strong>Your Response</strong>
+                    ${submission.seller_response ? `<p style="margin-top: 0.4rem;">Status: ${escapeHTML(submission.seller_response)}</p>` : ''}
+                    ${submission.seller_response_message ? `<p style="margin-top: 0.4rem;">${escapeHTML(submission.seller_response_message)}</p>` : ''}
+                    ${submission.seller_response_at ? `<p style="margin-top: 0.4rem; color: var(--text-secondary);">Responded ${formatDateTime(submission.seller_response_at)}</p>` : ''}
+                </div>
+            ` : '';
+
+            const outcomeSection = submission.final_price ? `
+                <div class="submission-outcome">
+                    <strong>Outcome</strong>
+                    <p style="margin-top: 0.4rem;">Final agreed price: ${formatCurrency(submission.final_price)}</p>
+                    ${submission.admin_notes ? `<p style="margin-top: 0.4rem; color: var(--text-secondary);">${escapeHTML(submission.admin_notes)}</p>` : ''}
+                </div>
+            ` : '';
+
+            return `
+                <div class="submission-card">
+                    <div class="submission-card-header">
+                        <h3>${batchLabel}</h3>
+                        <span class="${statusConfig.badgeClass}">${statusConfig.icon} ${statusConfig.label}</span>
+                    </div>
+                    <div class="submission-meta">
+                        ${metaBits.map(bit => `<span>${bit}</span>`).join('')}
+                    </div>
+                    <div class="submission-values">
+                        <div class="submission-value">
+                            <strong>Your Asking</strong>
+                            <span>${formatCurrency(submission.seller_price)}</span>
+                        </div>
+                        <div class="submission-value">
+                            <strong>SBS Estimate</strong>
+                            <span>${formatCurrency(submission.estimated_value)}</span>
+                        </div>
+                        <div class="submission-value">
+                            <strong>Offer</strong>
+                            <span>${formatCurrency(submission.offered_price)}</span>
+                        </div>
+                        <div class="submission-value">
+                            <strong>Final</strong>
+                            <span>${formatCurrency(submission.final_price)}</span>
+                        </div>
+                    </div>
+                    ${sellerNotes}
+                    ${extraNotes}
+                    ${offerSection}
+                    ${responseSection}
+                    ${outcomeSection}
+                    <div class="submission-items">
+                        <strong>Items</strong>
+                        <ul>${itemsList || '<li>No item details captured.</li>'}</ul>
+                        ${moreItemsHint}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderSubmissionPreview(submission) {
+            const statusConfig = getStatusConfig(submission.status);
+            const items = Array.isArray(submission.items) ? submission.items : [];
+            const itemCount = items.length || Number(submission.item_count) || 0;
+            const createdAt = formatDateTime(submission.created_at);
+            const batchLabel = submission.batch_id ? escapeHTML(submission.batch_id) : `Submission #${escapeHTML(String(submission.id || ''))}`;
+
+            let priceSnippet = '';
+            if (submission.offered_price) {
+                priceSnippet = `${formatCurrency(submission.offered_price)} offer`;
+            } else if (submission.seller_price) {
+                priceSnippet = `${formatCurrency(submission.seller_price)} asking`;
+            }
+
+            return `
+                <div class="card">
+                    <div class="card-header" style="justify-content: space-between; align-items: center;">
+                        <div>
+                            <div class="card-title">${batchLabel}</div>
+                            <div style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.35rem;">
+                                ${itemCount} item${itemCount === 1 ? '' : 's'} • ${createdAt}
+                            </div>
+                        </div>
+                        <span class="${statusConfig.badgeClass}" style="flex-shrink: 0;">${statusConfig.label}</span>
+                    </div>
+                    ${priceSnippet ? `<p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.5rem;">${priceSnippet}</p>` : ''}
                 </div>
             `;
         }
