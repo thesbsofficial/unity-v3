@@ -13,14 +13,28 @@ const helperContent = {
     'shop-how-to-buy': {
         title: '📦 How to Buy',
         content: `
-            <ol class="help-list">
-                <li><strong>Browse</strong> - Find items you love in our collection</li>
-                <li><strong>Add to Basket</strong> - Click the 🧺 basket button on any item</li>
-                <li><strong>Checkout</strong> - Enter your delivery details</li>
-                <li><strong>Choose Delivery</strong> - Collection (free) or Delivery (+€5)</li>
-                <li><strong>We Contact You</strong> - We'll reach out via WhatsApp to arrange</li>
-            </ol>
-            <p class="help-note">💡 All items are 100% authentic and as described</p>
+            <div style="background: rgba(255, 215, 0, 0.1); padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border: 1px solid rgba(255, 215, 0, 0.3);">
+                <h4 style="color: #ffd700; margin: 0 0 0.5rem 0;">🛒 Option 1: On-Site Checkout (Recommended)</h4>
+                <ol class="help-list" style="margin: 0;">
+                    <li><strong>Browse</strong> - Find items you love</li>
+                    <li><strong>Add to Basket</strong> - Click "Add to Basket" button</li>
+                    <li><strong>Checkout</strong> - Enter delivery details</li>
+                    <li><strong>Reserve Items</strong> - We hold items for 24 hours</li>
+                    <li><strong>Payment on Delivery</strong> - Pay when you receive (Cash, Card, Bank Transfer, or Crypto)</li>
+                </ol>
+            </div>
+            
+            <div style="background: rgba(255, 255, 255, 0.05); padding: 1rem; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.1);">
+                <h4 style="color: #fff; margin: 0 0 0.5rem 0;">📱 Option 2: DM Method</h4>
+                <ol class="help-list" style="margin: 0;">
+                    <li><strong>Screenshot</strong> - Take a pic of items you want</li>
+                    <li><strong>DM Us</strong> - Send via WhatsApp or Instagram</li>
+                    <li><strong>Confirm</strong> - We check availability</li>
+                    <li><strong>Arrange Delivery</strong> - We coordinate pickup/delivery</li>
+                </ol>
+            </div>
+            
+            <p class="help-note" style="margin-top: 1rem;">💡 Both methods work great! On-site checkout is faster and reserves items instantly.</p>
         `
     },
     'shop-size-guide': {

@@ -1161,7 +1161,7 @@
       try {
         const basket = JSON.parse(localStorage.getItem('shopping_basket') || '[]');
         const count = basket.reduce((total, item) => total + (item.quantity || 1), 0);
-        const basketCount = document.getElementById('basket-count');
+        const basketCount = document.getElementById('cart-count'); // Fixed: was 'basket-count'
         if (basketCount) {
           basketCount.textContent = count;
           basketCount.style.display = count > 0 ? 'block' : 'none';
