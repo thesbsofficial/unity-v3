@@ -61,12 +61,12 @@ class SBSAnalytics {
         const event = {
             event_type: eventType,
             event_category: this.getEventCategory(eventType),
-            session_id: this.sessionId,
-            user_id: this.userId,
+            session_id: this.sessionId || null,
+            user_id: this.userId || null,
             timestamp: new Date().toISOString(),
             page_url: window.location.href,
-            referrer: document.referrer,
-            user_agent: navigator.userAgent,
+            referrer: document.referrer || null,
+            user_agent: navigator.userAgent || null,
             ...data
         };
 
@@ -220,21 +220,34 @@ class SBSAnalytics {
      * Clean object to remove undefined values (D1 doesn't support undefined)
      */
     cleanObject(obj) {
-        if (typeof obj !== 'object' || obj === null) {
-            return obj;
+        if (obj === null) return null;
+        if (obj === undefined) return null;
+        if (typeof obj !== 'object') return obj;
+
+        // Handle arrays
+        if (Array.isArray(obj)) {
+            return obj.map(item => this.cleanObject(item)).filter(item => item !== null && item !== undefined);
         }
 
+        // Handle objects
         const cleaned = {};
         for (const [key, value] of Object.entries(obj)) {
-            // Skip undefined values entirely
-            if (value !== undefined) {
-                // Recursively clean nested objects
-                if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
-                    cleaned[key] = this.cleanObject(value);
+            // Skip undefined and null values entirely
+            if (value !== undefined && value !== null) {
+                // Recursively clean nested objects/arrays
+                if (typeof value === 'object') {
+                    const cleanedValue = this.cleanObject(value);
+                    if (cleanedValue !== null && cleanedValue !== undefined) {
+                        cleaned[key] = cleanedValue;
+                    }
                 } else {
                     cleaned[key] = value;
                 }
+            } else if (value === null) {
+                // Keep explicit nulls
+                cleaned[key] = null;
             }
+            // Skip undefined entirely
         }
         return cleaned;
     }
@@ -294,15 +307,22 @@ class SBSAnalytics {
                 return cleaned;
             });
 
+            // Final safety: JSON.parse(JSON.stringify()) strips undefined values
+            const safePayload = JSON.parse(JSON.stringify({ 
+                events: cleanEvents,
+                sessionId: this.sessionId || null
+            }));
+
+            if (this.debug) {
+                console.log('📦 Sending payload:', safePayload);
+            }
+
             const response = await fetch(this.endpoint, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ 
-                    events: cleanEvents,
-                    sessionId: this.sessionId || null
-                }),
+                body: JSON.stringify(safePayload),
                 keepalive: true // Ensure delivery even on page unload
             });
 
