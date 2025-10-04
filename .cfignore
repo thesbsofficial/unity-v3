@@ -1,0 +1,87 @@
+# Wrangler Pages Deploy Ignore
+# Only deploy essential files, exclude large unnecessary assets
+
+# Node modules
+node_modules/
+.npm/
+
+# Build artifacts
+.wrangler/
+dist/
+.cache/
+
+# Documentation (not needed in production)
+*.md
+!README.md
+
+# Development files
+.git/
+.github/
+.vscode/
+*.log
+.DS_Store
+
+# Test files
+test/
+tests/
+*.test.js
+*.spec.js
+
+# Large markdown files
+CLOUDFLARE-*.md
+DEPLOYMENT-*.md
+*-COMPLETE.md
+*-PROGRESS.md
+*-STATUS.md
+ADMIN-*.md
+ALL-*.md
+ANALYTICS-*.md
+ARCHITECTURE-*.md
+AUDIT-*.md
+BATCH-*.md
+BUG-*.md
+BUGFIX-*.md
+CART-*.md
+CHECKOUT-*.md
+CLEAN-*.md
+CLEANUP-*.md
+CODE-*.md
+COMPLETE-*.md
+COMPREHENSIVE-*.md
+CUSTOM-*.md
+DEBUG-*.md
+DEVELOPMENT-*.md
+DOCS-*.md
+EMAIL-*.md
+ENVIRONMENT-*.md
+FILE-*.md
+FINAL-*.md
+FIX-*.md
+GITHUB-*.md
+HELPER-*.md
+INVENTORY-*.md
+JS-*.md
+MAILCHANNELS-*.md
+MASTER-*.md
+METADATA-*.md
+MIGRATION-*.md
+MISSION-*.md
+MOBILE-*.md
+NOTIFICATION-*.md
+OCT-*.md
+ORDERS-*.md
+PRICE-*.md
+PRIORITY-*.md
+PRODUCTION-*.md
+PRODUCTS-*.md
+PUSH-*.md
+QUICK-*.md
+
+# Scripts (not needed in production runtime)
+scripts/
+generate-password-hash.js
+
+# Temp files
+*.tmp
+*.temp
+DEPLOYMENT-BLOCKED-*.md
