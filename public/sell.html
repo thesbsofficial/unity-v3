@@ -2029,6 +2029,7 @@
             const category = document.getElementById('qb-category');
             const brand = document.getElementById('qb-brand');
             const size = document.getElementById('qb-size');
+            const locationGroup = document.getElementById('qb-location-group');
             const address = document.getElementById('qb-address');
             const city = document.getElementById('qb-city');
             const eircode = document.getElementById('qb-eircode');
@@ -2037,6 +2038,8 @@
             const phoneInput = document.getElementById('qb-phone');
             const igInput = document.getElementById('qb-ig-handle');
             const snapInput = document.getElementById('qb-snap-handle');
+            const validationFeedback = document.getElementById('qb-validation-feedback');
+            const validationList = document.getElementById('qb-validation-list');
 
             // Load saved data from localStorage
             address.value = localStorage.getItem('sbs-address') || '';
@@ -2044,6 +2047,10 @@
             eircode.value = localStorage.getItem('sbs-eircode') || '';
             phoneInput.value = localStorage.getItem('sbs-phone') || '';
             document.getElementById('qb-email').value = localStorage.getItem('sbs-email') || '';
+
+            if (address.value || city.value) {
+                locationGroup.style.display = 'block';
+            }
 
             const savedSocialChannel = localStorage.getItem('sbs-social-channel');
             const savedSocialHandle = localStorage.getItem('sbs-social-handle');
@@ -2126,9 +2133,15 @@
                 document.getElementById('qb-upload-status').innerHTML = '';
                 photoInput.value = '';
 
-                ['qb-brand-group', 'qb-condition-group', 'qb-size-group', 'qb-defects-group', 'qb-photos-group'].forEach(id => {
+                ['qb-brand-group', 'qb-condition-group', 'qb-size-group', 'qb-location-group', 'qb-defects-group', 'qb-photos-group', 'qb-contact-group'].forEach(id => {
                     document.getElementById(id).style.display = 'none';
                 });
+                photos.checked = false;
+                generateBtn.disabled = true;
+                if (validationFeedback) {
+                    validationFeedback.style.display = 'none';
+                    validationList.innerHTML = '';
+                }
                 document.getElementById('qb-category').scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
 
@@ -2202,10 +2215,15 @@
                     brand.appendChild(opt);
                 });
                 document.getElementById('qb-brand-group').style.display = 'block';
+                checkComplete();
             });
 
             brand.addEventListener('change', () => {
-                if (brand.value) document.getElementById('qb-condition-group').style.display = 'block';
+                if (brand.value) {
+                    document.getElementById('qb-condition-group').style.display = 'block';
+                    locationGroup.style.display = 'block';
+                }
+                checkComplete();
             });
 
             document.querySelectorAll('input[name="qb-condition"]').forEach(radio => {
@@ -2221,6 +2239,7 @@
                         });
                         document.getElementById('qb-size-group').style.display = 'block';
                     }
+                    locationGroup.style.display = 'block';
                     document.getElementById('qb-defects-group').style.display = 'block';
                     document.getElementById('qb-photos-group').style.display = 'block';
                     checkComplete();
@@ -2228,7 +2247,15 @@
             });
 
             photos.addEventListener('change', () => {
-                if (photos.checked) document.getElementById('qb-contact-group').style.display = 'block';
+                const contactGroup = document.getElementById('qb-contact-group');
+                if (photos.checked) {
+                    contactGroup.style.display = 'block';
+                } else {
+                    contactGroup.style.display = 'none';
+                    document.querySelectorAll('input[name="qb-social"]').forEach(r => (r.checked = false));
+                    igInput.value = '';
+                    snapInput.value = '';
+                }
                 checkComplete();
             });
 
@@ -2271,8 +2298,25 @@
                 // PHOTOS ARE OPTIONAL - removed photos.checked requirement
                 // Photos checkbox auto-checks when photos are uploaded
                 const complete = cat && brand.value && conditionRadio && sizeOK && addressComplete && phoneValid && socialValid && consent;
+                if (!complete && validationFeedback) {
+                    const missing = [];
+                    if (!cat) missing.push('Select a category');
+                    if (!brand.value) missing.push('Choose a brand');
+                    if (!conditionRadio) missing.push('Pick a condition');
+                    if (!sizeOK) missing.push('Choose a size');
+                    if (!address.value) missing.push('Enter your street address');
+                    if (!city.value) missing.push('Enter your city/town');
+                    if (!phoneValid) missing.push('Use a valid phone number (+353…)');
+                    if (!socialChannel) missing.push('Select Instagram or Snapchat');
+                    else if (!socialValid) missing.push(`Add your ${socialChannel.value === 'instagram' ? 'Instagram' : 'Snapchat'} handle`);
+                    if (!consent) missing.push('Agree to contact consent');
 
-                // Validation feedback logic can be added here if desired
+                    validationList.innerHTML = missing.map(item => `<li>${item}</li>`).join('');
+                    validationFeedback.style.display = missing.length ? 'block' : 'none';
+                } else if (validationFeedback) {
+                    validationFeedback.style.display = 'none';
+                    validationList.innerHTML = '';
+                }
 
                 generateBtn.disabled = !complete;
             }
@@ -2282,6 +2326,8 @@
                 el.addEventListener('input', checkComplete);
                 el.addEventListener('change', checkComplete);
             });
+
+            checkComplete();
 
             // Add item to list
             generateBtn.addEventListener('click', function () {
@@ -2308,14 +2354,15 @@
                 const saveProfile = document.getElementById('qb-save-profile').checked;
                 const eircodeText = eircode.value ? `, ${eircode.value}` : '';
 
-                let socialHandle = socialChannel.value === 'instagram' ? igInput.value : snapInput.value;
+                const contactChannel = socialChannel.value;
+                let socialHandle = contactChannel === 'instagram' ? igInput.value : snapInput.value;
 
                 if (saveProfile) {
                     localStorage.setItem('sbs-address', address.value);
                     localStorage.setItem('sbs-city', city.value);
                     if (eircode.value) localStorage.setItem('sbs-eircode', eircode.value);
                     localStorage.setItem('sbs-phone', phone);
-                    localStorage.setItem('sbs-social-channel', socialChannel.value);
+                    localStorage.setItem('sbs-social-channel', contactChannel);
                     localStorage.setItem('sbs-social-handle', socialHandle);
                     if (email) localStorage.setItem('sbs-email', email);
                 }
@@ -2342,15 +2389,15 @@ ${itemsText}
                 document.getElementById('qb-message-output').scrollIntoView({ behavior: 'smooth' });
 
                 // ALSO submit to API for tracking
-                submitToAPI(socialChannel, phone, email, address.value, city.value, eircode.value, socialHandle);
+                submitToAPI(items, contactChannel, phone, email, address.value, city.value, eircode.value, socialHandle);
             });
         }
 
         // Submit to API for database tracking
-        async function submitToAPI(socialChannel, phone, email, addressValue, cityValue, eircodeValue, socialHandle) {
+        async function submitToAPI(itemsList, contactChannel, phone, email, addressValue, cityValue, eircodeValue, socialHandle) {
             try {
                 const submissionData = {
-                    items: items.map(item => ({
+                    items: itemsList.map(item => ({
                         category: item.category,
                         brand: item.brand,
                         condition: item.condition,
@@ -2358,7 +2405,7 @@ ${itemsText}
                         description: item.defects || null
                     })),
                     contact_phone: phone,
-                    contact_channel: socialChannel.value,
+                    contact_channel: contactChannel,
                     contact_handle: socialHandle,
                     contact_email: email || null,
                     address: addressValue,
