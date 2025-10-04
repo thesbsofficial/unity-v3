@@ -384,6 +384,59 @@
             box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
         }
 
+        .add-to-cart:disabled {
+            background: linear-gradient(45deg, #666, #888);
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .add-to-cart:disabled:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* RESERVED BADGE */
+        .reserved-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: linear-gradient(135deg, var(--primary-gold), #ffed4e);
+            color: var(--primary-black);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.6);
+            z-index: 10;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                box-shadow: 0 4px 15px rgba(255, 215, 0, 0.6);
+            }
+            50% {
+                box-shadow: 0 4px 25px rgba(255, 215, 0, 0.9);
+            }
+        }
+
+        .product-card.reserved {
+            opacity: 0.85;
+        }
+
+        .product-card.reserved .product-image::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.15);
+            pointer-events: none;
+        }
+
         /* CART MODAL */
         .cart-modal {
             position: fixed;
@@ -1041,12 +1094,8 @@
             
             <!-- Order Summary -->
             <div class="checkout-items">
-                <h3>Order Summary</h3>
+                <h3>Your Items</h3>
                 <div class="checkout-items-list" id="checkout-items-list"></div>
-                <div class="checkout-total">
-                    <span>Total:</span>
-                    <span id="checkout-total-amount">€0.00</span>
-                </div>
             </div>
 
             <!-- Customer Details Form -->
@@ -1322,19 +1371,23 @@
             // Format the size using taxonomy system
             const formattedSize = formatSizeLabel(productData.size);
 
+            // Check if product is reserved
+            const isReserved = product.status === 'reserved';
+            
             return `
-                <div class="product-card">
+                <div class="product-card ${isReserved ? 'reserved' : ''}">
                     <div class="product-image" onclick="openImageViewer('${imageUrl}')">
                         <img src="${imageUrl}" alt="${productData.category}" loading="lazy" 
                              onerror="this.src='/placeholder.svg'; console.error('Failed to load image:', '${imageUrl}');">
+                        ${isReserved ? '<div class="reserved-badge">RESERVED</div>' : ''}
                     </div>
                     <div class="product-info">
                         <div class="product-pills">
                             <span class="product-pill">${productData.category.toUpperCase()}</span>
                             <span class="product-pill">SIZE ${formattedSize.toUpperCase()}</span>
                         </div>
-                        <button class="add-to-cart" onclick="addToCart('${product.id}', '${productData.category}', '${formattedSize}', '${imageUrl}')">
-                            Add to Basket
+                        <button class="add-to-cart" ${isReserved ? 'disabled' : ''} onclick="${isReserved ? 'return false;' : `addToCart('${product.id}', '${productData.category}', '${formattedSize}', '${imageUrl}')`}">
+                            ${isReserved ? 'Reserved' : 'Add to Basket'}
                         </button>
                     </div>
                 </div>
@@ -1474,22 +1527,17 @@
                     <div class="cart-item-info">
                         <h4>${item.category}</h4>
                         <p>Size: ${item.size}</p>
-                        ${item.price ? `<p style="color: #ffd700; font-weight: bold;">€${item.price.toFixed(2)}</p>` : ''}
                     </div>
                     <button class="remove-btn" onclick="removeFromCart(${index})">Remove</button>
                 </div>
             `).join('');
             
-            // Show checkout button with total when items exist
+            // Show checkout button when items exist
             if (cartFooter) {
                 cartFooter.style.display = 'block';
                 cartFooter.innerHTML = `
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding: 0 4px;">
-                        <span style="font-size: 18px; font-weight: bold;">Total:</span>
-                        <span style="font-size: 24px; font-weight: bold; color: #ffd700;">€${total.toFixed(2)}</span>
-                    </div>
                     <button onclick="checkout()" class="btn-checkout" style="width: 100%; margin-bottom: 8px;">
-                        Proceed to Checkout
+                        Proceed to Checkout (${basket.length} ${basket.length === 1 ? 'item' : 'items'})
                     </button>
                     <button onclick="clearCart()" style="width: 100%; padding: 12px; background: #333; color: white; border: 1px solid #555; border-radius: 8px; cursor: pointer; font-size: 14px;" onmouseover="this.style.background='#444'" onmouseout="this.style.background='#333'">
                         Clear Basket

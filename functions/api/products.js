@@ -81,7 +81,27 @@ export async function onRequest(context) {
 
         console.log(`✅ Found ${images.length} images`);
 
-        // 📝 PARSE METADATA FROM CLOUDFLARE IMAGES
+        // � FETCH STATUS FROM DATABASE
+        // The reservation system updates product status in D1 database
+        // Priority: D1 status > Cloudflare metadata status
+        let dbStatusMap = {};
+        try {
+            if (env.DB) {
+                const dbProducts = await env.DB.prepare('SELECT cloudflare_image_id, status FROM products').all();
+                if (dbProducts.success && dbProducts.results) {
+                    dbProducts.results.forEach(p => {
+                        if (p.cloudflare_image_id) {
+                            dbStatusMap[p.cloudflare_image_id] = p.status;
+                        }
+                    });
+                    console.log(`✅ Loaded ${Object.keys(dbStatusMap).length} product statuses from D1`);
+                }
+            }
+        } catch (dbError) {
+            console.warn('⚠️ Could not fetch statuses from D1:', dbError.message);
+        }
+
+        // �📝 PARSE METADATA FROM CLOUDFLARE IMAGES
         // Each image can have metadata fields set in CF Images dashboard:
         // - name: Product name
         // - category: BN-CLOTHES, BN-SHOES, PO-CLOTHES, PO-SHOES
@@ -98,8 +118,11 @@ export async function onRequest(context) {
                     const meta = image.meta || image.metadata || {};
                     const filename = image.filename || '';
 
-                    // Get status - hide if not active (unless admin view)
-                    const status = (meta.status || 'active').toLowerCase();
+                    // Get status - D1 database has priority (updated by reservation system)
+                    let status = dbStatusMap[image.id] || (meta.status || 'active').toLowerCase();
+                    
+                    // For public view: hide if status is hidden or sold
+                    // For reservation system: show 'reserved' status
                     if (!includeHidden && (status === 'hidden' || status === 'sold')) {
                         return null; // Filter out hidden/sold items for public view
                     }

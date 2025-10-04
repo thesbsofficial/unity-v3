@@ -711,7 +711,7 @@
             loadOrders();
         });
 
-        // Load orders from API
+        // Load orders from API (including reservations)
         async function loadOrders() {
             try {
                 // Try to fetch from real API first
@@ -724,16 +724,47 @@
                     
                     if (response.ok) {
                         const data = await response.json();
-                        allOrders = data.orders;
+                        allOrders = data.orders || [];
+                        
+                        // Also fetch reservations and merge them as "orders"
+                        try {
+                            const reservationsResponse = await fetch('/api/admin/reservations');
+                            if (reservationsResponse.ok) {
+                                const reservationsData = await reservationsResponse.json();
+                                if (reservationsData.success && reservationsData.reservations) {
+                                    // Convert reservations to order format
+                                    const reservationOrders = reservationsData.reservations.map(r => ({
+                                        id: `R${r.id}`,
+                                        order_number: r.order_number,
+                                        customer_name: r.customer_name,
+                                        customer_phone: r.customer_phone,
+                                        customer_email: r.customer_email || 'N/A',
+                                        status: r.status === 'pending' ? 'pending' : (r.status === 'confirmed' ? 'completed' : 'cancelled'),
+                                        total_amount: r.price || 0,
+                                        created_at: r.reserved_at,
+                                        items: [{
+                                            product_title: r.product_title,
+                                            brand: r.brand,
+                                            image: r.image,
+                                            price: r.price
+                                        }],
+                                        type: 'reservation',
+                                        reservation_id: r.id,
+                                        expires_at: r.expires_at
+                                    }));
+                                    
+                                    // Merge reservations with orders
+                                    allOrders = [...allOrders, ...reservationOrders];
+                                }
+                            }
+                        } catch (resError) {
+                            console.log('Could not fetch reservations:', resError);
+                        }
+                        
                         filteredOrders = allOrders;
                         
-                        // Update stats from API
-                        if (data.stats) {
-                            document.getElementById('pendingCount').textContent = data.stats.pending;
-                            document.getElementById('readyCount').textContent = data.stats.ready;
-                            document.getElementById('completedCount').textContent = data.stats.completed;
-                            document.getElementById('revenueCount').textContent = `€${data.stats.revenue}`;
-                        }
+                        // Update stats from combined data
+                        updateStats();
                         
                         renderOrders();
                         document.getElementById('loadingState').style.display = 'none';
