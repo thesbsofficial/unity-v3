@@ -507,9 +507,19 @@ export async function onRequest(context) {
       }
     }
 
-    // ANALYTICS TRACKING - PUBLIC
+    // ANALYTICS TRACKING - PUBLIC (no auth required)
     if (path === "/api/analytics/track" && method === "POST") {
       try {
+        // Check if DB is available
+        if (!env.DB) {
+          console.error('Analytics: DB binding not available');
+          return json({ 
+            success: false, 
+            error: "Database not configured",
+            hint: "DB binding missing in environment" 
+          }, 500, headers);
+        }
+
         const body = await request.json();
         const events = body.events;
 
@@ -517,34 +527,57 @@ export async function onRequest(context) {
           return json({ success: false, error: "No events to track" }, 400, headers);
         }
 
+        console.log(`Analytics: Processing ${events.length} events`);
+
         const ip = ipOf(request);
         const ua = request.headers.get("User-Agent") || "unknown";
         const userId = session?.user_id || null;
-        const sessionId = session?.session_id || body.sessionId || null; // Allow client to send session ID
+        const sessionId = session?.session_id || body.sessionId || null;
 
-        const stmt = env.DB.prepare(
-          `INSERT INTO analytics_events (event_type, event_data, user_id, session_id, ip_address, user_agent, path)
-           VALUES (?, ?, ?, ?, ?, ?, ?)`
-        );
+        // Try to insert events one by one for better error handling
+        let successCount = 0;
+        const errors = [];
 
-        const batch = events.map(event =>
-          stmt.bind(
-            event.type,
-            JSON.stringify(event.data || {}),
-            userId,
-            sessionId,
-            ip,
-            ua,
-            event.path || null
-          )
-        );
+        for (const event of events) {
+          try {
+            await env.DB.prepare(
+              `INSERT INTO analytics_events (event_type, event_data, user_id, session_id, ip_address, user_agent, path)
+               VALUES (?, ?, ?, ?, ?, ?, ?)`
+            ).bind(
+              event.type || 'unknown',
+              JSON.stringify(event.data || {}),
+              userId,
+              sessionId,
+              ip,
+              ua,
+              event.path || null
+            ).run();
+            successCount++;
+          } catch (insertError) {
+            console.error(`Failed to insert event ${event.type}:`, insertError);
+            errors.push({ event: event.type, error: insertError.message });
+          }
+        }
 
-        await env.DB.batch(batch);
-
-        return json({ success: true, tracked: events.length }, 200, headers);
+        if (successCount === events.length) {
+          return json({ success: true, tracked: successCount }, 200, headers);
+        } else {
+          return json({ 
+            success: true, 
+            tracked: successCount, 
+            failed: errors.length,
+            errors: errors.slice(0, 3) // Only return first 3 errors
+          }, 200, headers);
+        }
       } catch (error) {
         console.error('Analytics tracking error:', error);
-        return json({ success: false, error: "Failed to track analytics", details: error.message }, 500, headers);
+        console.error('Error stack:', error.stack);
+        return json({ 
+          success: false, 
+          error: "Failed to track analytics", 
+          details: error.message,
+          stack: error.stack?.split('\n').slice(0, 3).join('\n')
+        }, 500, headers);
       }
     }
 
@@ -638,7 +671,7 @@ export async function onRequest(context) {
           const soldProducts = await env.DB.prepare(
             "SELECT COUNT(*) as count FROM products WHERE status = 'sold'"
           ).first();
-          
+
           // Top products by views
           const topProducts = await env.DB.prepare(
             "SELECT id, brand, category, size, views_count, price FROM products ORDER BY views_count DESC LIMIT 5"
@@ -674,7 +707,7 @@ export async function onRequest(context) {
             analyticsEvents = await env.DB.prepare(
               "SELECT event_type, COUNT(*) as count FROM analytics_events GROUP BY event_type ORDER BY count DESC LIMIT 10"
             ).all();
-            
+
             analyticsEvents.results.forEach(row => {
               eventCounts[row.event_type] = row.count;
             });
@@ -727,10 +760,10 @@ export async function onRequest(context) {
           }, 200, headers);
         } catch (error) {
           console.error('Dashboard analytics error:', error);
-          return json({ 
-            success: false, 
-            error: "Failed to load dashboard analytics", 
-            details: error.message 
+          return json({
+            success: false,
+            error: "Failed to load dashboard analytics",
+            details: error.message
           }, 500, headers);
         }
       }
@@ -743,8 +776,8 @@ export async function onRequest(context) {
           return json({ success: true, events: results || [] }, 200, headers);
         } catch (error) {
           // Table might not exist yet
-          return json({ 
-            success: true, 
+          return json({
+            success: true,
             events: [],
             message: "Analytics events table not yet created. Events will appear after first deployment with schema."
           }, 200, headers);
@@ -826,7 +859,7 @@ export async function onRequest(context) {
           const requiredTables = ['users', 'sessions', 'session_tokens', 'orders', 'products', 'sell_cases'];
           const foundTables = tables.results?.map(r => r.name) || [];
           const missingTables = requiredTables.filter(t => !foundTables.includes(t));
-          
+
           if (missingTables.length === 0) {
             passedChecks++;
             checks.push({
@@ -930,8 +963,8 @@ export async function onRequest(context) {
 
         // 5. Cloudflare Images API check
         totalChecks++;
-        const hasImagesConfig = env.CLOUDFLARE_ACCOUNT_ID && 
-                                (env.CLOUDFLARE_API_TOKEN || env.CLOUDFLARE_IMAGES_API_TOKEN);
+        const hasImagesConfig = env.CLOUDFLARE_ACCOUNT_ID &&
+          (env.CLOUDFLARE_API_TOKEN || env.CLOUDFLARE_IMAGES_API_TOKEN);
         if (hasImagesConfig) {
           passedChecks++;
           checks.push({
@@ -949,8 +982,8 @@ export async function onRequest(context) {
         }
 
         const successRate = ((passedChecks / totalChecks) * 100).toFixed(1);
-        const overallStatus = passedChecks === totalChecks ? "HEALTHY" : 
-                             passedChecks >= totalChecks * 0.8 ? "DEGRADED" : "UNHEALTHY";
+        const overallStatus = passedChecks === totalChecks ? "HEALTHY" :
+          passedChecks >= totalChecks * 0.8 ? "DEGRADED" : "UNHEALTHY";
 
         return json({
           success: true,

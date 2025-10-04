@@ -248,8 +248,15 @@ class SBSAnalytics {
     async flush() {
         if (this.queue.length === 0) return;
 
+        // Prevent concurrent flushes
+        if (this.isFlushing) {
+            this.log('⏳ Flush already in progress, skipping');
+            return;
+        }
+
         const events = [...this.queue];
         this.queue = [];
+        this.isFlushing = true;
 
         this.log('📤 Flushing events:', events.length);
 
@@ -259,23 +266,46 @@ class SBSAnalytics {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ events }),
+                body: JSON.stringify({ 
+                    events: events.map(e => ({
+                        type: e.event_type,
+                        data: e,
+                        path: e.page_url || window.location.pathname
+                    })),
+                    sessionId: this.sessionId
+                }),
                 keepalive: true // Ensure delivery even on page unload
             });
 
             if (!response.ok) {
-                throw new Error(`HTTP ${response.status}`);
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(`HTTP ${response.status}: ${errorData.error || 'Unknown error'}`);
             }
 
             const data = await response.json();
             this.log('✅ Events sent successfully:', data);
 
+            // Reset failure count on success
+            this.failureCount = 0;
+
         } catch (error) {
-            console.error('❌ Analytics flush failed:', error);
-            // Re-add to queue on failure (but limit to prevent infinite growth)
-            if (this.queue.length < 50) {
-                this.queue.unshift(...events);
+            this.failureCount = (this.failureCount || 0) + 1;
+            
+            // Only log error every 5th failure to avoid spam
+            if (this.failureCount % 5 === 1) {
+                console.warn(`⚠️ Analytics flush failed (${this.failureCount} times):`, error.message);
             }
+
+            // Re-add to queue on failure (but limit to prevent infinite growth)
+            // Stop trying after 10 consecutive failures
+            if (this.queue.length < 50 && this.failureCount < 10) {
+                this.queue.unshift(...events);
+            } else if (this.failureCount >= 10) {
+                console.warn('🛑 Analytics: Too many failures, stopping tracking to prevent spam');
+                this.stopAutoFlush();
+            }
+        } finally {
+            this.isFlushing = false;
         }
     }
 
