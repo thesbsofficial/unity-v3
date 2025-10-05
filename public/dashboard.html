@@ -855,7 +855,6 @@
                     <span></span>
                     <span></span>
                 </button>
-                <button type="button" class="btn-outline" id="signOutBtn">Sign Out</button>
             </div>
         </nav>
     </header>
@@ -1501,16 +1500,13 @@
             window.location.replace('/login.html?logout=true&t=' + Date.now());
         }
 
-        const signOutButton = document.getElementById('signOutBtn');
-        if (signOutButton) {
-            signOutButton.addEventListener('click', handleSignOut);
-        }
-
+        // Hero sign-out button (main CTA in page header)
         const heroSignOutBtn = document.getElementById('heroSignOutBtn');
         if (heroSignOutBtn) {
             heroSignOutBtn.addEventListener('click', handleSignOut);
         }
 
+        // Mobile menu sign-out button
         const mobileSignOutBtn = document.getElementById('mobile-signout');
         if (mobileSignOutBtn) {
             mobileSignOutBtn.addEventListener('click', handleSignOut);
