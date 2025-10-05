@@ -166,6 +166,41 @@
 
         .page-header {
             margin-bottom: 3rem;
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .page-header-content {
+            flex: 1 1 320px;
+            min-width: 260px;
+        }
+
+        .page-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .hero-signout-btn {
+            white-space: nowrap;
+        }
+
+        @media (max-width: 600px) {
+            .page-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .page-header-actions {
+                width: 100%;
+            }
+
+            .hero-signout-btn {
+                width: 100%;
+            }
         }
 
         .page-title {
@@ -842,8 +877,13 @@
     <!-- Main Content -->
     <div class="container">
         <div class="page-header">
-            <h1 class="page-title">My Account</h1>
-            <p class="page-subtitle">Manage your orders, sell submissions, and account settings</p>
+            <div class="page-header-content">
+                <h1 class="page-title">My Account</h1>
+                <p class="page-subtitle">Manage your orders, sell submissions, and account settings</p>
+            </div>
+            <div class="page-header-actions">
+                <button type="button" class="btn-outline hero-signout-btn" id="heroSignOutBtn">Sign Out</button>
+            </div>
         </div>
 
         <div class="dashboard-grid">
@@ -1464,6 +1504,11 @@
         const signOutButton = document.getElementById('signOutBtn');
         if (signOutButton) {
             signOutButton.addEventListener('click', handleSignOut);
+        }
+
+        const heroSignOutBtn = document.getElementById('heroSignOutBtn');
+        if (heroSignOutBtn) {
+            heroSignOutBtn.addEventListener('click', handleSignOut);
         }
 
         const mobileSignOutBtn = document.getElementById('mobile-signout');
