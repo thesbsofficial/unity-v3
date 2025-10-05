@@ -160,7 +160,7 @@
                 navRight.innerHTML = `
                     <a href="/dashboard" class="nav-link">👤 ${firstName}</a>
                     ${isAdmin ? '<a href="/admin/inventory/" class="nav-link">⚙️ Admin</a>' : ''}
-                    <button class="btn-outline" onclick="window.SBS.auth.signOut()" style="font-family: inherit; font-size: 1rem;">Sign Out</button>
+                    <button type="button" class="btn-outline" id="signOutBtn" style="font-family: inherit; font-size: 1rem;">Sign Out</button>
                     <button class="cart-toggle" type="button">
                         Basket
                         <span class="cart-count" id="cart-count">0</span>
