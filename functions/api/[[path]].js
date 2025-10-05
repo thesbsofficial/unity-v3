@@ -4,6 +4,7 @@
 // Oct 2, 2025
 
 import NotificationService from '../lib/notification-service.js';
+import bcrypt from 'bcryptjs';
 
 // ---- Util ----
 const enc = new TextEncoder();
@@ -77,8 +78,38 @@ async function hashPassword(password, iterations = 100000) {
   };
 }
 
+const hexRegex = /^[a-f0-9]{64}$/i;
+
 async function verifyPassword(password, user) {
-  if (!user?.password_hash || !user?.password_salt) return false;
+  if (!user?.password_hash) return false;
+
+  const hash = user.password_hash;
+  const hashType = (user.password_hash_type || "").toLowerCase();
+
+  // Legacy bcrypt hashes
+  if (
+    hashType === "bcrypt" ||
+    hash.startsWith("$2a$") ||
+    hash.startsWith("$2b$") ||
+    hash.startsWith("$2y$")
+  ) {
+    try {
+      return bcrypt.compareSync(password, hash);
+    } catch (error) {
+      console.error('Bcrypt verification failed:', error);
+      return false;
+    }
+  }
+
+  // Legacy SHA-256 hex hashes
+  if (hashType === "sha256" || (hexRegex.test(hash) && !user.password_salt)) {
+    const digest = await crypto.subtle.digest("SHA-256", enc.encode(password));
+    const digestHex = Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, "0")).join("");
+    return timingSafeEq(digestHex, hash);
+  }
+
+  if (!user.password_salt) return false;
+
   const iters = Number(user.password_iterations || 100000);
   const key = await crypto.subtle.importKey("raw", enc.encode(password), "PBKDF2", false, [
     "deriveBits",
@@ -88,7 +119,7 @@ async function verifyPassword(password, user) {
     key,
     256
   );
-  return timingSafeEq(b64(bits), user.password_hash);
+  return timingSafeEq(b64(bits), hash);
 }
 
 // ---- CSRF ----
@@ -116,19 +147,51 @@ async function createSession(env, userId, ip, ua) {
   const exp = new Date(now.getTime() + 30 * 24 * 3600 * 1000).toISOString();
   const tokenHash = await sha256b64(tokenRaw);
 
-  await env.DB.prepare(
-    `INSERT INTO sessions (user_id, token, csrf_secret, expires_at, ip_address, user_agent)
-     VALUES (?, ?, ?, ?, ?, ?)`
-  )
-    .bind(userId, tokenHash, csrfSecret, exp, ip || null, ua || null)
-    .run();
+  // Try writing hashed token for modern schema
+  let storedTokenValue = tokenHash;
+  let hashedInserted = false;
+  try {
+    await env.DB.prepare(
+      `INSERT INTO sessions (user_id, token, csrf_secret, expires_at, ip_address, user_agent)
+       VALUES (?, ?, ?, ?, ?, ?)`
+    )
+      .bind(userId, tokenHash, csrfSecret, exp, ip || null, ua || null)
+      .run();
+    hashedInserted = true;
+  } catch (error) {
+    // Fallback: legacy schema stores plaintext token in "token" column
+    storedTokenValue = tokenRaw;
+    await env.DB.prepare(
+      `INSERT INTO sessions (user_id, token, csrf_secret, expires_at, ip_address, user_agent)
+       VALUES (?, ?, ?, ?, ?, ?)`
+    )
+      .bind(userId, storedTokenValue, csrfSecret, exp, ip || null, ua || null)
+      .run();
+  }
 
-  // map token to user with a lightweight store table
-  await env.DB.prepare(
-    `INSERT INTO session_tokens (token_hash, user_id, expires_at) VALUES (?, ?, ?)`
-  )
-    .bind(tokenHash, userId, exp)
-    .run();
+  // map token to user with a lightweight store table (if available)
+  try {
+    await env.DB.prepare(
+      `INSERT INTO session_tokens (token_hash, user_id, expires_at) VALUES (?, ?, ?)`
+    )
+      .bind(tokenHash, userId, exp)
+      .run();
+  } catch (err) {
+    // session_tokens table not present in legacy schema – safe to ignore
+    if (hashedInserted) {
+      // Ensure plaintext token is stored for compatibility
+      try {
+        await env.DB.prepare(
+          `UPDATE sessions SET token = ? WHERE user_id = ? AND token = ?`
+        )
+          .bind(tokenRaw, userId, storedTokenValue)
+          .run();
+        storedTokenValue = tokenRaw;
+      } catch (swapErr) {
+        console.warn('Unable to swap hashed session token to plaintext:', swapErr);
+      }
+    }
+  }
 
   return { token: tokenRaw, csrfSecret };
 }
@@ -140,35 +203,88 @@ async function sha256b64(s) {
 
 async function readSession(env, tokenRaw) {
   if (!tokenRaw) return null;
-  const tokenHash = await sha256b64(tokenRaw);
-  const tok = await env.DB.prepare(
-    `SELECT user_id, expires_at FROM session_tokens WHERE token_hash = ? AND expires_at > datetime('now')`
-  )
-    .bind(tokenHash)
-    .first();
-  if (!tok) return null;
-  const row = await env.DB.prepare(
-    `SELECT s.user_id, s.csrf_secret, s.expires_at, u.role, u.social_handle, u.first_name, u.last_name, u.email, u.is_allowlisted
-       FROM sessions s
-       JOIN users u ON u.id = s.user_id
-      WHERE s.user_id = ? AND s.expires_at > datetime('now')
-      ORDER BY s.created_at DESC LIMIT 1`
-  )
-    .bind(tok.user_id)
-    .first();
-  return row || null;
+
+  // Attempt modern hashed lookup first (if supporting tables/columns exist)
+  try {
+    const tokenHash = await sha256b64(tokenRaw);
+    const tok = await env.DB.prepare(
+      `SELECT user_id, expires_at FROM session_tokens WHERE token_hash = ? AND expires_at > datetime('now')`
+    )
+      .bind(tokenHash)
+      .first();
+
+    if (tok?.user_id) {
+      const row = await env.DB.prepare(
+        `SELECT s.user_id, s.csrf_secret, s.expires_at, u.role, u.social_handle, u.first_name, u.last_name, u.email,
+                al.user_id AS is_allowlisted
+           FROM sessions s
+           JOIN users u ON u.id = s.user_id
+           LEFT JOIN admin_allowlist al ON al.user_id = u.id
+          WHERE s.user_id = ? AND s.expires_at > datetime('now')
+          ORDER BY s.created_at DESC LIMIT 1`
+      )
+        .bind(tok.user_id)
+        .first();
+
+      if (row) return row;
+    }
+  } catch (error) {
+    // session_tokens table or token_hash column may not exist in production; fall back below
+    console.warn('Hashed session lookup unavailable, falling back to legacy schema:', error?.message || error);
+  }
+
+  // Legacy schemas store plaintext token directly on sessions table
+  try {
+    const row = await env.DB.prepare(
+      `SELECT s.user_id, s.csrf_secret, s.expires_at, u.role, u.social_handle, u.first_name, u.last_name, u.email,
+              al.user_id AS is_allowlisted
+         FROM sessions s
+         JOIN users u ON u.id = s.user_id
+         LEFT JOIN admin_allowlist al ON al.user_id = u.id
+        WHERE s.token = ? AND (s.expires_at IS NULL OR s.expires_at > datetime('now'))
+        ORDER BY s.created_at DESC LIMIT 1`
+    )
+      .bind(tokenRaw)
+      .first();
+
+    if (row) {
+      // Ensure csrf_secret always populated
+      return {
+        ...row,
+        csrf_secret: row.csrf_secret || tokenRaw,
+      };
+    }
+  } catch (legacyError) {
+    console.error('Legacy session lookup failed:', legacyError);
+  }
+
+  return null;
 }
 
 async function destroySession(env, tokenRaw) {
   if (!tokenRaw) return;
   const tokenHash = await sha256b64(tokenRaw);
-  await env.DB.prepare(`DELETE FROM session_tokens WHERE token_hash = ?`).bind(tokenHash).run();
-  // (Let per-user sessions table expire naturally; optional: also DELETE sessions by user_id)
+  try {
+    await env.DB.prepare(`DELETE FROM session_tokens WHERE token_hash = ?`).bind(tokenHash).run();
+  } catch (e) {
+    // table may not exist; ignore
+  }
+  try {
+    await env.DB.prepare(`DELETE FROM sessions WHERE token = ? OR token = ?`).bind(tokenRaw, tokenHash).run();
+  } catch (err) {
+    // At minimum ensure plaintext token is cleared if present (best-effort)
+    try {
+      await env.DB.prepare(`DELETE FROM sessions WHERE token = ?`).bind(tokenRaw).run();
+    } catch (legacyErr) {
+      console.warn('Failed to remove session token:', legacyErr);
+    }
+  }
 }
 
 // ---- Helpers ----
 const okOrigins = (env) => (env.ALLOWED_ORIGINS || "").split(",").map((s) => s.trim());
-const isAdmin = (session) => session?.role === "admin" && session?.is_allowlisted === 1;
+// Fixed: Accept any truthy is_allowlisted value (can be 1 or user_id like 12)
+const isAdmin = (session) => session?.role === "admin" && (session?.is_allowlisted === 1 || !!session?.is_allowlisted);
 const ipOf = (req) =>
   req.headers.get("CF-Connecting-IP") ||
   (req.headers.get("X-Forwarded-For") || "").split(",")[0] ||
@@ -304,13 +420,29 @@ export async function onRequest(context) {
 
     if (path === "/api/users/login" && method === "POST") {
       const body = await request.json();
-      const { social_handle, password } = body;
-      if (!social_handle || !password)
-        return json({ success: false, error: "social_handle and password required" }, 400, headers);
+      const rawHandle = (body.social_handle || body.identifier || "").trim();
+      const rawEmail = (body.email || "").trim().toLowerCase();
+      const password = body.password;
 
-      const user = await env.DB.prepare("SELECT * FROM users WHERE social_handle = ?")
-        .bind(social_handle)
-        .first();
+      if ((!rawHandle && !rawEmail) || !password) {
+        return json({ success: false, error: "Username/email and password required" }, 400, headers);
+      }
+
+      let user = null;
+
+      if (rawEmail) {
+        user = await env.DB.prepare("SELECT * FROM users WHERE LOWER(email) = LOWER(?)")
+          .bind(rawEmail)
+          .first();
+      }
+
+      if (!user && rawHandle) {
+        const normalizedHandle = rawHandle.startsWith("@") ? rawHandle.slice(1) : rawHandle;
+        user = await env.DB.prepare("SELECT * FROM users WHERE LOWER(social_handle) = LOWER(?)")
+          .bind(normalizedHandle)
+          .first();
+      }
+
       if (!user || !(await verifyPassword(password, user)))
         return json({ success: false, error: "Invalid credentials" }, 401, headers);
 
@@ -695,12 +827,12 @@ export async function onRequest(context) {
             "SELECT COUNT(*) as count FROM orders WHERE status = 'completed'"
           ).first();
           const totalRevenue = await env.DB.prepare(
-            "SELECT COALESCE(SUM(total_amount), 0) as total FROM orders WHERE status = 'completed'"
+            "SELECT COALESCE(SUM(total), 0) as total FROM orders WHERE status = 'completed'"
           ).first();
 
           // Recent orders
           const recentOrders = await env.DB.prepare(
-            "SELECT order_number, total_amount, status, created_at FROM orders ORDER BY created_at DESC LIMIT 10"
+            "SELECT order_number, total, status, created_at FROM orders ORDER BY created_at DESC LIMIT 10"
           ).all();
 
           // 4. Sell Cases Metrics
@@ -1244,6 +1376,8 @@ export async function onRequest(context) {
 
     // ORDERS (example) — CSRF required on mutations
     if (path === "/api/orders" && method === "POST") {
+      if (!session?.user_id) return json({ success: false, error: "Authentication required" }, 401, headers);
+
       const ok = await assertCsrf(request, session);
       if (!ok) return json({ success: false, error: "Invalid CSRF token" }, 403, headers);
 
@@ -1251,40 +1385,133 @@ export async function onRequest(context) {
       if (!Array.isArray(body.items) || !body.items.length)
         return json({ success: false, error: "Items required" }, 400, headers);
 
+      const user = await env.DB.prepare(
+        `SELECT email, first_name, last_name, phone FROM users WHERE id=?`
+      )
+        .bind(session.user_id)
+        .first();
+
+      const customerName = (body.customer_name || `${user?.first_name || ''} ${user?.last_name || ''}`.trim()).trim() || session.social_handle || "SBS Customer";
+      const customerPhone = (body.customer_phone || user?.phone || '').trim() || 'N/A';
+      const deliveryMethod = body.delivery_method === 'collection' ? 'collection' : 'delivery';
+
+      const items = body.items.map((item) => ({
+        product_id: item.product_id || null,
+        product_name: item.product_name || item.name || item.category || 'SBS Item',
+        product_brand: item.product_brand || item.brand || 'SBS',
+        product_category: item.product_category || item.category || 'General',
+        product_size: item.product_size || item.size || 'One Size',
+        price: Number(item.price) || 0,
+        quantity: Number(item.quantity) || 1,
+        image_url: item.image_url || null
+      }));
+
+      const itemsSubtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+      const providedSubtotal = Number(body.subtotal);
+      const providedTotal = Number(body.total ?? body.total_amount);
+      const deliveryFee = Number.isFinite(Number(body.delivery_fee))
+        ? Number(body.delivery_fee)
+        : deliveryMethod === 'delivery'
+          ? 5
+          : 0;
+
+      const subtotal = Number.isFinite(providedSubtotal) ? providedSubtotal : itemsSubtotal;
+      const total = Number.isFinite(providedTotal) ? providedTotal : subtotal + deliveryFee;
+
       const orderNo = `SBS-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
+      const itemsJson = JSON.stringify(items);
+
       const res = await env.DB.prepare(
-        `INSERT INTO orders (user_id, order_number, items_json, total_amount, delivery_address, delivery_city, delivery_method, status, created_at)
-         VALUES (?,?,?,?,?,?,?,'pending',CURRENT_TIMESTAMP)`
+        `INSERT INTO orders (
+            user_id,
+            order_number,
+            customer_name,
+            customer_phone,
+            customer_email,
+            items_json,
+            delivery_method,
+            delivery_fee,
+            delivery_address,
+            delivery_city,
+            delivery_eircode,
+            subtotal,
+            total,
+            status,
+            created_at,
+            updated_at
+         )
+         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,'pending',CURRENT_TIMESTAMP,CURRENT_TIMESTAMP)`
       )
         .bind(
           session.user_id,
           orderNo,
-          JSON.stringify(body.items),
-          body.total_amount || 0,
+          customerName,
+          customerPhone,
+          user?.email || null,
+          itemsJson,
+          deliveryMethod,
+          deliveryFee,
           body.delivery_address || null,
           body.delivery_city || null,
-          body.delivery_method || "delivery"
+          body.delivery_eircode || null,
+          subtotal,
+          total
         )
         .run();
 
-      // Get user email for order confirmation
-      const user = await env.DB.prepare(
-        `SELECT email, first_name, last_name FROM users WHERE id=?`
-      ).bind(session.user_id).first();
+      const orderId = res.meta?.last_row_id ?? null;
+
+      if (orderId) {
+        for (const item of items) {
+          await env.DB.prepare(
+            `INSERT INTO order_items (
+                order_id,
+                product_id,
+                product_name,
+                product_brand,
+                product_category,
+                product_size,
+                price,
+                quantity,
+                created_at
+             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`
+          )
+            .bind(
+              orderId,
+              item.product_id,
+              item.product_name,
+              item.product_brand,
+              item.product_category,
+              item.product_size,
+              item.price,
+              item.quantity
+            )
+            .run();
+        }
+      }
 
       const newOrder = {
-        id: res.meta?.last_row_id ?? null,
+        id: orderId,
         order_number: orderNo,
-        status: "pending",
-        total_amount: body.total_amount || 0,
-        user_email: user?.email,
-        user_name: user ? `${user.first_name || ''} ${user.last_name || ''}`.trim() : null
+        status: 'pending',
+        total,
+        subtotal,
+        delivery_method: deliveryMethod,
+        user_email: user?.email || null,
+        user_name: customerName,
+        items
       };
 
       // Send order confirmation notification
       try {
         const notificationService = new NotificationService(env);
-        const notificationResult = await notificationService.sendOrderConfirmation(newOrder, body.items);
+        const notificationItems = items.map(item => ({
+          name: item.product_name,
+          size: item.product_size,
+          quantity: item.quantity,
+          price: item.price
+        }));
+        const notificationResult = await notificationService.sendOrderConfirmation(newOrder, notificationItems);
 
         if (notificationResult.success) {
           console.log(`✅ Order confirmation sent for ${orderNo}`);
@@ -1304,12 +1531,35 @@ export async function onRequest(context) {
     }
 
     if (path === "/api/orders" && method === "GET") {
+      if (!session?.user_id) return json({ success: false, error: "Authentication required" }, 401, headers);
+
       const rows = await env.DB.prepare(
-        `SELECT id, order_number, total_amount, status, created_at FROM orders WHERE user_id=? ORDER BY created_at DESC`
+        `SELECT id, order_number, items_json, subtotal, total, status, delivery_method, delivery_fee,
+                delivery_address, delivery_city, delivery_eircode, admin_notes, customer_notes,
+                created_at, updated_at, completed_at
+         FROM orders
+         WHERE user_id=?
+         ORDER BY created_at DESC`
       )
         .bind(session.user_id)
         .all();
-      return json({ success: true, orders: rows.results || [] }, 200, headers);
+
+      const orders = (rows.results || []).map((row) => ({
+        ...row,
+        subtotal: Number(row.subtotal) || 0,
+        total: Number(row.total) || 0,
+        items: (() => {
+          try {
+            const parsed = JSON.parse(row.items_json || '[]');
+            return Array.isArray(parsed) ? parsed : [];
+          } catch (err) {
+            console.warn('Failed to parse order items_json', err);
+            return [];
+          }
+        })()
+      }));
+
+      return json({ success: true, orders }, 200, headers);
     }
 
     // USER DATA & GDPR ENDPOINTS
@@ -1330,14 +1580,39 @@ export async function onRequest(context) {
 
     // Get user's orders
     if (path === "/api/users/me/orders" && method === "GET") {
-      const orders = await env.DB.prepare(
+      if (!session?.user_id) return json({ success: false, error: "Authentication required" }, 401, headers);
+
+      const ordersStmt = await env.DB.prepare(
         `SELECT id, order_number, items_json, total_amount, delivery_address, delivery_city,
-         delivery_method, status, created_at FROM orders WHERE user_id=? ORDER BY created_at DESC`
+                delivery_eircode, delivery_method, delivery_phone, status, payment_status,
+                created_at, updated_at
+         FROM orders
+         WHERE user_id=?
+         ORDER BY created_at DESC`
       )
         .bind(session.user_id)
         .all();
 
-      return json({ success: true, orders: orders.results || [] }, 200, headers);
+      const orders = (ordersStmt.results || []).map((row) => ({
+        ...row,
+        total: Number(row.total_amount) || 0,
+        subtotal: Number(row.total_amount) || 0,
+        delivery_fee: 0,
+        admin_notes: '',
+        customer_notes: '',
+        completed_at: null,
+        items: (() => {
+          try {
+            const parsed = JSON.parse(row.items_json || '[]');
+            return Array.isArray(parsed) ? parsed : [];
+          } catch (err) {
+            console.warn('Failed to parse order items_json', err);
+            return [];
+          }
+        })()
+      }));
+
+      return json({ success: true, orders }, 200, headers);
     }
 
     // EMAIL VERIFICATION ENDPOINTS

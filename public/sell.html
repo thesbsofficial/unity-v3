@@ -1395,6 +1395,32 @@
             </div>
         </section>
 
+        <!-- SIGNUP BENEFITS BANNER -->
+        <section style="background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 215, 0, 0.05)); border: 2px solid rgba(255, 215, 0, 0.3); border-radius: 12px; padding: 2rem; margin: 2rem auto; max-width: 1200px;">
+            <div class="container" style="text-align: center;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">💎</div>
+                <h3 style="color: var(--primary-gold); font-size: 1.75rem; margin-bottom: 1rem; font-weight: 700;">Get Better Offers When You Sign Up!</h3>
+                <p style="font-size: 1.125rem; color: var(--text-primary); margin-bottom: 1.5rem; line-height: 1.6;">
+                    <strong>Registered members</strong> can receive <span style="color: var(--primary-gold); font-weight: 700;">counter-offers</span>, 
+                    track all submissions on their dashboard, and get priority responses. <br>
+                    <span style="color: var(--text-secondary);">Guests can still submit - but you won't be able to negotiate or track your requests.</span>
+                </p>
+                <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                    <a href="/register.html" class="btn btn-gold" style="font-size: 1.125rem; padding: 1rem 2rem;">
+                        <i data-lucide="user-plus" class="icon"></i>
+                        Sign Up Free
+                    </a>
+                    <a href="/login.html" class="btn btn-secondary" style="font-size: 1.125rem; padding: 1rem 2rem;">
+                        <i data-lucide="log-in" class="icon"></i>
+                        Already Have Account?
+                    </a>
+                </div>
+                <p style="font-size: 0.875rem; color: var(--text-secondary); margin-top: 1rem;">
+                    ✓ Receive & counter offers  •  ✓ Track all submissions  •  ✓ Faster responses  •  ✓ Priority support
+                </p>
+            </div>
+        </section>
+
         <!-- QUICK BUILDER (Hidden by default) -->
         <section class="quick-builder is-gated" id="quick-builder-section" style="position: relative;">
             <div class="container">
@@ -1528,6 +1554,14 @@
                         <div class="form-group" id="qb-contact-group" style="display:none;">
                             <label class="form-label">9. Contact Details</label>
                             <span class="form-helper">So we can reach you with an offer</span>
+
+                            <!-- Full Name -->
+                            <div style="margin-bottom: 1rem;">
+                                <label for="qb-full-name"
+                                    style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Full Name *</label>
+                                <input type="text" class="form-input" id="qb-full-name" placeholder="John Smith" required>
+                                <small style="display: block; margin-top: 0.25rem; color: var(--text-secondary);">Your first and last name</small>
+                            </div>
 
                             <!-- Phone Number -->
                             <div style="margin-bottom: 1rem;">
@@ -2369,6 +2403,7 @@
 
             // Generate final message
             finishBtn.addEventListener('click', function () {
+                const fullName = document.getElementById('qb-full-name').value.trim();
                 const socialChannel = document.querySelector('input[name="qb-social"]:checked');
                 const phone = phoneInput.value.trim();
                 const email = document.getElementById('qb-email').value;
@@ -2429,12 +2464,12 @@ ${itemsText}
                 document.getElementById('qb-message-output').scrollIntoView({ behavior: 'smooth' });
 
                 // ALSO submit to API for tracking
-                submitToAPI(items, contactChannel, phone, email, address.value, city.value, eircode.value, socialHandle, askingPrice, sellerNotes, submissionUserId);
+                submitToAPI(items, fullName, contactChannel, phone, email, address.value, city.value, eircode.value, socialHandle, askingPrice, sellerNotes, submissionUserId);
             });
         }
 
         // Submit to API for database tracking
-        async function submitToAPI(itemsList, contactChannel, phone, email, addressValue, cityValue, eircodeValue, socialHandle, sellerPrice, sellerMessage, userId) {
+        async function submitToAPI(itemsList, fullName, contactChannel, phone, email, addressValue, cityValue, eircodeValue, socialHandle, sellerPrice, sellerMessage, userId) {
             try {
                 const submissionData = {
                     items: itemsList.map(item => ({
@@ -2444,6 +2479,7 @@ ${itemsText}
                         size: item.size,
                         description: item.defects || null
                     })),
+                    contact_name: fullName,
                     contact_phone: phone,
                     contact_channel: contactChannel,
                     contact_handle: socialHandle,

@@ -356,6 +356,133 @@
             line-height: 1.8;
         }
 
+        .order-card {
+            margin-bottom: 1.5rem;
+        }
+
+        .order-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .order-card-header h3 {
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .order-meta {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .order-meta strong {
+            display: block;
+            color: var(--text-primary);
+            font-size: 1rem;
+        }
+
+        .order-items {
+            display: grid;
+            gap: 1rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .order-item {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-subtle);
+            border-radius: 10px;
+            padding: 1rem;
+        }
+
+        .order-item-image {
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            object-fit: cover;
+            background: var(--bg-hover);
+        }
+
+        .order-item-details {
+            flex: 1;
+        }
+
+        .order-item-details h4 {
+            margin-bottom: 0.25rem;
+            font-size: 1rem;
+        }
+
+        .order-item-details p {
+            margin: 0.15rem 0;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .order-badge-note {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary-gold);
+            background: rgba(255, 215, 0, 0.08);
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .badge-ready {
+            background: rgba(33, 150, 243, 0.2);
+            color: #2196f3;
+        }
+
+        .badge-completed {
+            background: rgba(76, 175, 80, 0.2);
+            color: var(--success-green);
+        }
+
+        .badge-cancelled {
+            background: rgba(244, 67, 54, 0.2);
+            color: var(--danger-red);
+        }
+
+        .orders-empty-state {
+            text-align: center;
+            padding: 2.5rem 1rem;
+            border: 1px dashed var(--border-subtle);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .orders-empty-state p {
+            color: var(--text-secondary);
+            margin-bottom: 1.25rem;
+        }
+
+        .orders-grid {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .order-status-timeline {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-subtle);
+        }
+
+        .order-status-timeline div {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
         .status-summary-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -733,7 +860,7 @@
                         <strong
                             style="color: var(--primary-gold); font-size: 0.85rem; padding: 0 1rem; display: block; margin-bottom: 0.5rem;">SELL</strong>
                     </li>
-                    <li><a href="#" data-section="submissions">My Sales <small>(Coming Soon)</small></a></li>
+                    <li><a href="#" data-section="submissions">My Sell Requests</a></li>
                     <li style="margin-top: 1rem; padding: 0.5rem 0; border-top: 1px solid var(--border-subtle);">
                         <strong
                             style="color: var(--primary-gold); font-size: 0.85rem; padding: 0 1rem; display: block; margin-bottom: 0.5rem;">SETTINGS</strong>
@@ -859,6 +986,8 @@
 
         const STATUS_ORDER = ['pending', 'reviewing', 'offer_sent', 'offer_pending', 'offer_accepted', 'completed', 'rejected', 'cancelled'];
 
+    const ORDER_STATUS_KEYS = ['pending', 'confirmed', 'processing', 'shipped', 'completed', 'cancelled'];
+
         const currencyFormatter = new Intl.NumberFormat('en-IE', {
             style: 'currency',
             currency: 'EUR',
@@ -869,6 +998,319 @@
             dateStyle: 'medium',
             timeStyle: 'short'
         });
+
+        const ORDER_STATUS_CONFIG = {
+            pending: {
+                label: 'Awaiting Confirmation',
+                description: 'We have your order and will confirm shortly.',
+                badgeClass: 'badge badge-pending',
+                summaryBg: 'rgba(255, 152, 0, 0.18)',
+                summaryBorder: 'rgba(255, 152, 0, 0.4)',
+                icon: '⏳'
+            },
+            confirmed: {
+                label: 'Confirmed',
+                description: 'Your order is confirmed and being prepared.',
+                badgeClass: 'badge badge-ready',
+                summaryBg: 'rgba(33, 150, 243, 0.16)',
+                summaryBorder: 'rgba(33, 150, 243, 0.35)',
+                icon: '📦'
+            },
+            processing: {
+                label: 'Processing',
+                description: 'Our team is working on your order.',
+                badgeClass: 'badge badge-reviewing',
+                summaryBg: 'rgba(156, 39, 176, 0.14)',
+                summaryBorder: 'rgba(156, 39, 176, 0.35)',
+                icon: '⚙️'
+            },
+            shipped: {
+                label: 'Shipped',
+                description: 'Your order is on the way to you.',
+                badgeClass: 'badge badge-delivered',
+                summaryBg: 'rgba(100, 181, 246, 0.16)',
+                summaryBorder: 'rgba(100, 181, 246, 0.4)',
+                icon: '�'
+            },
+            completed: {
+                label: 'Completed',
+                description: 'Order fulfilled. Thank you for shopping with SBS!',
+                badgeClass: 'badge badge-completed',
+                summaryBg: 'rgba(76, 175, 80, 0.18)',
+                summaryBorder: 'rgba(76, 175, 80, 0.45)',
+                icon: '✅'
+            },
+            cancelled: {
+                label: 'Cancelled',
+                description: 'This order was cancelled. Contact us if you have questions.',
+                badgeClass: 'badge badge-cancelled',
+                summaryBg: 'rgba(244, 67, 54, 0.16)',
+                summaryBorder: 'rgba(244, 67, 54, 0.45)',
+                icon: '🚫'
+            }
+        };
+
+        function getOrderStatusConfig(status) {
+            const key = normaliseStatus(status);
+            if (ORDER_STATUS_CONFIG[key]) return ORDER_STATUS_CONFIG[key];
+            return {
+                label: String(status || 'Unknown').replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase()),
+                description: 'Status update in progress.',
+                badgeClass: 'badge badge-reviewing',
+                summaryBg: 'rgba(255, 255, 255, 0.08)',
+                summaryBorder: 'rgba(255, 255, 255, 0.2)',
+                icon: '•'
+            };
+        }
+
+        function normaliseOrderItems(items) {
+            if (!Array.isArray(items)) {
+                if (typeof items === 'string') {
+                    try {
+                        const parsed = JSON.parse(items);
+                        items = Array.isArray(parsed) ? parsed : [];
+                    } catch (err) {
+                        console.warn('Failed to parse order items_json', err);
+                        items = [];
+                    }
+                } else {
+                    return [];
+                }
+            }
+
+            return items.map(item => ({
+                name: item.product_name || item.name || item.product_category || item.category || 'SBS Item',
+                category: item.product_category || item.category || 'General',
+                size: item.product_size || item.size || 'One Size',
+                quantity: Number(item.quantity) || 1,
+                price: Number(item.price) || 0,
+                brand: item.product_brand || item.brand || '',
+                image_url: item.image_url || item.image || null
+            }));
+        }
+
+        function normalizeCustomerOrder(order = {}) {
+            const items = normaliseOrderItems(order.items ?? order.items_json);
+            return {
+                ...order,
+                status: normaliseStatus(order.status),
+                total: Number(order.total) || 0,
+                subtotal: Number(order.subtotal) || 0,
+                delivery_fee: Number(order.delivery_fee) || 0,
+                delivery_method: order.delivery_method || 'delivery',
+                items,
+                // Note: Production schema doesn't have admin_notes, customer_notes, or completed_at columns
+                created_at: order.created_at,
+                updated_at: order.updated_at || order.created_at
+            };
+        }
+
+        let ordersCache = null;
+        let ordersCacheFetchedAt = 0;
+
+        async function fetchOrders(forceRefresh = false) {
+            const now = Date.now();
+            if (!forceRefresh && ordersCache && now - ordersCacheFetchedAt < 15000) {
+                return ordersCache;
+            }
+
+            const token = sessionStorage.getItem('sbs_csrf_token');
+            const response = await fetch('/api/users/me/orders', {
+                method: 'GET',
+                headers: {
+                    'X-CSRF-Token': token || ''
+                },
+                credentials: 'include'
+            });
+
+            if (response.status === 401) {
+                handleSignOut();
+                return [];
+            }
+
+            const data = await response.json();
+
+            if (!response.ok || !data.success) {
+                throw new Error(data.error || 'Failed to load orders');
+            }
+
+            const orders = (data.orders || []).map(normalizeCustomerOrder);
+            ordersCache = orders;
+            ordersCacheFetchedAt = now;
+            return orders;
+        }
+
+        function computeOrderStats(orders) {
+            const stats = {
+                total: orders.length
+            };
+
+            for (const key of ORDER_STATUS_KEYS) {
+                stats[key] = 0;
+            }
+
+            orders.forEach(order => {
+                const key = normaliseStatus(order.status);
+                stats[key] = (stats[key] || 0) + 1;
+            });
+
+            return stats;
+        }
+
+        function renderOrdersSummaryHtml(orders) {
+            const stats = computeOrderStats(orders);
+            const activeStatuses = ORDER_STATUS_KEYS.filter(key => stats[key] > 0);
+
+            const statusCards = activeStatuses.map(key => {
+                const config = getOrderStatusConfig(key);
+                return `
+                    <div class="status-summary-card" style="background: ${config.summaryBg}; border-color: ${config.summaryBorder};">
+                        <h3>${config.icon} ${config.label}</h3>
+                        <div class="status-summary-metric">${stats[key]}</div>
+                        <div class="status-summary-meta">Orders in this state</div>
+                    </div>
+                `;
+            }).join('');
+
+            return `
+                <div class="status-summary-grid">
+                    <div class="status-summary-card primary">
+                        <h3>📦 Total Orders</h3>
+                        <div class="status-summary-metric">${stats.total}</div>
+                        <div class="status-summary-meta">Track your deliveries and pickups</div>
+                    </div>
+                    ${statusCards}
+                </div>
+            `;
+        }
+
+        function renderOrderItems(order) {
+            if (!order.items.length) {
+                return `
+                    <div class="order-item">
+                        <div class="order-item-details">
+                            <h4>Items on File</h4>
+                            <p>We'll update this with item details shortly.</p>
+                        </div>
+                    </div>
+                `;
+            }
+
+            return order.items.map(item => `
+                <div class="order-item">
+                    ${item.image_url ? `<img src="${item.image_url}" alt="${escapeHTML(item.name)}" class="order-item-image">` : ''}
+                    <div class="order-item-details">
+                        <h4>${escapeHTML(item.name)}</h4>
+                        <p>${escapeHTML(item.category)} • Size ${escapeHTML(item.size)}</p>
+                        <p>Qty ${item.quantity}${item.price ? ` • ${formatCurrency(item.price)}` : ''}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderOrderCard(order) {
+            const config = getOrderStatusConfig(order.status);
+            const timeline = [
+                `<div><strong>Placed:</strong> ${formatDateTime(order.created_at)}</div>`,
+                `<div><strong>Updated:</strong> ${formatDateTime(order.updated_at)}</div>`
+            ];
+            if (order.completed_at) {
+                timeline.push(`<div><strong>Completed:</strong> ${formatDateTime(order.completed_at)}</div>`);
+            }
+
+            const address = order.delivery_method === 'delivery'
+                ? [order.delivery_address, order.delivery_city, order.delivery_eircode].filter(Boolean).map(escapeHTML).join(', ')
+                : 'Collect in-store';
+
+            return `
+                <div class="card order-card">
+                    <div class="order-card-header">
+                        <h3>${escapeHTML(order.order_number)}</h3>
+                        <span class="${config.badgeClass}">${config.icon} ${config.label}</span>
+                    </div>
+                    <div class="order-meta">
+                        <div>
+                            <strong>Total</strong>
+                            ${formatCurrency(order.total)}
+                        </div>
+                        <div>
+                            <strong>Delivery</strong>
+                            ${escapeHTML(order.delivery_method === 'collection' ? 'Collection' : 'Delivery')}
+                        </div>
+                        <div>
+                            <strong>Destination</strong>
+                            ${address || '—'}
+                        </div>
+                        <div>
+                            <strong>Status Message</strong>
+                            ${escapeHTML(config.description)}
+                        </div>
+                    </div>
+                    <div class="order-items">
+                        ${renderOrderItems(order)}
+                    </div>
+                    ${order.admin_notes ? `<div class="order-badge-note">${escapeHTML(order.admin_notes)}</div>` : ''}
+                    ${order.customer_notes ? `<div class="order-badge-note" style="border-left-color: var(--primary-black); background: rgba(255, 255, 255, 0.05);">Customer note: ${escapeHTML(order.customer_notes)}</div>` : ''}
+                    <div class="order-status-timeline">
+                        ${timeline.join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderOrderPreview(order) {
+            const config = getOrderStatusConfig(order.status);
+            const firstItem = order.items[0];
+            const itemSummary = firstItem
+                ? `${escapeHTML(firstItem.name)}${order.items.length > 1 ? ` +${order.items.length - 1} more` : ''}`
+                : 'Awaiting item details';
+
+            return `
+                <div class="card order-card">
+                    <div class="order-card-header">
+                        <h3>${escapeHTML(order.order_number)}</h3>
+                        <span class="${config.badgeClass}">${config.icon} ${config.label}</span>
+                    </div>
+                    <div class="order-meta">
+                        <div>
+                            <strong>Total</strong>
+                            ${formatCurrency(order.total)}
+                        </div>
+                        <div>
+                            <strong>Placed</strong>
+                            ${formatDateTime(order.created_at)}
+                        </div>
+                    </div>
+                    <div class="order-item-details">
+                        <p>${itemSummary}</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderOrdersContent(orders) {
+            const summaryEl = document.getElementById('ordersSummary');
+            const listEl = document.getElementById('ordersList');
+            if (!summaryEl || !listEl) return;
+
+            if (!orders.length) {
+                summaryEl.innerHTML = `
+                    <div class="orders-empty-state">
+                        <p>You haven't placed any orders yet.</p>
+                        <a href="/shop.html" class="btn-gold">Browse Shop</a>
+                    </div>
+                `;
+                listEl.innerHTML = `
+                    <div class="orders-empty-state">
+                        <p>Your order history will appear here once you place an order.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            summaryEl.innerHTML = renderOrdersSummaryHtml(orders);
+            listEl.innerHTML = orders.map(renderOrderCard).join('');
+        }
 
         let submissionsState = {
             entries: [],
@@ -1062,10 +1504,31 @@
             const recentOrdersEl = document.getElementById('recentOrders');
             if (recentOrdersEl) {
                 recentOrdersEl.innerHTML = `
-                    <div class="empty-state">
-                        <p>No orders yet. <a href="/shop.html" style="color: var(--primary-gold);">Start shopping!</a></p>
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p style="margin-top: 0.5rem;">Loading your recent orders...</p>
                     </div>
                 `;
+
+                try {
+                    const orders = await fetchOrders();
+                    if (!orders.length) {
+                        recentOrdersEl.innerHTML = `
+                            <div class="empty-state">
+                                <p>No orders yet. <a href="/shop.html" style="color: var(--primary-gold);">Start shopping!</a></p>
+                            </div>
+                        `;
+                    } else {
+                        recentOrdersEl.innerHTML = orders.slice(0, 3).map(renderOrderPreview).join('');
+                    }
+                } catch (ordersError) {
+                    console.warn('Recent orders load error:', ordersError);
+                    recentOrdersEl.innerHTML = `
+                        <div class="empty-state">
+                            <p>We couldn't fetch your orders right now. Try refreshing shortly.</p>
+                        </div>
+                    `;
+                }
             }
 
             const recentSubmissionsEl = document.getElementById('recentSubmissions');
@@ -1111,13 +1574,79 @@
                 <div class="section">
                     <div class="section-header">
                         <h2 class="section-title">My Orders</h2>
+                        <button type="button" class="btn-outline" id="refreshOrdersBtn">🔄 Refresh</button>
                     </div>
-                    <div class="empty-state">
-                        <p>You haven't placed any orders yet.</p>
-                        <a href="/shop.html" class="btn-gold" style="display: inline-block; margin-top: 1rem;">Browse Shop</a>
+                    <div id="ordersSummary" class="loading">
+                        <div class="spinner"></div>
+                        <p style="margin-top: 0.5rem;">Loading your orders...</p>
                     </div>
                 </div>
+                <div class="section">
+                    <div id="ordersList" class="orders-grid"></div>
+                </div>
             `;
+
+            async function refreshOrders(force = false) {
+                const summaryEl = document.getElementById('ordersSummary');
+                const listEl = document.getElementById('ordersList');
+
+                try {
+                    if (summaryEl) {
+                        summaryEl.classList.add('loading');
+                    }
+
+                    const orders = await fetchOrders(force);
+                    renderOrdersContent(orders);
+
+                    if (summaryEl) {
+                        summaryEl.classList.remove('loading');
+                    }
+                } catch (error) {
+                    console.error('Orders load error:', error);
+                    if (summaryEl) {
+                        summaryEl.classList.remove('loading');
+                        summaryEl.innerHTML = `
+                            <div class="orders-empty-state">
+                                <p>${escapeHTML(error.message || 'We could not load your orders right now.')}</p>
+                                <button type="button" class="btn-outline" id="retryOrdersBtn">Retry</button>
+                            </div>
+                        `;
+
+                        const retryBtn = document.getElementById('retryOrdersBtn');
+                        if (retryBtn) {
+                            retryBtn.addEventListener('click', () => {
+                                summaryEl.innerHTML = `
+                                    <div class="loading">
+                                        <div class="spinner"></div>
+                                        <p style="margin-top: 0.5rem;">Retrying...</p>
+                                    </div>
+                                `;
+                                refreshOrders(true);
+                            });
+                        }
+                    }
+
+                    if (listEl) listEl.innerHTML = '';
+                }
+            }
+
+            await refreshOrders(true);
+
+            const refreshBtn = document.getElementById('refreshOrdersBtn');
+            if (refreshBtn) {
+                refreshBtn.addEventListener('click', () => {
+                    const summaryEl = document.getElementById('ordersSummary');
+                    if (summaryEl) {
+                        summaryEl.innerHTML = `
+                            <div class="loading">
+                                <div class="spinner"></div>
+                                <p style="margin-top: 0.5rem;">Refreshing...</p>
+                            </div>
+                        `;
+                    }
+                    refreshOrders(true);
+                });
+            }
         }
 
         // Load Submissions

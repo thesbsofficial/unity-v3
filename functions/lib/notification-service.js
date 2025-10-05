@@ -157,7 +157,10 @@ class NotificationService {
                                 ${itemsHtml}
                                 <tr style="background: #f8f9fa; font-weight: bold;">
                                     <td style="padding: 15px 10px;" colspan="2">Total</td>
-                                    <td style="padding: 15px 10px; text-align: right;">€${order.total_amount || 'TBD'}</td>
+                                    <td style="padding: 15px 10px; text-align: right;">€${(() => {
+                                        const value = Number(order.total ?? order.total_amount);
+                                        return Number.isFinite(value) ? value.toFixed(2) : 'TBD';
+                                    })()}</td>
                                 </tr>
                             </tbody>
                         </table>

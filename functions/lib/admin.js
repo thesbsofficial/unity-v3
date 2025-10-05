@@ -4,6 +4,7 @@
  */
 
 import { generateTotpSecret, generateRecoveryCodes, verifyTotp, hashToken } from './security.js';
+import { extractSessionToken } from './sessions.js';
 
 // ==================== Admin Role Checking ====================
 
@@ -13,37 +14,95 @@ import { generateTotpSecret, generateRecoveryCodes, verifyTotp, hashToken } from
  * @returns {boolean}
  */
 export function isAdminSession(session) {
-    return session?.role === 'admin' && session?.is_allowlisted === 1;
+    // In some schemas, LEFT JOIN admin_allowlist returns the user_id as is_allowlisted
+    // Treat any non-null value as allowlisted; accept literal 1 as well
+    const hasRole = session?.role === 'admin';
+    const isAllowlisted = session?.is_allowlisted === 1 || !!session?.is_allowlisted;
+    console.log('🔒 isAdminSession check:', { 
+        role: session?.role, 
+        hasRole, 
+        is_allowlisted: session?.is_allowlisted,
+        isAllowlisted,
+        result: hasRole && isAllowlisted
+    });
+    return hasRole && isAllowlisted;
 }
 
 /**
- * Verify admin authentication from request headers
+ * Verify admin authentication from request headers (supports both Bearer tokens and session cookies)
  * @param {Request} request - HTTP request object
  * @param {Object} env - Cloudflare environment with DB
  * @returns {Promise<Object|null>} Session object if valid, null if invalid
  */
 export async function verifyAdminAuth(request, env) {
+    let token = null;
+
+    // Try Bearer token first (for API calls)
     const authHeader = request.headers.get('Authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return null;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+        token = authHeader.substring(7);
+        console.log('🔐 verifyAdminAuth: Using Bearer token');
+    } else {
+        // Fall back to session cookie (for browser requests)
+        token = extractSessionToken(request);
+        console.log('🔐 verifyAdminAuth: Using cookie token');
     }
 
-    const token = authHeader.substring(7);
+    if (!token) {
+        console.log('❌ verifyAdminAuth: No token found');
+        return null;
+    }
+    console.log('✅ verifyAdminAuth: Token found, length:', token?.length);
 
-    // Hash token for database lookup
-    const tokenHash = await hashToken(token);
-
-    // Verify admin session using unified sessions table
-    const session = await env.DB.prepare(`
-        SELECT s.user_id, s.csrf_secret, s.expires_at,
-               u.email, u.role, u.is_allowlisted, u.first_name, u.last_name
+    // Build base select used by both schema variants
+    const baseSelect = `
+        SELECT 
+            s.user_id, s.csrf_secret, s.expires_at, s.invalidated_at,
+            u.email, u.role, u.first_name, u.last_name, u.social_handle,
+            al.user_id AS is_allowlisted
         FROM sessions s
         JOIN users u ON s.user_id = u.id
-        WHERE s.token_hash = ? AND s.expires_at > datetime('now')
-        AND u.role = 'admin' AND u.is_allowlisted = 1
-    `).bind(tokenHash).first();
+        LEFT JOIN admin_allowlist al ON al.user_id = u.id
+        WHERE s.expires_at > datetime('now')
+          AND (s.invalidated_at IS NULL OR s.invalidated_at IS NULL)
+          AND u.role = 'admin'
+    `;
 
-    return session;
+    // Try hashed token lookup first (newer schema with token_hash)
+    try {
+        const tokenHash = await hashToken(token);
+        const byHash = await env.DB.prepare(`${baseSelect} AND s.token_hash = ?`).bind(tokenHash).first();
+        console.log('🔍 verifyAdminAuth: Hash lookup result:', byHash ? 'found' : 'not found');
+        if (byHash) {
+            console.log('📊 verifyAdminAuth: Hash session data:', { role: byHash.role, is_allowlisted: byHash.is_allowlisted });
+            if (isAdminSession(byHash)) {
+                console.log('✅ verifyAdminAuth: Hash session is admin');
+                return byHash;
+            }
+            console.log('❌ verifyAdminAuth: Hash session failed isAdminSession check');
+        }
+    } catch (e1) {
+        console.log('⚠️ verifyAdminAuth: Hash lookup error (expected for production):', e1.message);
+    }
+
+    // Fallback: plaintext token column (legacy/production schema)
+    try {
+        const byPlain = await env.DB.prepare(`${baseSelect} AND s.token = ?`).bind(token).first();
+        console.log('🔍 verifyAdminAuth: Plain lookup result:', byPlain ? 'found' : 'not found');
+        if (byPlain) {
+            console.log('📊 verifyAdminAuth: Plain session data:', { role: byPlain.role, is_allowlisted: byPlain.is_allowlisted, user_id: byPlain.user_id });
+            if (isAdminSession(byPlain)) {
+                console.log('✅ verifyAdminAuth: Plain session is admin');
+                return byPlain;
+            }
+            console.log('❌ verifyAdminAuth: Plain session failed isAdminSession check');
+        }
+    } catch (e2) {
+        console.log('❌ verifyAdminAuth: Plain lookup error:', e2.message);
+    }
+
+    console.log('❌ verifyAdminAuth: No valid session found, returning null');
+    return null;
 }
 
 /**
@@ -95,17 +154,55 @@ export async function promoteToAdmin(env, userId) {
 export async function logAdminAction(env, session, action, resource = null, metadata = null, ipAddress = null) {
     if (!session?.user_id) return;
 
-    await env.DB.prepare(`
-        INSERT INTO admin_audit_logs (
-            user_id, action, resource, metadata_json, ip_address
-        ) VALUES (?, ?, ?, ?, ?)
-    `).bind(
-        session.user_id,
-        action,
-        resource,
-        metadata ? JSON.stringify(metadata) : null,
-        ipAddress
-    ).run();
+    const metaJson = metadata ? JSON.stringify(metadata) : null;
+
+    // Prefer minimal production schema (user_id, action, resource, metadata_json, ip_address)
+    try {
+        await env.DB.prepare(`
+            INSERT INTO admin_audit_logs (
+                user_id,
+                action,
+                resource,
+                metadata_json,
+                ip_address
+            ) VALUES (?, ?, ?, ?, ?)
+        `).bind(
+            session.user_id,
+            action,
+            resource,
+            metaJson,
+            ipAddress
+        ).run();
+        return;
+    } catch (e1) {
+        // Fallback to extended schema if present in some environments
+        try {
+            await env.DB.prepare(`
+                INSERT INTO admin_audit_logs (
+                    admin_id,
+                    user_id,
+                    action,
+                    resource,
+                    metadata,
+                    metadata_json,
+                    ip_address,
+                    user_agent
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            `).bind(
+                session.user_id,
+                session.user_id,
+                action,
+                resource,
+                metaJson,
+                metaJson,
+                ipAddress,
+                session.user_agent || null
+            ).run();
+        } catch (e2) {
+            console.error('Audit log insert failed (both schemas):', e1, e2);
+            // Do not throw – auditing must not break primary flows
+        }
+    }
 }
 
 // ==================== Admin Menu HTML ====================

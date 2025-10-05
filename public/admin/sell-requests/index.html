@@ -1,5 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOC                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               lang="en">
 
 <head>
     <meta charset="UTF-8">
@@ -263,6 +262,26 @@
             color: #8b5cf6;
         }
 
+        .status-offer_sent {
+            background: rgba(168, 85, 247, 0.2);
+            color: #a855f7;
+        }
+
+        .status-accepted {
+            background: rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+        }
+
+        .status-refused {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        .status-counter_offer {
+            background: rgba(249, 115, 22, 0.2);
+            color: #f97316;
+        }
+
         .action-buttons {
             display: flex;
             gap: 0.5rem;
@@ -281,6 +300,16 @@
         .btn-icon:hover {
             background: var(--bg-hover);
             border-color: var(--gold);
+        }
+
+        .btn-icon.btn-danger {
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-icon.btn-danger:hover {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: var(--red);
+            color: var(--red);
         }
 
         /* Modal */
@@ -338,6 +367,15 @@
             color: var(--text-primary);
         }
 
+        .spinning {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
         .detail-row {
             display: grid;
             grid-template-columns: 150px 1fr;
@@ -370,6 +408,137 @@
         .item-card h4 {
             color: var(--gold);
             margin-bottom: 0.5rem;
+        }
+
+        /* Enhanced Item Cards Grid */
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .item-card-enhanced {
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .item-card-enhanced:hover {
+            border-color: var(--gold);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 215, 0, 0.1);
+        }
+
+        .item-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .item-number {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--gold);
+        }
+
+        .item-category {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .item-image {
+            width: 100%;
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.05), rgba(255, 215, 0, 0.02));
+            overflow: hidden;
+        }
+
+        .item-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .item-image.no-image {
+            flex-direction: column;
+            gap: 0.5rem;
+            color: var(--text-secondary);
+        }
+
+        .item-image.no-image i {
+            width: 48px;
+            height: 48px;
+            opacity: 0.5;
+        }
+
+        .item-image.no-image span {
+            font-size: 0.875rem;
+            opacity: 0.7;
+        }
+
+        .item-details {
+            padding: 1rem;
+        }
+
+        .item-detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .item-detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .item-detail-row .label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .item-detail-row .value {
+            font-size: 0.9375rem;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .item-detail-row .value.price {
+            color: var(--gold);
+            font-size: 1.125rem;
+            font-weight: 700;
+        }
+
+        .item-description {
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .item-description .label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .item-description p {
+            font-size: 0.875rem;
+            color: var(--text-primary);
+            line-height: 1.5;
+            margin: 0;
         }
 
         .form-group {
@@ -517,8 +686,16 @@
                 <div class="value" id="stat-pending">0</div>
             </div>
             <div class="stat-card">
-                <h3>Approved</h3>
-                <div class="value" id="stat-approved">0</div>
+                <h3>Offers Sent</h3>
+                <div class="value" id="stat-offers">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Counter Offers</h3>
+                <div class="value" id="stat-counters">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Accepted</h3>
+                <div class="value" id="stat-accepted">0</div>
             </div>
             <div class="stat-card">
                 <h3>Total Items</h3>
@@ -535,6 +712,10 @@
                         <option value="">All Statuses</option>
                         <option value="pending">Pending</option>
                         <option value="reviewing">Reviewing</option>
+                        <option value="offer_sent">Offer Sent</option>
+                        <option value="accepted">Accepted</option>
+                        <option value="refused">Refused</option>
+                        <option value="counter_offer">Counter Offer</option>
                         <option value="approved">Approved</option>
                         <option value="rejected">Rejected</option>
                         <option value="completed">Completed</option>
@@ -561,10 +742,9 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>Batch ID</th>
-                            <th>Date</th>
-                            <th>Items</th>
-                            <th>Contact</th>
+                            <th>#</th>
+                            <th>Full Name</th>
+                            <th>Date & Time</th>
                             <th>Status</th>
                             <th>Value</th>
                             <th>Actions</th>
@@ -572,7 +752,7 @@
                     </thead>
                     <tbody id="submissions-table">
                         <tr>
-                            <td colspan="7" class="empty-state">
+                            <td colspan="5" class="empty-state">
                                 <i data-lucide="inbox"></i>
                                 <p>Loading submissions...</p>
                             </td>
@@ -594,6 +774,82 @@
             </div>
             <div id="modal-body">
                 <!-- Details will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Send Offer Modal -->
+    <div class="modal" id="offer-modal" style="display: none;">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2>Send Offer to Customer</h2>
+                <button class="modal-close" onclick="closeOfferModal()">
+                    <i data-lucide="x" style="width: 24px; height: 24px;"></i>
+                </button>
+            </div>
+            <div id="offer-modal-body" style="padding: 2rem;">
+                <form id="offerForm" onsubmit="submitOffer(event); return false;">
+                    <input type="hidden" id="offer_submission_id" name="submission_id">
+                    
+                    <div id="offer-submission-summary" style="background: rgba(255, 215, 0, 0.1); border: 1px solid rgba(255, 215, 0, 0.3); border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem;">
+                        <!-- Will be populated with submission details -->
+                    </div>
+
+                    <div style="margin-bottom: 1.5rem;">
+                        <label for="offered_price" style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--gold);">
+                            Your Offer Price (€) <span style="color: var(--red);">*</span>
+                        </label>
+                        <input 
+                            type="number" 
+                            id="offered_price" 
+                            name="offered_price" 
+                            required 
+                            min="1" 
+                            step="0.01"
+                            style="width: 100%; padding: 0.75rem; background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; color: var(--text-primary); font-size: 1.125rem;"
+                            placeholder="Enter offer amount"
+                        >
+                    </div>
+
+                    <div style="margin-bottom: 1.5rem;">
+                        <label for="offer_message" style="display: block; font-weight: 600; margin-bottom: 0.5rem;">
+                            Offer Message (Optional)
+                        </label>
+                        <textarea 
+                            id="offer_message" 
+                            name="offer_message" 
+                            rows="4"
+                            style="width: 100%; padding: 0.75rem; background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; color: var(--text-primary); resize: vertical; font-family: inherit;"
+                            placeholder="Add a personal message to the customer..."
+                        ></textarea>
+                    </div>
+
+                    <div style="margin-bottom: 2rem;">
+                        <label for="offer_expires_days" style="display: block; font-weight: 600; margin-bottom: 0.5rem;">
+                            Offer Expires In
+                        </label>
+                        <select 
+                            id="offer_expires_days" 
+                            name="offer_expires_days"
+                            style="width: 100%; padding: 0.75rem; background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; color: var(--text-primary);"
+                        >
+                            <option value="3">3 days</option>
+                            <option value="7" selected>7 days (recommended)</option>
+                            <option value="14">14 days</option>
+                            <option value="30">30 days</option>
+                        </select>
+                    </div>
+
+                    <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                        <button type="button" class="btn btn-secondary" onclick="closeOfferModal()">
+                            Cancel
+                        </button>
+                        <button type="submit" class="btn btn-gold" id="submitOfferBtn">
+                            <i data-lucide="send" class="icon"></i>
+                            Send Offer
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -627,33 +883,77 @@
             return submissionsCache[id] || (currentSubmission && currentSubmission.id === id ? currentSubmission : null);
         }
 
-        // Check auth
-        const token = localStorage.getItem('admin_token');
-        if (!token) {
-            window.location.href = '/admin/dashboard.html';
+        // Check session status on load
+        async function checkSessionStatus() {
+            console.log('🔍 Checking session status...');
+            try {
+                const response = await fetch('/api/users/me', { credentials: 'include' });
+                console.log('📡 /api/users/me status:', response.status);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('✅ Raw API response:', data);
+                    console.log('✅ User session data:', data.user);
+                    console.log('   - Email:', data.user?.email);
+                    console.log('   - Role:', data.user?.role);
+                    console.log('   - Is Allowlisted:', data.user?.is_allowlisted);
+                    console.log('   - User ID:', data.user?.id);
+                    console.log('   - Is Admin:', data.is_admin);
+                    return data;
+                } else {
+                    const errorText = await response.text();
+                    console.error('❌ Session check failed:', response.status, errorText);
+                    return null;
+                }
+            } catch (error) {
+                console.error('❌ Session check error:', error);
+                return null;
+            }
         }
 
-        // Load submissions on page load
-        loadSubmissions();
+        // NO AUTH CHECK - Direct load on page ready
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('📦 Sell Requests page loaded');
+            
+            // Check and log session first
+            const session = await checkSessionStatus();
+            
+            if (!session) {
+                console.warn('⚠️ No valid session found, but attempting API call anyway...');
+            } else {
+                console.log('✅ Valid session found, proceeding with data fetch...');
+            }
+            
+            loadSubmissions();
+        });
 
         async function loadSubmissions() {
             const status = document.getElementById('filter-status').value;
             const search = document.getElementById('filter-search').value;
 
-            let url = '/api/admin/sell-requests?';
+            // Use absolute URL with current origin
+            const baseUrl = `${window.location.origin}/api/admin/sell-requests`;
+            let url = baseUrl + '?';
             if (status) url += `status=${status}&`;
             if (search) url += `search=${encodeURIComponent(search)}&`;
 
+            console.log('🔍 Fetching from:', url);
+
             try {
                 const response = await fetch(url, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
+                    credentials: 'include'
                 });
 
-                if (!response.ok) throw new Error('Failed to load submissions');
+                console.log('📡 Response status:', response.status);
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('❌ API Error:', response.status, errorText);
+                    throw new Error(`API returned ${response.status}: ${errorText}`);
+                }
 
                 const data = await response.json();
+                console.log('✅ Data loaded:', data);
 
                 // Update stats
                 updateStats(data.summary);
@@ -662,27 +962,43 @@
                 renderSubmissions(data.submissions);
 
             } catch (error) {
-                console.error('Load error:', error);
-                alert('Failed to load submissions');
+                console.error('❌ Load error:', error);
+                const tbody = document.getElementById('submissions-table');
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="empty-state">
+                            <i data-lucide="alert-circle"></i>
+                            <p>Error loading submissions: ${error.message}</p>
+                            <p style="color: var(--text-secondary); font-size: 0.875rem;">Check console for details</p>
+                        </td>
+                    </tr>
+                `;
+                lucide.createIcons();
             }
         }
 
         function updateStats(summary) {
             let total = 0;
             let pending = 0;
-            let approved = 0;
+            let offers = 0;
+            let counters = 0;
+            let accepted = 0;
             let items = 0;
 
             summary.forEach(s => {
                 total += s.count;
                 items += s.total_items || 0;
                 if (s.status === 'pending') pending = s.count;
-                if (s.status === 'approved') approved = s.count;
+                if (s.status === 'offer_sent') offers = s.count;
+                if (s.status === 'counter_offer') counters = s.count;
+                if (s.status === 'accepted') accepted = s.count;
             });
 
             document.getElementById('stat-total').textContent = total;
             document.getElementById('stat-pending').textContent = pending;
-            document.getElementById('stat-approved').textContent = approved;
+            document.getElementById('stat-offers').textContent = offers;
+            document.getElementById('stat-counters').textContent = counters;
+            document.getElementById('stat-accepted').textContent = accepted;
             document.getElementById('stat-items').textContent = items;
         }
 
@@ -692,7 +1008,7 @@
             if (submissions.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="7" class="empty-state">
+                        <td colspan="6" class="empty-state">
                             <i data-lucide="inbox"></i>
                             <p>No submissions found</p>
                         </td>
@@ -709,24 +1025,53 @@
             });
 
             const rows = submissions.map(sub => {
+                // Priority: final_price > offered_price > seller_price > estimated_value
                 const priceLabel = sub.final_price != null
                     ? 'Final'
                     : sub.offered_price != null
-                        ? 'Offer'
-                        : sub.estimated_value != null
-                            ? 'Estimate'
-                            : null;
-                const priceValue = sub.final_price ?? sub.offered_price ?? sub.estimated_value ?? null;
-                const priceDisplay = priceValue != null ? `${priceLabel ? priceLabel + ': ' : ''}${formatCurrency(priceValue) || priceValue}` : '-';
+                        ? 'Our Offer'
+                        : sub.seller_price != null
+                            ? 'Asking'
+                            : sub.estimated_value != null
+                                ? 'Estimate'
+                                : null;
+                const priceValue = sub.final_price ?? sub.offered_price ?? sub.seller_price ?? sub.estimated_value ?? null;
+                const priceDisplay = priceValue != null 
+                    ? `<div style="display: flex; flex-direction: column; align-items: flex-start;">
+                        <span style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.25rem;">${priceLabel}</span>
+                        <strong style="font-size: 1.125rem; color: var(--gold);">${formatCurrency(priceValue) || '€' + priceValue}</strong>
+                       </div>` 
+                    : '<span style="color: var(--text-secondary);">Not set</span>';
 
+                // Use contact_name if available, fallback to handle/email/phone
+                const fullName = sub.contact_name || sub.contact_handle || sub.contact_email || sub.contact_phone || 'Unknown';
+                
+                // Format date and time
+                const dateTime = new Date(sub.created_at);
+                const dateStr = dateTime.toLocaleDateString('en-IE', { 
+                    day: '2-digit', 
+                    month: 'short', 
+                    year: 'numeric' 
+                });
+                const timeStr = dateTime.toLocaleTimeString('en-IE', { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                });
+                
                 return `
                 <tr>
-                    <td><strong>${sub.batch_id}</strong></td>
-                    <td>${new Date(sub.created_at).toLocaleDateString()}</td>
-                    <td>${sub.item_count} items</td>
                     <td>
-                        ${sub.contact_handle}<br>
-                        <small style="color: var(--text-secondary)">${sub.contact_phone || ''}</small>
+                        <strong style="font-size: 1.25rem; color: var(--primary-gold);">#${sub.id}</strong>
+                    </td>
+                    <td>
+                        <strong>${fullName}</strong>
+                        <br><small style="color: var(--text-secondary); font-size: 0.875rem;">${sub.batch_id}</small>
+                    </td>
+                    <td>
+                        <div style="display: flex; flex-direction: column;">
+                            <span>${dateStr}</span>
+                            <small style="color: var(--text-secondary); font-size: 0.875rem;">${timeStr}</small>
+                        </div>
                     </td>
                     <td>
                         <span class="status-badge status-${sub.status}">
@@ -736,16 +1081,13 @@
                     <td>${priceDisplay}</td>
                     <td>
                         <div class="action-buttons">
-                            <button class="btn-icon" onclick="replyToLead(${sub.id})" title="Reply">
-                                <i data-lucide="message-circle"></i>
+                            <button class="btn-icon" onclick="replyToLead(${sub.id})" title="Reply to Offer">
+                                <i data-lucide="reply"></i>
                             </button>
-                            <button class="btn-icon" onclick="viewDetails(${sub.id})" title="View Details">
-                                <i data-lucide="eye"></i>
+                            <button class="btn-icon" onclick="viewImages(${sub.id})" title="View Items">
+                                <i data-lucide="image"></i>
                             </button>
-                            <button class="btn-icon" onclick="editSubmission(${sub.id})" title="Edit">
-                                <i data-lucide="edit"></i>
-                            </button>
-                            <button class="btn-icon" onclick="deleteSubmission(${sub.id})" title="Delete">
+                            <button class="btn-icon btn-danger" onclick="deleteSubmission(${sub.id})" title="Delete">
                                 <i data-lucide="trash-2"></i>
                             </button>
                         </div>
@@ -762,7 +1104,7 @@
         async function viewDetails(id) {
             try {
                 const response = await fetch(`/api/admin/sell-requests/${id}`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
+                    credentials: 'include'
                 });
 
                 if (!response.ok) throw new Error('Failed to load details');
@@ -792,11 +1134,18 @@
                     <div class="detail-row">
                         <div class="detail-label">Contact:</div>
                         <div class="detail-value">
-                            ${currentSubmission.contact_handle} (${currentSubmission.contact_channel})<br>
-                            Phone: ${currentSubmission.contact_phone}<br>
-                            ${currentSubmission.contact_email ? 'Email: ' + currentSubmission.contact_email : ''}
+                            ${currentSubmission.contact_name ? `<strong>${currentSubmission.contact_name}</strong><br>` : ''}
+                            ${currentSubmission.contact_handle ? `${currentSubmission.contact_handle}${currentSubmission.contact_channel ? ` (${currentSubmission.contact_channel})` : ''}<br>` : ''}
+                            ${currentSubmission.contact_phone ? `Phone: ${currentSubmission.contact_phone}<br>` : ''}
+                            ${currentSubmission.contact_email ? `Email: ${currentSubmission.contact_email}` : ''}
                         </div>
                     </div>
+                    ${currentSubmission.total_offer ? `
+                    <div class="detail-row">
+                        <div class="detail-label">Seller Offer:</div>
+                        <div class="detail-value">${formatCurrency(currentSubmission.total_offer) || currentSubmission.total_offer}</div>
+                    </div>
+                    ` : ''}
                     ${currentSubmission.seller_price ? `
                     <div class="detail-row">
                         <div class="detail-label">Seller Asking:</div>
@@ -846,16 +1195,51 @@
                     </div>
                     ` : ''}
                     <div class="detail-row">
-                        <div class="detail-label">Items:</div>
+                        <div class="detail-label">Items (${currentSubmission.items.length}):</div>
                         <div class="detail-value">
-                            <div class="items-list">
-                                ${currentSubmission.items.map(item => `
-                                    <div class="item-card">
-                                        <h4>${item.category || 'Product'}</h4>
-                                        <p><strong>Brand:</strong> ${item.brand || 'N/A'}</p>
-                                        <p><strong>Size:</strong> ${item.size || 'N/A'}</p>
-                                        <p><strong>Condition:</strong> ${item.condition || 'N/A'}</p>
-                                        ${item.description ? `<p><strong>Description:</strong> ${item.description}</p>` : ''}
+                            <div class="items-grid">
+                                ${currentSubmission.items.map((item, index) => `
+                                    <div class="item-card-enhanced">
+                                        <div class="item-card-header">
+                                            <span class="item-number">#${index + 1}</span>
+                                            <span class="item-category">${item.category || 'Product'}</span>
+                                        </div>
+                                        ${item.image_url ? `
+                                            <div class="item-image">
+                                                <img src="${item.image_url}" alt="${item.brand}" onerror="this.parentElement.innerHTML='<div class=&quot;no-image&quot;><i data-lucide=&quot;image-off&quot;></i></div>'">
+                                            </div>
+                                        ` : `
+                                            <div class="item-image no-image">
+                                                <i data-lucide="shirt"></i>
+                                                <span>No image</span>
+                                            </div>
+                                        `}
+                                        <div class="item-details">
+                                            <div class="item-detail-row">
+                                                <span class="label">Brand:</span>
+                                                <span class="value">${item.brand || 'N/A'}</span>
+                                            </div>
+                                            <div class="item-detail-row">
+                                                <span class="label">Size:</span>
+                                                <span class="value">${item.size || 'N/A'}</span>
+                                            </div>
+                                            <div class="item-detail-row">
+                                                <span class="label">Condition:</span>
+                                                <span class="value">${item.condition || 'N/A'}</span>
+                                            </div>
+                                            ${item.price ? `
+                                            <div class="item-detail-row">
+                                                <span class="label">Price:</span>
+                                                <span class="value price">${formatCurrency(item.price) || '€' + item.price}</span>
+                                            </div>
+                                            ` : ''}
+                                            ${item.description ? `
+                                            <div class="item-description">
+                                                <span class="label">Notes:</span>
+                                                <p>${item.description}</p>
+                                            </div>
+                                            ` : ''}
+                                        </div>
                                     </div>
                                 `).join('')}
                             </div>
@@ -896,6 +1280,118 @@
             }
         }
 
+        async function viewImages(id) {
+            try {
+                const response = await fetch(`/api/admin/sell-requests/${id}`, {
+                    credentials: 'include'
+                });
+
+                if (!response.ok) throw new Error('Failed to load submission');
+
+                const data = await response.json();
+                currentSubmission = data.submission;
+                submissionsCache[currentSubmission.id] = currentSubmission;
+
+                // Ensure items array exists
+                if (!currentSubmission.items || !Array.isArray(currentSubmission.items)) {
+                    console.error('No items array in submission:', currentSubmission);
+                    alert('This submission has no items data');
+                    return;
+                }
+
+                const modalBody = document.getElementById('modal-body');
+                
+                // Display items with images in a grid
+                modalBody.innerHTML = `
+                    <div class="detail-row" style="margin-bottom: 1.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                            <div>
+                                <h3 style="margin: 0; color: var(--gold);">${currentSubmission.batch_id}</h3>
+                                <p style="margin: 0.5rem 0 0 0; color: var(--text-secondary);">
+                                    ${currentSubmission.items.length} items • 
+                                    Submitted ${new Date(currentSubmission.created_at).toLocaleDateString()}
+                                </p>
+                            </div>
+                            <button class="btn btn-secondary" onclick="copyContactDetails()">
+                                <i data-lucide="copy"></i>
+                                Copy Contact
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-row">
+                        <div class="detail-label">Items:</div>
+                        <div class="detail-value" style="width: 100%;">
+                            <div class="items-grid">
+                                ${currentSubmission.items.map((item, index) => `
+                                    <div class="item-card-enhanced">
+                                        <div class="item-card-header">
+                                            <span class="item-number">#${index + 1}</span>
+                                            <span class="item-category">${item.category || 'Product'}</span>
+                                        </div>
+                                        ${item.image_url ? `
+                                            <div class="item-image">
+                                                <img src="${item.image_url}" alt="${item.brand}" onerror="this.parentElement.innerHTML='<div class=\\'no-image\\'><i data-lucide=\\'image-off\\'></i><span>Image unavailable</span></div>'">
+                                            </div>
+                                        ` : `
+                                            <div class="item-image no-image">
+                                                <i data-lucide="shirt"></i>
+                                                <span>No image provided</span>
+                                            </div>
+                                        `}
+                                        <div class="item-details">
+                                            <div class="item-detail-row">
+                                                <span class="label">Brand:</span>
+                                                <span class="value">${item.brand || 'N/A'}</span>
+                                            </div>
+                                            <div class="item-detail-row">
+                                                <span class="label">Size:</span>
+                                                <span class="value">${item.size || 'N/A'}</span>
+                                            </div>
+                                            <div class="item-detail-row">
+                                                <span class="label">Condition:</span>
+                                                <span class="value">${item.condition || 'N/A'}</span>
+                                            </div>
+                                            ${item.price ? `
+                                            <div class="item-detail-row">
+                                                <span class="label">Price:</span>
+                                                <span class="value price">${formatCurrency(item.price) || '€' + item.price}</span>
+                                            </div>
+                                            ` : ''}
+                                            ${item.description ? `
+                                            <div class="item-description">
+                                                <span class="label">Notes:</span>
+                                                <p>${item.description}</p>
+                                            </div>
+                                            ` : ''}
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="button-group" style="margin-top: 1.5rem;">
+                        <button class="btn btn-primary" onclick="replyToLead(${currentSubmission.id})">
+                            <i data-lucide="reply"></i>
+                            Reply to Customer
+                        </button>
+                        <button class="btn btn-secondary" onclick="viewDetails(${currentSubmission.id})">
+                            <i data-lucide="info"></i>
+                            Full Details
+                        </button>
+                    </div>
+                `;
+
+                document.getElementById('details-modal').classList.add('active');
+                lucide.createIcons();
+
+            } catch (error) {
+                console.error('View images error:', error);
+                alert('Failed to load submission items');
+            }
+        }
+
         function editSubmission(id) {
             // For now, redirect to details - could be enhanced with inline editing
             viewDetails(id);
@@ -907,7 +1403,7 @@
             try {
                 const response = await fetch(`/api/admin/sell-requests/${id}`, {
                     method: 'DELETE',
-                    headers: { 'Authorization': `Bearer ${token}` }
+                    credentials: 'include'
                 });
 
                 if (!response.ok) throw new Error('Delete failed');
@@ -968,53 +1464,112 @@
                 return;
             }
 
-            const channel = (submission.contact_channel || '').toLowerCase();
-            const handle = (submission.contact_handle || '').trim();
-            const sanitizedHandle = handle.startsWith('@') ? handle.substring(1) : handle;
-            const phone = (submission.contact_phone || '').replace(/[^+\d]/g, '');
-            const email = (submission.contact_email || '').trim();
+            // Open the Send Offer modal
+            openOfferModal(submission);
+        }
 
-            let link = '';
+        function openOfferModal(submission) {
+            const modal = document.getElementById('offer-modal');
+            const form = document.getElementById('offerForm');
+            const summary = document.getElementById('offer-submission-summary');
+            
+            // Reset form
+            form.reset();
+            document.getElementById('offer_submission_id').value = submission.id;
 
-            if (channel.includes('instagram') && sanitizedHandle) {
-                link = `https://www.instagram.com/${sanitizedHandle}`;
-            } else if (channel.includes('snap') && sanitizedHandle) {
-                link = `https://www.snapchat.com/add/${sanitizedHandle}`;
-            } else if (channel.includes('email') && email) {
-                link = `mailto:${email}`;
-            } else if ((channel.includes('phone') || channel.includes('sms') || channel.includes('whatsapp')) && phone) {
-                link = `tel:${phone}`;
+            // Pre-fill with existing offer if any
+            if (submission.offered_price) {
+                document.getElementById('offered_price').value = submission.offered_price;
+            } else if (submission.seller_price) {
+                // Suggest customer's asking price as starting point
+                document.getElementById('offered_price').value = submission.seller_price;
             }
 
-            if (!link) {
-                if (email) {
-                    link = `mailto:${email}`;
-                } else if (phone) {
-                    link = `tel:${phone}`;
-                } else if (sanitizedHandle) {
-                    link = `https://www.instagram.com/${sanitizedHandle}`;
+            if (submission.offer_message) {
+                document.getElementById('offer_message').value = submission.offer_message;
+            }
+
+            // Populate submission summary
+            const fullName = submission.contact_name || submission.contact_handle || submission.contact_email || 'Customer';
+            const items = submission.items || [];
+            const itemCount = items.length || submission.item_count || 0;
+            
+            summary.innerHTML = `
+                <h3 style="margin-bottom: 1rem; color: var(--primary-gold);">Submission #${submission.id}</h3>
+                <p style="margin-bottom: 0.5rem;"><strong>Customer:</strong> ${fullName}</p>
+                <p style="margin-bottom: 0.5rem;"><strong>Items:</strong> ${itemCount} item${itemCount === 1 ? '' : 's'}</p>
+                ${submission.seller_price ? `<p style="margin-bottom: 0.5rem;"><strong>Customer Asking:</strong> €${submission.seller_price}</p>` : ''}
+                ${submission.estimated_value ? `<p style="margin-bottom: 0.5rem;"><strong>Our Estimate:</strong> €${submission.estimated_value}</p>` : ''}
+                <p style="margin-bottom: 0; color: var(--text-secondary); font-size: 0.875rem; margin-top: 0.5rem;">
+                    <strong>Contact:</strong> ${submission.contact_channel || 'N/A'} ${submission.contact_handle || submission.contact_email || submission.contact_phone || ''}
+                </p>
+            `;
+
+            modal.style.display = 'flex';
+            lucide.createIcons();
+        }
+
+        function closeOfferModal() {
+            const modal = document.getElementById('offer-modal');
+            modal.style.display = 'none';
+        }
+
+        async function submitOffer(event) {
+            event.preventDefault();
+            
+            const submitBtn = document.getElementById('submitOfferBtn');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i data-lucide="loader" class="icon spinning"></i> Sending...';
+            lucide.createIcons();
+
+            const formData = new FormData(event.target);
+            const submissionId = formData.get('submission_id');
+            const offeredPrice = parseFloat(formData.get('offered_price'));
+            const offerMessage = formData.get('offer_message');
+            const expiresInDays = parseInt(formData.get('offer_expires_days'));
+
+            if (!offeredPrice || offeredPrice <= 0) {
+                alert('Please enter a valid offer price');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+                lucide.createIcons();
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/admin/sell-requests/${submissionId}/offer`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        offered_price: offeredPrice,
+                        offer_message: offerMessage || null,
+                        expires_in_days: expiresInDays
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok || !data.success) {
+                    throw new Error(data.error || 'Failed to send offer');
                 }
-            }
 
-            const contactSummary = [
-                handle ? `Handle: ${handle}` : null,
-                submission.contact_channel ? `Channel: ${submission.contact_channel}` : null,
-                phone ? `Phone: ${submission.contact_phone}` : null,
-                email ? `Email: ${email}` : null
-            ].filter(Boolean).join('\n');
+                alert('✅ Offer sent successfully!');
+                closeOfferModal();
+                
+                // Reload submissions to show updated status
+                loadSubmissions();
 
-            if (contactSummary && navigator.clipboard && window.isSecureContext) {
-                try {
-                    await navigator.clipboard.writeText(contactSummary);
-                } catch (error) {
-                    console.warn('Clipboard copy for reply failed:', error);
-                }
-            }
-
-            if (link) {
-                window.open(link, '_blank');
-            } else {
-                alert('No direct contact link available. Contact details have been copied for manual follow-up.');
+            } catch (error) {
+                console.error('Send offer error:', error);
+                alert('❌ Failed to send offer: ' + error.message);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+                lucide.createIcons();
             }
         }
 
@@ -1023,9 +1578,9 @@
                 const response = await fetch(`/api/admin/sell-requests/${id}`, {
                     method: 'PUT',
                     headers: {
-                        'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
                     },
+                    credentials: 'include',
                     body: JSON.stringify(payload)
                 });
 

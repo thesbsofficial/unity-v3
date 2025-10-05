@@ -543,7 +543,7 @@
                                     <span style="margin-left: 10px;" class="badge ${statusBadge}">${order.status}</span>
                                 </div>
                                 <div style="text-align: right;">
-                                    <div style="font-weight: 600;">€${order.total_amount.toFixed(2)}</div>
+                                    <div style="font-weight: 600;">€${(Number(order.total) || 0).toFixed(2)}</div>
                                     <div style="font-size: 12px; color: var(--text-secondary);">${new Date(order.created_at).toLocaleDateString()}</div>
                                 </div>
                             </div>

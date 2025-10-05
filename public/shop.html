@@ -1509,6 +1509,12 @@
             // Check if product is reserved
             const isReserved = product.status === 'reserved';
 
+            // BUG #10 FIX: Handle missing prices gracefully
+            const hasPrice = typeof product.price === 'number';
+            const priceDisplay = hasPrice ? `£${product.price.toFixed(2)}` : 'Price TBD';
+            const addToCartDisabled = isReserved || !hasPrice;
+            const buttonText = isReserved ? 'Reserved' : (!hasPrice ? 'Price TBD' : 'Add to Basket');
+            
             return `
                 <div class="product-card ${isReserved ? 'reserved' : ''}">
                     <div class="product-image" onclick="openImageViewer('${imageUrl}', '${product.id}')">
@@ -1520,9 +1526,10 @@
                         <div class="product-pills">
                             <span class="product-pill">${productData.category.toUpperCase()}</span>
                             <span class="product-pill">SIZE ${formattedSize.toUpperCase()}</span>
+                            ${hasPrice ? `<span class="product-pill price-pill">${priceDisplay}</span>` : ''}
                         </div>
-                        <button class="add-to-cart" ${isReserved ? 'disabled' : ''} onclick="${isReserved ? 'return false;' : `addToCart('${product.id}', '${productData.category}', '${formattedSize}', '${imageUrl}')`}">
-                            ${isReserved ? 'Reserved' : 'Add to Basket'}
+                        <button class="add-to-cart" ${addToCartDisabled ? 'disabled' : ''} onclick="${addToCartDisabled ? 'return false;' : `addToCart('${product.id}', '${productData.category}', '${formattedSize}', '${imageUrl}')`}">
+                            ${buttonText}
                         </button>
                     </div>
                 </div>

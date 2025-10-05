@@ -618,7 +618,7 @@
 
             <div class="stat-card">
                 <div class="stat-info">
-                    <h3>Ready for Pickup</h3>
+                    <h3>Confirmed / In Progress</h3>
                     <div class="stat-value" id="readyCount">0</div>
                 </div>
                 <div class="stat-icon ready">
@@ -652,9 +652,11 @@
             <div class="filter-group">
                 <button class="filter-btn active" data-status="all" onclick="filterByStatus('all')">All</button>
                 <button class="filter-btn" data-status="pending" onclick="filterByStatus('pending')">Pending</button>
-                <button class="filter-btn" data-status="ready" onclick="filterByStatus('ready')">Ready</button>
-                <button class="filter-btn" data-status="completed"
-                    onclick="filterByStatus('completed')">Completed</button>
+                <button class="filter-btn" data-status="confirmed" onclick="filterByStatus('confirmed')">Confirmed</button>
+                <button class="filter-btn" data-status="processing" onclick="filterByStatus('processing')">Processing</button>
+                <button class="filter-btn" data-status="shipped" onclick="filterByStatus('shipped')">Shipped</button>
+                <button class="filter-btn" data-status="completed" onclick="filterByStatus('completed')">Completed</button>
+                <button class="filter-btn" data-status="cancelled" onclick="filterByStatus('cancelled')">Cancelled</button>
             </div>
 
             <div class="search-box">
@@ -724,6 +726,40 @@
         let filteredOrders = [];
         let currentFilter = 'all';
 
+        const toNumber = (value) => {
+            const num = Number(value);
+            return Number.isFinite(num) ? num : 0;
+        };
+
+        function normalizeItem(item = {}) {
+            return {
+                product_id: item.product_id || null,
+                product_name: item.product_name || item.name || item.product_title || item.category || 'SBS Item',
+                product_brand: item.product_brand || item.brand || 'SBS',
+                product_category: item.product_category || item.category || item.product_title || 'General',
+                product_size: item.product_size || item.size || 'N/A',
+                price: toNumber(item.price ?? item.unit_price),
+                quantity: toNumber(item.quantity || 1) || 1,
+                image_url: item.image_url || item.image || null
+            };
+        }
+
+        function normalizeOrder(order = {}) {
+            const normalizedItems = Array.isArray(order.items)
+                ? order.items.map(normalizeItem)
+                : [];
+
+            return {
+                ...order,
+                total: toNumber(order.total ?? order.total_amount),
+                subtotal: toNumber(order.subtotal ?? order.sub_total ?? order.total_amount),
+                delivery_method: order.delivery_method || 'delivery',
+                customer_name: order.customer_name || order.name || 'SBS Customer',
+                customer_phone: order.customer_phone || order.phone || 'N/A',
+                items: normalizedItems
+            };
+        }
+
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
@@ -743,7 +779,7 @@
 
                     if (response.ok) {
                         const data = await response.json();
-                        allOrders = data.orders || [];
+                        allOrders = (data.orders || []).map(normalizeOrder);
 
                         // Also fetch reservations and merge them as "orders"
                         try {
@@ -759,7 +795,8 @@
                                         customer_phone: r.customer_phone,
                                         customer_email: r.customer_email || 'N/A',
                                         status: r.status === 'pending' ? 'pending' : (r.status === 'confirmed' ? 'completed' : 'cancelled'),
-                                        total_amount: r.price || 0,
+                                        total: r.price || 0,
+                                        subtotal: r.price || 0,
                                         created_at: r.reserved_at,
                                         items: [{
                                             product_title: r.product_title,
@@ -770,7 +807,7 @@
                                         type: 'reservation',
                                         reservation_id: r.id,
                                         expires_at: r.expires_at
-                                    }));
+                                    })).map(normalizeOrder);
 
                                     // Merge reservations with orders
                                     allOrders = [...allOrders, ...reservationOrders];
@@ -780,7 +817,7 @@
                             console.log('Could not fetch reservations:', resError);
                         }
 
-                        filteredOrders = allOrders;
+                        filteredOrders = allOrders.map(normalizeOrder);
 
                         // Update stats from combined data
                         updateStats();
@@ -796,8 +833,8 @@
                 }
 
                 // Fallback to mock data if API fails
-                allOrders = generateMockOrders(25);
-                filteredOrders = allOrders;
+                allOrders = generateMockOrders(25).map(normalizeOrder);
+                filteredOrders = allOrders.slice();
 
                 updateStats();
                 renderOrders();
@@ -814,17 +851,21 @@
 
         // Update stats
         function updateStats() {
-            const pending = allOrders.filter(o => o.status === 'pending').length;
-            const ready = allOrders.filter(o => o.status === 'ready').length;
-            const completed = allOrders.filter(o => o.status === 'completed' && isToday(o.created_at)).length;
-            const revenue = allOrders
+            const normalized = allOrders.map(normalizeOrder);
+            allOrders = normalized;
+
+            const pending = normalized.filter(o => o.status === 'pending').length;
+            const confirmed = normalized.filter(o => o.status === 'confirmed').length;
+            const processing = normalized.filter(o => o.status === 'processing').length;
+            const completed = normalized.filter(o => o.status === 'completed' && isToday(o.created_at)).length;
+            const revenue = normalized
                 .filter(o => o.status === 'completed' && isToday(o.created_at))
-                .reduce((sum, o) => sum + o.total_amount, 0);
+                .reduce((sum, o) => sum + toNumber(o.total), 0);
 
             document.getElementById('pendingCount').textContent = pending;
-            document.getElementById('readyCount').textContent = ready;
+            document.getElementById('readyCount').textContent = confirmed + processing;
             document.getElementById('completedCount').textContent = completed;
-            document.getElementById('revenueCount').textContent = `€${revenue}`;
+            document.getElementById('revenueCount').textContent = `€${revenue.toFixed(2)}`;
         }
 
         // Render orders table
@@ -841,7 +882,7 @@
             document.getElementById('emptyState').style.display = 'none';
             document.getElementById('ordersTable').style.display = 'table';
 
-            tbody.innerHTML = filteredOrders.map(order => `
+            tbody.innerHTML = filteredOrders.map(normalizeOrder).map(order => `
                 <tr onclick="viewOrder('${order.order_number}')">
                     <td><span class="order-number">${order.order_number}</span></td>
                     <td>
@@ -852,7 +893,7 @@
                     </td>
                     <td>${order.items.length} item(s)</td>
                     <td><span class="badge ${order.delivery_method}">${order.delivery_method}</span></td>
-                    <td>€${order.total_amount}</td>
+                    <td>€${order.total.toFixed(2)}</td>
                     <td><span class="badge ${order.status}">${order.status}</span></td>
                     <td>${formatDate(order.created_at)}</td>
                     <td>
@@ -873,8 +914,9 @@
 
         // View order details
         function viewOrder(orderNumber) {
-            const order = allOrders.find(o => o.order_number === orderNumber);
-            if (!order) return;
+            const rawOrder = allOrders.find(o => o.order_number === orderNumber);
+            if (!rawOrder) return;
+            const order = normalizeOrder(rawOrder);
 
             const modalBody = document.getElementById('modalBody');
             const modalFooter = document.getElementById('modalFooter');
@@ -908,7 +950,7 @@
                 </div>
                 <div class="detail-row">
                     <span class="detail-label">Total Amount</span>
-                    <span class="detail-value">€${order.total_amount}</span>
+                    <span class="detail-value">€${order.total.toFixed(2)}</span>
                 </div>
                 <div class="detail-row">
                     <span class="detail-label">Order Date</span>
@@ -919,10 +961,12 @@
                     <h3 style="margin-bottom: 1rem;">Ordered Items</h3>
                     ${order.items.map(item => `
                         <div class="item-card">
-                            <img src="${item.image_url}" alt="${item.category}" class="item-image">
+                            <img src="${item.image_url || '/images/placeholder.png'}" alt="${item.product_category}" class="item-image">
                             <div class="item-info">
-                                <h4>${item.category}</h4>
-                                <p>Size: ${item.size}</p>
+                                <h4>${item.product_name}</h4>
+                                <p>Category: ${item.product_category}</p>
+                                <p>Size: ${item.product_size}</p>
+                                <p>Qty: ${item.quantity} • €${item.price.toFixed(2)}</p>
                             </div>
                         </div>
                     `).join('')}
@@ -932,9 +976,9 @@
             // Action buttons based on status
             if (order.status === 'pending') {
                 modalFooter.innerHTML = `
-                    <button class="btn btn-success" onclick="updateOrderStatus('${order.order_number}', 'ready')">
+                    <button class="btn btn-success" onclick="updateOrderStatus('${order.order_number}', 'confirmed')">
                         <i data-lucide="check-circle"></i>
-                        Mark as Ready
+                        Mark as Confirmed
                     </button>
                     <button class="btn btn-primary" onclick="openWhatsApp('${order.customer_phone}')">
                         <i data-lucide="message-circle"></i>
@@ -942,7 +986,7 @@
                     </button>
                     <button class="btn btn-secondary" onclick="closeOrderModal()">Close</button>
                 `;
-            } else if (order.status === 'ready') {
+            } else if (order.status === 'confirmed') {
                 modalFooter.innerHTML = `
                     <button class="btn btn-success" onclick="updateOrderStatus('${order.order_number}', 'completed')">
                         <i data-lucide="package-check"></i>
@@ -1088,7 +1132,7 @@
 
         // Mock data generator
         function generateMockOrders(count) {
-            const statuses = ['pending', 'ready', 'completed'];
+            const statuses = ['pending', 'confirmed', 'processing', 'shipped', 'completed'];
             const methods = ['collection', 'delivery'];
             const names = ['John Smith', 'Emma Wilson', 'Michael Brown', 'Sarah Davis', 'James Jones'];
 
@@ -1106,11 +1150,16 @@
                     delivery_city: method === 'delivery' ? 'Dublin' : null,
                     delivery_eircode: method === 'delivery' ? 'D01 F5P2' : null,
                     status: status,
-                    total_amount: method === 'delivery' ? 5 : 0,
+                    total: method === 'delivery' ? 5 : 0,
+                    subtotal: 0,
                     created_at: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
-                    items: Array.from({ length: itemCount }, (_, j) => ({
-                        category: 'Nike Air Max 97',
-                        size: 'UK 9',
+                    items: Array.from({ length: itemCount }, () => ({
+                        product_category: 'Sneakers',
+                        product_name: 'Nike Air Max 97',
+                        product_size: 'UK 9',
+                        product_brand: 'Nike',
+                        price: 0,
+                        quantity: 1,
                         image_url: 'https://imagedelivery.net/625959b904a63f24f6bb7ec9b8c1ed7c/example/w=360,h=640'
                     }))
                 };

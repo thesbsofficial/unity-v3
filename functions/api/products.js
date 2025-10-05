@@ -177,6 +177,7 @@ export async function onRequest(context) {
                         size: meta.size || null,
                         status: status,
                         sku: meta.sku || `SBS-${image.id.slice(0, 8)}`,
+                        price: meta.price ? parseFloat(meta.price) : null, // BUG #7 FIX: Parse price from metadata
                         imageUrl: imageUrl,
                         image: imageUrl,
                         thumbnail: thumbUrl,

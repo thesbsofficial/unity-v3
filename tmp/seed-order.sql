@@ -1,0 +1,63 @@
+INSERT INTO orders (
+    order_number,
+    user_id,
+    customer_name,
+    customer_phone,
+    customer_email,
+    items_json,
+    delivery_method,
+    delivery_fee,
+    delivery_address,
+    delivery_city,
+    delivery_eircode,
+    subtotal,
+    total,
+    status,
+    payment_status,
+    admin_notes,
+    customer_notes,
+    created_at,
+    updated_at
+) VALUES (
+    'ORD-TEST01',
+    3,
+    'Casey Customer',
+    '+353871234567',
+    'customer@example.com',
+    '[{"product_name":"Air Jordan 1 Retro","product_category":"Sneakers","product_size":"UK 9","product_brand":"Nike","price":220,"quantity":1}]',
+    'delivery',
+    5,
+    '123 Sample Street',
+    'Dublin',
+    'D01XYZ',
+    220,
+    225,
+    'pending',
+    'pending',
+    NULL,
+    NULL,
+    datetime('now'),
+    datetime('now')
+);
+
+INSERT INTO order_items (
+    order_id,
+    product_id,
+    product_name,
+    product_brand,
+    product_category,
+    product_size,
+    price,
+    quantity,
+    created_at
+) VALUES (
+    (SELECT id FROM orders WHERE order_number = 'ORD-TEST01'),
+    NULL,
+    'Air Jordan 1 Retro',
+    'Nike',
+    'Sneakers',
+    'UK 9',
+    220,
+    1,
+    datetime('now')
+);

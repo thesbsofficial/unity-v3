@@ -134,9 +134,13 @@ function updateCheckoutTotal() {
     if (!deliveryRadio) return;
 
     const deliveryFee = deliveryRadio.value === 'delivery' ? 5 : 0;
+    // BUG #8 FIX: Include cart items total, not just delivery fee
+    const cartTotal = window.SBSCart ? window.SBSCart.getTotal() : 0;
+    const grandTotal = cartTotal + deliveryFee;
+    
     const totalElement = document.getElementById('checkout-total-amount');
     if (totalElement) {
-        totalElement.textContent = `€${deliveryFee}`;
+        totalElement.textContent = `£${grandTotal.toFixed(2)}`;
     }
 }
 

@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Your Offer - SBS</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-black: #000000;
+            --primary-gold: #ffd700;
+            --bg-dark: #0a0a0a;
+            --bg-card: #1a1a1a;
+            --text-primary: #ffffff;
+            --text-secondary: #cccccc;
+            --border: rgba(255, 255, 255, 0.1);
+            --success: #4caf50;
+            --warning: #ff9800;
+            --danger: #f44336;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .logo {
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: var(--primary-gold);
+            text-decoration: none;
+            display: inline-block;
+            margin-bottom: 1rem;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .offer-header {
+            text-align: center;
+            padding: 2rem;
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 215, 0, 0.05));
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            border-radius: 12px;
+            margin-bottom: 2rem;
+        }
+
+        .offer-header h1 {
+            font-size: 2rem;
+            color: var(--primary-gold);
+            margin-bottom: 0.5rem;
+        }
+
+        .offer-price {
+            font-size: 3.5rem;
+            font-weight: 900;
+            color: var(--primary-gold);
+            margin: 1rem 0;
+        }
+
+        .offer-status {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .status-active {
+            background: rgba(76, 175, 80, 0.2);
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+
+        .status-expired {
+            background: rgba(244, 67, 54, 0.2);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+        }
+
+        .offer-message {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary-gold);
+            margin: 1.5rem 0;
+            line-height: 1.6;
+        }
+
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .item-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+        }
+
+        .item-card img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 6px;
+            margin-bottom: 0.75rem;
+        }
+
+        .item-card h4 {
+            color: var(--primary-gold);
+            margin-bottom: 0.5rem;
+        }
+
+        .item-detail {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            font-size: 1.125rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+
+        .btn-accept {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-accept:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+        }
+
+        .btn-refuse {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-refuse:hover {
+            background: #d32f2f;
+        }
+
+        .btn-counter {
+            background: var(--warning);
+            color: white;
+        }
+
+        .btn-counter:hover {
+            background: #f57c00;
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .info-label {
+            color: var(--text-secondary);
+        }
+
+        .info-value {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 4rem 2rem;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--border);
+            border-top-color: var(--primary-gold);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .error {
+            text-align: center;
+            padding: 2rem;
+            color: var(--danger);
+        }
+
+        .counter-offer-form {
+            display: none;
+            background: rgba(255, 152, 0, 0.1);
+            border: 2px solid var(--warning);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+
+        .counter-offer-form.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--primary-gold);
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 1rem;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+
+            .offer-price {
+                font-size: 2.5rem;
+            }
+
+            .action-buttons {
+                grid-template-columns: 1fr;
+            }
+
+            .items-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="/" class="logo">SBS</a>
+            <p style="color: var(--text-secondary);">Your Offer Details</p>
+        </div>
+
+        <div id="content">
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>Loading your offer...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const batchId = window.location.pathname.split('/').pop();
+        let offerData = null;
+
+        async function loadOffer() {
+            try {
+                const response = await fetch(`/api/offers/${batchId}`, {
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to load offer');
+                }
+
+                const data = await response.json();
+                
+                if (!data.success) {
+                    throw new Error(data.error || 'Failed to load offer');
+                }
+
+                offerData = data.submission;
+                renderOffer(offerData);
+
+            } catch (error) {
+                console.error('Load offer error:', error);
+                document.getElementById('content').innerHTML = `
+                    <div class="error card">
+                        <i data-lucide="alert-circle" style="width: 64px; height: 64px; margin: 0 auto 1rem; display: block;"></i>
+                        <h2>Unable to Load Offer</h2>
+                        <p style="margin-top: 1rem;">${error.message}</p>
+                        <a href="/dashboard.html" class="btn btn-counter" style="margin-top: 2rem; display: inline-flex;">
+                            <i data-lucide="arrow-left"></i>
+                            Go to Dashboard
+                        </a>
+                    </div>
+                `;
+                lucide.createIcons();
+            }
+        }
+
+        function renderOffer(offer) {
+            const isExpired = offer.offer_expires_at && new Date(offer.offer_expires_at) < new Date();
+            const hasResponded = offer.seller_response && offer.seller_response !== 'pending';
+            const canRespond = !isExpired && !hasResponded;
+
+            const statusClass = isExpired ? 'status-expired' : 'status-active';
+            const statusText = isExpired ? '⌛ Offer Expired' : hasResponded ? `✅ ${offer.seller_response}` : '✨ Active Offer';
+
+            const items = Array.isArray(offer.items) ? offer.items : [];
+            
+            const itemsHtml = items.length > 0 ? `
+                <div class="card">
+                    <h2 style="margin-bottom: 1rem;">Your Items (${items.length})</h2>
+                    <div class="items-grid">
+                        ${items.map(item => `
+                            <div class="item-card">
+                                ${item.image_url ? `<img src="${item.image_url}" alt="${item.brand} ${item.category}">` : ''}
+                                <h4>${item.brand || 'Unknown'} ${item.category || 'Item'}</h4>
+                                ${item.size ? `<div class="item-detail">Size: ${item.size}</div>` : ''}
+                                <div class="item-detail">Condition: ${item.condition || 'N/A'}</div>
+                                ${item.defects ? `<div class="item-detail" style="color: var(--warning);">Issues: ${item.defects}</div>` : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            ` : '';
+
+            document.getElementById('content').innerHTML = `
+                <div class="offer-header">
+                    <span class="offer-status ${statusClass}">${statusText}</span>
+                    <h1>Our Offer</h1>
+                    <div class="offer-price">€${offer.offered_price || '0.00'}</div>
+                    ${offer.offer_message ? `<div class="offer-message">${offer.offer_message}</div>` : ''}
+                    ${offer.offer_expires_at ? `<p style="color: var(--text-secondary); margin-top: 1rem;">Expires: ${new Date(offer.offer_expires_at).toLocaleString('en-IE')}</p>` : ''}
+                </div>
+
+                <div class="card">
+                    <h2 style="margin-bottom: 1rem;">Submission Details</h2>
+                    <div class="info-row">
+                        <span class="info-label">Batch ID</span>
+                        <span class="info-value">${offer.batch_id}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Your Asking Price</span>
+                        <span class="info-value">€${offer.seller_price || 'Not specified'}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Our Estimate</span>
+                        <span class="info-value">€${offer.estimated_value || 'Not available'}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Items Count</span>
+                        <span class="info-value">${items.length}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Submitted</span>
+                        <span class="info-value">${new Date(offer.created_at).toLocaleString('en-IE')}</span>
+                    </div>
+                </div>
+
+                ${itemsHtml}
+
+                ${hasResponded ? `
+                    <div class="card" style="background: rgba(76, 175, 80, 0.1); border-color: var(--success);">
+                        <h2 style="color: var(--success); margin-bottom: 1rem;">Your Response</h2>
+                        <div class="info-row">
+                            <span class="info-label">Status</span>
+                            <span class="info-value">${offer.seller_response}</span>
+                        </div>
+                        ${offer.seller_response_message ? `
+                            <div style="margin-top: 1rem; padding: 1rem; background: rgba(0,0,0,0.2); border-radius: 6px;">
+                                ${offer.seller_response_message}
+                            </div>
+                        ` : ''}
+                        ${offer.seller_response_at ? `
+                            <p style="color: var(--text-secondary); margin-top: 1rem;">
+                                Responded: ${new Date(offer.seller_response_at).toLocaleString('en-IE')}
+                            </p>
+                        ` : ''}
+                    </div>
+                ` : ''}
+
+                ${canRespond ? `
+                    <div class="card">
+                        <h2 style="margin-bottom: 1.5rem;">Respond to Offer</h2>
+                        <div class="action-buttons">
+                            <button class="btn btn-accept" onclick="respondToOffer('accept')">
+                                <i data-lucide="check-circle"></i>
+                                Accept Offer
+                            </button>
+                            <button class="btn btn-counter" onclick="showCounterForm()">
+                                <i data-lucide="message-circle"></i>
+                                Make Counter Offer
+                            </button>
+                            <button class="btn btn-refuse" onclick="respondToOffer('refuse')">
+                                <i data-lucide="x-circle"></i>
+                                Decline Offer
+                            </button>
+                        </div>
+
+                        <div class="counter-offer-form" id="counterForm">
+                            <h3 style="margin-bottom: 1.5rem; color: var(--warning);">Make a Counter Offer</h3>
+                            <form onsubmit="submitCounterOffer(event)">
+                                <div class="form-group">
+                                    <label for="counter_price">Your Counter Price (€) *</label>
+                                    <input type="number" id="counter_price" name="counter_price" required min="1" step="0.01" placeholder="Enter your counter offer">
+                                </div>
+                                <div class="form-group">
+                                    <label for="counter_message">Message (Optional)</label>
+                                    <textarea id="counter_message" name="counter_message" placeholder="Explain your counter offer..."></textarea>
+                                </div>
+                                <div class="form-buttons">
+                                    <button type="button" class="btn btn-refuse" onclick="hideCounterForm()">Cancel</button>
+                                    <button type="submit" class="btn btn-counter">
+                                        <i data-lucide="send"></i>
+                                        Submit Counter Offer
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                ` : ''}
+
+                <div style="text-align: center; margin-top: 2rem;">
+                    <a href="/dashboard.html" style="color: var(--text-secondary); text-decoration: none;">
+                        <i data-lucide="arrow-left" style="width: 16px; height: 16px; vertical-align: middle;"></i>
+                        Back to Dashboard
+                    </a>
+                </div>
+            `;
+
+            lucide.createIcons();
+        }
+
+        function showCounterForm() {
+            document.getElementById('counterForm').classList.add('active');
+            document.getElementById('counter_price').focus();
+        }
+
+        function hideCounterForm() {
+            document.getElementById('counterForm').classList.remove('active');
+        }
+
+        async function respondToOffer(action) {
+            if (!confirm(`Are you sure you want to ${action} this offer?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/offers/${batchId}/respond`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({ action })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok || !data.success) {
+                    throw new Error(data.error || 'Failed to respond to offer');
+                }
+
+                alert(`✅ Offer ${action}ed successfully!`);
+                loadOffer(); // Reload to show updated status
+
+            } catch (error) {
+                console.error('Response error:', error);
+                alert('❌ Failed to respond: ' + error.message);
+            }
+        }
+
+        async function submitCounterOffer(event) {
+            event.preventDefault();
+            
+            const counterPrice = parseFloat(document.getElementById('counter_price').value);
+            const counterMessage = document.getElementById('counter_message').value;
+
+            if (!counterPrice || counterPrice <= 0) {
+                alert('Please enter a valid counter offer price');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/offers/${batchId}/respond`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        action: 'counter',
+                        counter_price: counterPrice,
+                        message: counterMessage || null
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok || !data.success) {
+                    throw new Error(data.error || 'Failed to send counter offer');
+                }
+
+                alert('✅ Counter offer submitted successfully!');
+                loadOffer(); // Reload to show updated status
+
+            } catch (error) {
+                console.error('Counter offer error:', error);
+                alert('❌ Failed to submit counter offer: ' + error.message);
+            }
+        }
+
+        // Load offer on page load
+        loadOffer();
+    </script>
+</body>
+</html>

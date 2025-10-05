@@ -5,6 +5,99 @@
 
 import { generateSecureToken, hashToken } from './security.js';
 
+// Cached session column metadata (refresh every 5 minutes)
+let cachedSessionColumns = null;
+let cachedSessionColumnsFetchedAt = 0;
+
+const SESSION_SCHEMA_CACHE_TTL_MS = 5 * 60 * 1000;
+
+async function getSessionColumns(env) {
+    const now = Date.now();
+    if (cachedSessionColumns && (now - cachedSessionColumnsFetchedAt) < SESSION_SCHEMA_CACHE_TTL_MS) {
+        return cachedSessionColumns;
+    }
+
+    try {
+        const result = await env.DB.prepare(`PRAGMA table_info('sessions')`).all();
+        cachedSessionColumns = new Set((result?.results || []).map(col => col.name));
+    } catch (error) {
+        console.error('Failed to read sessions schema:', error);
+        cachedSessionColumns = new Set();
+    }
+
+    cachedSessionColumnsFetchedAt = now;
+    return cachedSessionColumns;
+}
+
+function hasColumn(columns, name) {
+    return columns?.has?.(name);
+}
+
+function buildSessionQuery(columns, predicate) {
+    const selectParts = [
+        's.id AS session_id',
+        's.user_id'
+    ];
+
+    if (hasColumn(columns, 'token')) {
+        selectParts.push('s.token AS session_token');
+    } else {
+        selectParts.push('NULL AS session_token');
+    }
+
+    if (hasColumn(columns, 'csrf_secret')) {
+        selectParts.push('s.csrf_secret');
+    } else {
+        selectParts.push('NULL AS csrf_secret');
+    }
+
+    if (hasColumn(columns, 'expires_at')) {
+        selectParts.push('s.expires_at');
+    } else {
+        selectParts.push('NULL AS expires_at');
+    }
+
+    if (hasColumn(columns, 'invalidated_at')) {
+        selectParts.push('s.invalidated_at');
+    } else {
+        selectParts.push('NULL AS invalidated_at');
+    }
+
+    if (hasColumn(columns, 'ip_address')) {
+        selectParts.push('s.ip_address');
+    } else {
+        selectParts.push('NULL AS ip_address');
+    }
+
+    if (hasColumn(columns, 'user_agent')) {
+        selectParts.push('s.user_agent');
+    } else {
+        selectParts.push('NULL AS user_agent');
+    }
+
+    if (hasColumn(columns, 'last_seen_at')) {
+        selectParts.push('s.last_seen_at');
+    } else {
+        selectParts.push('NULL AS last_seen_at');
+    }
+
+    const selectSql = `SELECT ${selectParts.join(', ')} FROM sessions s`;
+
+    const whereParts = [];
+    if (hasColumn(columns, 'expires_at')) {
+        whereParts.push(`s.expires_at > datetime('now')`);
+    }
+    if (hasColumn(columns, 'invalidated_at')) {
+        whereParts.push('(s.invalidated_at IS NULL OR s.invalidated_at = "")');
+    }
+    whereParts.push(predicate);
+
+    const whereSql = `WHERE ${whereParts.join(' AND ')}`;
+    const orderSql = hasColumn(columns, 'created_at') ? ' ORDER BY s.created_at DESC' : '';
+
+    return `${selectSql} ${whereSql}${orderSql} LIMIT 1`;
+}
+
 // Constants
 const SESSION_COOKIE_NAME = 'sbs_session';
 const SESSION_TTL_SECONDS = 30 * 24 * 60 * 60; // 30 days
@@ -20,31 +113,55 @@ const SESSION_TTL_SECONDS = 30 * 24 * 60 * 60; // 30 days
  * @returns {Promise<{token: string, csrfToken: string}>}
  */
 export async function createSession(env, userId, ipAddress = null, userAgent = null) {
-    // Generate session token and CSRF secret
-    const sessionToken = generateSecureToken(32); // 256-bit
-    const csrfSecret = generateSecureToken(32); // 256-bit
-
-    // Hash tokens before storage
-    const sessionTokenHash = await hashToken(sessionToken);
-    const csrfSecretHash = await hashToken(csrfSecret);
-
-    // Calculate expiry
+    const sessionToken = generateSecureToken(32);
+    const columns = await getSessionColumns(env);
     const expiresAt = new Date(Date.now() + SESSION_TTL_SECONDS * 1000).toISOString();
 
-    // Insert session into database
+    const useHashedToken = hasColumn(columns, 'token_hash');
+    const useCsrfSecretColumn = hasColumn(columns, 'csrf_secret');
+    const trackLastSeen = hasColumn(columns, 'last_seen_at');
+
+    const csrfSecret = useCsrfSecretColumn ? generateSecureToken(32) : sessionToken;
+    const storedToken = useHashedToken ? await hashToken(sessionToken) : sessionToken;
+    const storedCsrfSecret = useCsrfSecretColumn ? csrfSecret : null;
+
+    const insertColumns = ['user_id'];
+    const insertValues = [userId];
+
+    insertColumns.push(useHashedToken ? 'token_hash' : 'token');
+    insertValues.push(storedToken);
+
+    if (useCsrfSecretColumn) {
+        insertColumns.push('csrf_secret');
+        insertValues.push(storedCsrfSecret);
+    }
+
+    if (hasColumn(columns, 'expires_at')) {
+        insertColumns.push('expires_at');
+        insertValues.push(expiresAt);
+    }
+
+    if (hasColumn(columns, 'ip_address')) {
+        insertColumns.push('ip_address');
+        insertValues.push(ipAddress);
+    }
+
+    if (hasColumn(columns, 'user_agent')) {
+        insertColumns.push('user_agent');
+        insertValues.push(userAgent);
+    }
+
+    if (trackLastSeen) {
+        insertColumns.push('last_seen_at');
+        insertValues.push(new Date().toISOString());
+    }
+
+    const placeholders = insertColumns.map(() => '?').join(', ');
+
     await env.DB.prepare(`
-        INSERT INTO sessions (
-            user_id, token_hash, csrf_secret, expires_at, 
-            ip_address, user_agent, last_seen_at
-        ) VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
-    `).bind(
-        userId,
-        sessionTokenHash,
-        csrfSecretHash,
-        expiresAt,
-        ipAddress,
-        userAgent
-    ).run();
+        INSERT INTO sessions (${insertColumns.join(', ')})
+        VALUES (${placeholders})
+    `).bind(...insertValues).run();
 
     return {
         token: sessionToken,
@@ -61,57 +178,87 @@ export async function createSession(env, userId, ipAddress = null, userAgent = n
 export async function validateSession(env, token) {
     if (!token) return null;
 
-    const tokenHash = await hashToken(token);
+    const columns = await getSessionColumns(env);
+    let sessionRow = null;
 
-    const result = await env.DB.prepare(`
-        SELECT 
-            s.id as session_id,
-            s.user_id,
-            s.csrf_secret,
-            s.expires_at,
-            s.invalidated_at,
-            s.ip_address,
-            s.user_agent,
-            u.social_handle,
-            u.email,
-            u.phone,
-            u.instagram,
-            u.snapchat,
-            u.preferred_contact,
-            u.first_name,
-            u.last_name,
-            u.role,
-            u.totp_secret,
-            u.email_verified_at,
-            u.email_verification_required,
-            u.locked_until,
-            a.user_id as is_allowlisted
-        FROM sessions s
-        INNER JOIN users u ON s.user_id = u.id
-        LEFT JOIN admin_allowlist a ON u.id = a.user_id
-        WHERE s.token_hash = ?
-            AND s.expires_at > datetime('now')
-            AND s.invalidated_at IS NULL
-    `).bind(tokenHash).first();
-
-    if (!result) return null;
-
-    // Check if account is locked
-    if (result.locked_until) {
-        const lockedUntil = new Date(result.locked_until);
-        if (lockedUntil > new Date()) {
-            return null; // Account is locked
+    if (hasColumn(columns, 'token_hash')) {
+        try {
+            const query = buildSessionQuery(columns, 's.token_hash = ?');
+            const hashedToken = await hashToken(token);
+            sessionRow = await env.DB.prepare(query).bind(hashedToken).first();
+        } catch (error) {
+            console.error('Hashed session lookup failed:', error);
         }
     }
 
-    // Update last_seen_at
-    await env.DB.prepare(`
-        UPDATE sessions 
-        SET last_seen_at = CURRENT_TIMESTAMP 
-        WHERE id = ?
-    `).bind(result.session_id).run();
+    if (!sessionRow && hasColumn(columns, 'token')) {
+        try {
+            const query = buildSessionQuery(columns, 's.token = ?');
+            sessionRow = await env.DB.prepare(query).bind(token).first();
+        } catch (error) {
+            console.error('Plain session lookup failed:', error);
+        }
+    }
 
-    return result;
+    if (!sessionRow) return null;
+
+    const user = await env.DB.prepare(`SELECT * FROM users WHERE id = ?`).bind(sessionRow.user_id).first();
+    if (!user) return null;
+
+    let allowlisted = null;
+    try {
+        const allowRow = await env.DB.prepare(`SELECT user_id FROM admin_allowlist WHERE user_id = ?`).bind(sessionRow.user_id).first();
+        allowlisted = allowRow?.user_id ?? null;
+    } catch (error) {
+        // admin_allowlist table might not exist in some environments
+        allowlisted = null;
+    }
+
+    if (sessionRow.locked_until) {
+        const lockedUntil = new Date(sessionRow.locked_until);
+        if (!Number.isNaN(lockedUntil.getTime()) && lockedUntil > new Date()) {
+            return null;
+        }
+    }
+
+    if (hasColumn(columns, 'last_seen_at')) {
+        try {
+            await env.DB.prepare(`
+                UPDATE sessions
+                SET last_seen_at = CURRENT_TIMESTAMP
+                WHERE id = ?
+            `).bind(sessionRow.session_id).run();
+        } catch (error) {
+            console.warn('Unable to update last_seen_at:', error);
+        }
+    }
+
+    const sessionData = {
+        session_id: sessionRow.session_id,
+        user_id: sessionRow.user_id,
+        csrf_secret: sessionRow.csrf_secret || sessionRow.session_token || token,
+        expires_at: sessionRow.expires_at || null,
+        invalidated_at: sessionRow.invalidated_at || null,
+        ip_address: sessionRow.ip_address || null,
+        user_agent: sessionRow.user_agent || null,
+        last_seen_at: sessionRow.last_seen_at || null,
+        social_handle: user.social_handle || user.username || user.instagram_handle || null,
+        email: user.email || null,
+        phone: user.phone || user.contact_phone || null,
+        instagram: user.instagram || user.instagram_handle || null,
+        snapchat: user.snapchat || user.snapchat_handle || null,
+        preferred_contact: user.preferred_contact || user.preferred_contact_method || 'email',
+        first_name: user.first_name || null,
+        last_name: user.last_name || null,
+        role: user.role || (user.is_admin ? 'admin' : 'customer'),
+        totp_secret: user.totp_secret || null,
+        email_verified_at: user.email_verified_at || (user.email_verified === 1 ? user.updated_at : null) || null,
+        email_verification_required: user.email_verification_required ?? null,
+        locked_until: user.locked_until || null,
+        is_allowlisted: allowlisted
+    };
+
+    return sessionData;
 }
 
 /**
@@ -120,11 +267,20 @@ export async function validateSession(env, token) {
  * @param {number} sessionId
  */
 export async function invalidateSession(env, sessionId) {
-    await env.DB.prepare(`
-        UPDATE sessions 
-        SET invalidated_at = CURRENT_TIMESTAMP 
-        WHERE id = ?
-    `).bind(sessionId).run();
+    const columns = await getSessionColumns(env);
+
+    if (hasColumn(columns, 'invalidated_at')) {
+        await env.DB.prepare(`
+            UPDATE sessions
+            SET invalidated_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+        `).bind(sessionId).run();
+    } else {
+        await env.DB.prepare(`
+            DELETE FROM sessions
+            WHERE id = ?
+        `).bind(sessionId).run();
+    }
 }
 
 /**
@@ -133,11 +289,20 @@ export async function invalidateSession(env, sessionId) {
  * @param {number} userId
  */
 export async function invalidateSessionsForUser(env, userId) {
-    await env.DB.prepare(`
-        UPDATE sessions 
-        SET invalidated_at = CURRENT_TIMESTAMP 
-        WHERE user_id = ? AND invalidated_at IS NULL
-    `).bind(userId).run();
+    const columns = await getSessionColumns(env);
+
+    if (hasColumn(columns, 'invalidated_at')) {
+        await env.DB.prepare(`
+            UPDATE sessions
+            SET invalidated_at = CURRENT_TIMESTAMP
+            WHERE user_id = ? AND invalidated_at IS NULL
+        `).bind(userId).run();
+    } else {
+        await env.DB.prepare(`
+            DELETE FROM sessions
+            WHERE user_id = ?
+        `).bind(userId).run();
+    }
 }
 
 /**

@@ -224,6 +224,14 @@ CREATE TABLE IF NOT EXISTS sell_submissions (
     contact_name TEXT NOT NULL,
     contact_phone TEXT NOT NULL,
     contact_email TEXT,
+    contact_channel TEXT,         -- WhatsApp, Email, Instagram, etc.
+    contact_handle TEXT,           -- Social media handle
+    
+    -- Location Info
+    address TEXT,
+    city TEXT,
+    eircode TEXT,
+    notes TEXT,
     
     -- Items (JSON array)
     items_json TEXT NOT NULL,
@@ -237,8 +245,19 @@ CREATE TABLE IF NOT EXISTS sell_submissions (
     reviewed_at DATETIME,
     admin_notes TEXT,
     
-    -- Pricing
-    total_offer REAL,
+    -- Pricing Fields (Negotiation Workflow)
+    seller_price REAL,             -- Customer's asking price
+    seller_message TEXT,           -- Customer's message with submission
+    offered_price REAL,            -- Admin's offer to customer
+    offer_message TEXT,            -- Admin's message with offer
+    offer_sent_at DATETIME,        -- When offer was sent
+    offer_expires_at DATETIME,     -- Offer expiration date
+    seller_response TEXT,          -- accept/reject/counter
+    seller_response_message TEXT,  -- Customer's response message
+    seller_response_at DATETIME,   -- When customer responded
+    final_price REAL,              -- Final agreed price
+    
+    -- Payment
     payment_method TEXT CHECK(payment_method IN ('bank_transfer', 'store_credit', NULL)),
     
     -- Timestamps

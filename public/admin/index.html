@@ -270,14 +270,14 @@
                     <a href="/admin/" class="nav-link active">
                         <span>🏠</span> Overview
                     </a>
+                    <a href="/admin/orders/" class="nav-link">
+                        <span>🛒</span> Orders
+                    </a>
+                    <a href="/admin/sell-requests/" class="nav-link">
+                        <span>💰</span> Sell Requests
+                    </a>
                     <a href="/admin/inventory/" class="nav-link">
                         <span>📦</span> Inventory
-                    </a>
-                    <a href="/admin/requests/" class="nav-link">
-                        <span>📋</span> Requests
-                    </a>
-                    <a href="/admin/customers/" class="nav-link">
-                        <span>👥</span> Customers
                     </a>
                 </div>
 
@@ -286,34 +286,9 @@
                     <a href="/admin/analytics.html" class="nav-link">
                         <span>📊</span> Analytics
                     </a>
-                    <a href="/admin/data/" class="nav-link">
-                        <span>💾</span> Data
-                    </a>
-                    <a href="/admin/logs/" class="nav-link">
-                        <span>�</span> Logs
-                    </a>
-                    <a href="/admin/security/" class="nav-link">
-                        <span>🔒</span> Security
-                    </a>
-                    <a href="/admin/audit/" class="nav-link">
-                        <span>📜</span> Audit
-                    </a>
-                </div>
-
-                <div class="nav-section">
-                    <div class="nav-title">Utilities</div>
                     <a href="/debug.html" class="nav-link"
                         style="background: rgba(59, 130, 246, 0.1); border-left: 3px solid #3b82f6;">
                         <span>🔬</span> System Test
-                    </a>
-                    <a href="/admin/system-check.html" class="nav-link">
-                        <span>🔍</span> System Check
-                    </a>
-                    <a href="/admin/status.html" class="nav-link">
-                        <span>📡</span> API Status
-                    </a>
-                    <a href="/admin/diagnostic.html" class="nav-link">
-                        <span>🛠️</span> Diagnostics
                     </a>
                 </div>
             </nav>
@@ -353,17 +328,17 @@
                 <div class="quick-actions">
                     <h2 class="section-title">Quick Actions</h2>
                     <div class="actions-grid">
+                        <div class="action-btn" onclick="window.location.href='/admin/orders/'">
+                            <div class="action-icon">🛒</div>
+                            <div class="action-label">Manage Orders</div>
+                        </div>
+                        <div class="action-btn" onclick="window.location.href='/admin/sell-requests/'">
+                            <div class="action-icon">💰</div>
+                            <div class="action-label">Sell Requests</div>
+                        </div>
                         <div class="action-btn" onclick="window.location.href='/admin/inventory/'">
                             <div class="action-icon">📦</div>
                             <div class="action-label">Manage Inventory</div>
-                        </div>
-                        <div class="action-btn" onclick="window.location.href='/admin/requests/'">
-                            <div class="action-icon">📋</div>
-                            <div class="action-label">Review Requests</div>
-                        </div>
-                        <div class="action-btn" onclick="window.location.href='/admin/customers/'">
-                            <div class="action-icon">👥</div>
-                            <div class="action-label">Manage Customers</div>
                         </div>
                         <div class="action-btn" onclick="window.location.href='/debug.html'"
                             style="border: 2px solid #3b82f6;">
@@ -379,19 +354,32 @@
     <script>
         // Auth Check (Session-based, NO PASSWORD)
         async function checkAuth() {
+            console.log('🔍 Admin Index: Checking auth...');
             try {
-                const response = await fetch('/api/users/me');
+                const response = await fetch('/api/users/me', {
+                    credentials: 'include'  // CRITICAL: Send cookies!
+                });
+
+                console.log('📡 Admin Index: /api/users/me status:', response.status);
 
                 if (!response.ok) {
                     // Not authenticated - redirect to login
+                    console.warn('❌ Admin Index: Not authenticated, redirecting to login');
                     window.location.replace('/login.html?redirect=/admin/');
                     return;
                 }
 
                 const data = await response.json();
+                console.log('✅ Admin Index: User data:', data);
 
-                if (data.success && data.user?.role === 'admin') {
+                // Check if user is admin (role='admin' AND in allowlist)
+                const isAdmin = data.success && 
+                                data.user?.role === 'admin' && 
+                                (data.user?.is_allowlisted === 1 || !!data.user?.is_allowlisted);
+
+                if (isAdmin) {
                     // Admin authenticated - show interface
+                    console.log('✅ Admin Index: User is admin, showing interface');
                     document.getElementById('authCheck').style.display = 'none';
                     document.getElementById('adminInterface').style.display = 'block';
                     document.getElementById('userName').textContent = `@${data.user.social_handle || 'admin'}`;
@@ -400,10 +388,11 @@
                     loadDashboardData();
                 } else {
                     // Not admin - redirect to login
+                    console.warn('❌ Admin Index: User not admin (role:', data.user?.role, 'allowlisted:', data.user?.is_allowlisted, ')');
                     window.location.replace('/login.html?redirect=/admin/');
                 }
             } catch (error) {
-                console.error('Auth check failed:', error);
+                console.error('❌ Admin Index: Auth check failed:', error);
                 window.location.replace('/login.html?redirect=/admin/');
             }
         }
@@ -423,10 +412,10 @@
 
             try {
                 const [inventoryRes, requestsRes, customersRes, ordersRes] = await Promise.all([
-                    fetch('/api/products-smart?smart'),
-                    fetch('/api/sell-submissions?status=pending'),
-                    fetch('/api/analytics-v2?view=customers&period=month'),
-                    fetch('/api/admin/orders', { headers: authHeaders })
+                    fetch('/api/products-smart?smart', { credentials: 'include' }),
+                    fetch('/api/sell-submissions?status=pending', { credentials: 'include' }),
+                    fetch('/api/analytics-v2?view=customers&period=month', { credentials: 'include' }),
+                    fetch('/api/admin/orders', { headers: authHeaders, credentials: 'include' })
                 ]);
 
                 const inventoryData = await inventoryRes.json().catch(() => ({}));

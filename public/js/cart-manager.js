@@ -122,6 +122,26 @@ const SBSCart = {
         }));
     },
 
+    // BUG #9 FIX: Calculate cart total
+    getTotal() {
+        const items = this.getItems();
+        return items.reduce((sum, item) => {
+            const price = parseFloat(item.price) || 0;
+            return sum + price;
+        }, 0);
+    },
+
+    // BUG #9 FIX: Calculate total with delivery fee
+    getTotalWithDelivery(deliveryFee = 0) {
+        return this.getTotal() + parseFloat(deliveryFee);
+    },
+
+    // BUG #9 FIX: Format price for display
+    formatPrice(amount) {
+        const num = parseFloat(amount) || 0;
+        return `£${num.toFixed(2)}`;
+    },
+
     // Initialize cart system
     init() {
         // Update counters on page load
