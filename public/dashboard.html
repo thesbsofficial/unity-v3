@@ -1479,16 +1479,11 @@
         }
 
         async function handleSignOut(e) {
-            if (window.SBS?.auth?.signOut) {
-                await window.SBS.auth.signOut(e);
-                return;
-            }
-
             if (e) {
-                e.preventDefault();
-                e.stopPropagation();
+                e.preventDefault(); // Prevent default link behavior
+                e.stopPropagation(); // Stop cart-ui.js from interfering
             }
-
+            
             try {
                 await fetch('/api/users/logout', {
                     method: 'POST',
@@ -1497,9 +1492,12 @@
             } catch (error) {
                 console.error('Logout error:', error);
             }
-
+            
+            // Clear all storage
             sessionStorage.clear();
             localStorage.clear();
+            
+            // Force hard redirect with cache busting to prevent showing cached dashboard
             window.location.replace('/login.html?logout=true&t=' + Date.now());
         }
 
