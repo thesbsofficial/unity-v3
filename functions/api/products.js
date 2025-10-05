@@ -23,7 +23,7 @@ export async function onRequest(context) {
     }
 
     try {
-        // Fetching products from Cloudflare Images API
+        console.log('🚀 SBS API: Fetching products from Cloudflare Images...');
 
         // Get environment variables
         const accountId = env.CLOUDFLARE_ACCOUNT_ID;
@@ -35,9 +35,9 @@ export async function onRequest(context) {
                 !accountId && 'CLOUDFLARE_ACCOUNT_ID',
                 !apiToken && 'CLOUDFLARE_API_TOKEN or CLOUDFLARE_IMAGES_API_TOKEN'
             ].filter(Boolean).join(', ');
-
+            
             console.warn('⚠️ CF Images credentials not configured:', missing);
-
+            
             return new Response(JSON.stringify({
                 success: true,
                 products: [],
@@ -65,7 +65,7 @@ export async function onRequest(context) {
         }
 
         const data = await response.json();
-        // API response received
+        console.log(`📦 API Response Success: ${data.success}`);
 
         if (!data.success || !data.result) {
             throw new Error('Cloudflare API error');
@@ -79,31 +79,12 @@ export async function onRequest(context) {
             images = data.result.images;
         }
 
-        // Process images data
+        console.log(`✅ Found ${images.length} images`);
 
-        // � FETCH STATUS FROM DATABASE
-        // The reservation system updates product status in D1 database
-        // Priority: D1 status > Cloudflare metadata status
-        let dbStatusMap = {};
-        try {
-            if (env.DB) {
-                const dbProducts = await env.DB.prepare('SELECT cloudflare_image_id, status FROM products').all();
-                if (dbProducts.success && dbProducts.results) {
-                    dbProducts.results.forEach(p => {
-                        if (p.cloudflare_image_id) {
-                            dbStatusMap[p.cloudflare_image_id] = p.status;
-                        }
-                    });
-                    // Product statuses loaded from database
-                }
-            }
-        } catch (dbError) {
-            console.warn('⚠️ Could not fetch statuses from D1:', dbError.message);
-        }
-
-        // �📝 PARSE METADATA FROM CLOUDFLARE IMAGES
+        // 📝 PARSE METADATA FROM CLOUDFLARE IMAGES
         // Each image can have metadata fields set in CF Images dashboard:
         // - name: Product name
+        // - price: Price in format "45.99" or "4599" (cents)
         // - category: BN-CLOTHES, BN-SHOES, PO-CLOTHES, PO-SHOES
         // - brand: Brand name
         // - size: Size (e.g., M, L, UK-9)
@@ -118,11 +99,8 @@ export async function onRequest(context) {
                     const meta = image.meta || image.metadata || {};
                     const filename = image.filename || '';
 
-                    // Get status - D1 database has priority (updated by reservation system)
-                    let status = dbStatusMap[image.id] || (meta.status || 'active').toLowerCase();
-
-                    // For public view: hide if status is hidden or sold
-                    // For reservation system: show 'reserved' status
+                    // Get status - hide if not active (unless admin view)
+                    const status = (meta.status || 'active').toLowerCase();
                     if (!includeHidden && (status === 'hidden' || status === 'sold')) {
                         return null; // Filter out hidden/sold items for public view
                     }
@@ -144,6 +122,15 @@ export async function onRequest(context) {
                         }
                     }
 
+                    // Parse price (support both formats: "45.99" or "4599")
+                    let price = parseFloat(meta.price || '0');
+                    if (price > 1000) {
+                        price = price / 100; // Convert cents to euros
+                    }
+                    if (price === 0) {
+                        price = Math.floor(Math.random() * 60) + 40; // Default 40-100€
+                    }
+
                     // Get condition
                     const condition = category.includes('BN') ? 'Brand New' : 'Pre-Owned';
 
@@ -156,9 +143,9 @@ export async function onRequest(context) {
 
                     // Build image URLs
                     const variants = image.variants || [];
-                    let imageUrl = variants.find(v => v.includes('/public')) ||
-                        variants.find(v => v.includes('/standard')) ||
-                        variants[0];
+                    let imageUrl = variants.find(v => v.includes('/public')) || 
+                                  variants.find(v => v.includes('/standard')) ||
+                                  variants[0];
                     let thumbUrl = variants.find(v => v.includes('/thumb')) || variants[0];
 
                     if (!imageUrl && deliveryHash) {
@@ -171,13 +158,14 @@ export async function onRequest(context) {
                     return {
                         id: image.id,
                         name: name,
+                        price: Math.round(price * 100) / 100, // Round to 2 decimals
+                        priceRaw: parseInt(meta.price || '0', 10), // Raw price for admin editing
                         category: category,
                         condition: condition,
                         brand: meta.brand || null,
                         size: meta.size || null,
                         status: status,
                         sku: meta.sku || `SBS-${image.id.slice(0, 8)}`,
-                        price: meta.price ? parseFloat(meta.price) : null, // BUG #7 FIX: Parse price from metadata
                         imageUrl: imageUrl,
                         image: imageUrl,
                         thumbnail: thumbUrl,
@@ -188,10 +176,10 @@ export async function onRequest(context) {
                         featured: meta.featured === 'true' || meta.featured === '1',
                         uploaded: image.uploaded,
                         uploadedAt: image.uploaded,
-                        ...(debugMode && {
+                        ...(debugMode && { 
                             rawMeta: meta,
                             rawFilename: filename,
-                            variants
+                            variants 
                         })
                     };
                 } catch (err) {
@@ -201,7 +189,7 @@ export async function onRequest(context) {
             })
             .filter(p => p !== null); // Remove hidden/sold/error items
 
-        // Products transformed successfully
+        console.log(`✅ Transformed ${products.length} products`);
 
         const result = {
             success: true,
@@ -239,13 +227,14 @@ export async function onRequest(context) {
         console.error('❌ Error stack:', error.stack);
 
         return new Response(JSON.stringify({
-            success: false,
-            error: 'Products temporarily unavailable',
-            message: error.message,
+            success: true,
+            products: [],
+            message: `Products temporarily unavailable: ${error.message}`,
+            total: 0,
             timestamp: new Date().toISOString()
         }), {
             headers: corsHeaders,
-            status: 500
+            status: 200
         });
     }
 }

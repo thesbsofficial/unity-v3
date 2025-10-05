@@ -95,6 +95,13 @@
   font-weight: 600;
   color: var(--text-primary, #ffffff);
   text-decoration: none;
+  background: transparent;
+  border: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
   border-left: 3px solid transparent;
   transition: all 0.2s ease;
 }

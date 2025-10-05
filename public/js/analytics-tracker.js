@@ -359,23 +359,38 @@ class SBSAnalytics {
         } catch (error) {
             this.failureCount = (this.failureCount || 0) + 1;
             
-            // Log full error details on first failure and every 5th failure
-            if (this.failureCount === 1 || this.failureCount % 5 === 0) {
-                console.error(`❌ Analytics flush failed (attempt ${this.failureCount}):`, {
-                    message: error.message,
-                    stack: error.stack,
-                    endpoint: this.endpoint,
-                    queueSize: this.queue.length
-                });
+            // Check if this is a navigation-related error (page unload)
+            const isNavigationError = error.message.includes('Failed to fetch') || 
+                                     error.message.includes('NetworkError') ||
+                                     error.message.includes('AbortError');
+            
+            // Only log if it's not a navigation error, or if it's the first failure
+            if (!isNavigationError || this.failureCount === 1) {
+                if (this.failureCount === 1 || this.failureCount % 5 === 0) {
+                    if (isNavigationError) {
+                        // Silently ignore navigation errors during page unload
+                        this.log('⚠️ Analytics flush interrupted by navigation (this is normal)');
+                    } else {
+                        console.error(`❌ Analytics flush failed (attempt ${this.failureCount}):`, {
+                            message: error.message,
+                            stack: error.stack,
+                            endpoint: this.endpoint,
+                            queueSize: this.queue.length
+                        });
+                    }
+                }
             }
 
-            // Re-add to queue on failure (but limit to prevent infinite growth)
-            // Stop trying after 10 consecutive failures
-            if (this.queue.length < 50 && this.failureCount < 10) {
-                this.queue.unshift(...events);
-            } else if (this.failureCount >= 10) {
-                console.warn('🛑 Analytics: Too many failures, stopping tracking to prevent spam');
-                this.stopAutoFlush();
+            // Don't re-queue navigation errors since the page is unloading
+            if (!isNavigationError) {
+                // Re-add to queue on failure (but limit to prevent infinite growth)
+                // Stop trying after 10 consecutive failures
+                if (this.queue.length < 50 && this.failureCount < 10) {
+                    this.queue.unshift(...events);
+                } else if (this.failureCount >= 10) {
+                    console.warn('🛑 Analytics: Too many failures, stopping tracking to prevent spam');
+                    this.stopAutoFlush();
+                }
             }
         } finally {
             this.isFlushing = false;

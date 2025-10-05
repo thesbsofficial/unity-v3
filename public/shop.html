@@ -550,6 +550,50 @@
             box-shadow: none;
         }
 
+        /* Product actions - two buttons side by side */
+        .product-actions {
+            display: flex;
+            gap: 0.5rem;
+            width: 100%;
+        }
+
+        .product-actions .add-to-cart {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .make-offer-btn {
+            flex: 0 0 auto;
+            background: linear-gradient(45deg, #4CAF50, #66BB6A);
+            border: none;
+            color: white;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .make-offer-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+        }
+
+        /* Offer pills */
+        .offer-pill {
+            background: linear-gradient(45deg, #4CAF50, #66BB6A) !important;
+            color: white !important;
+        }
+
+        .highest-offer-pill {
+            background: linear-gradient(45deg, #FF6B6B, #FF8E53) !important;
+            color: white !important;
+            animation: pulse 2s infinite;
+        }
+
         /* RESERVED BADGE */
         .reserved-badge {
             position: absolute;
@@ -1257,6 +1301,83 @@
         <img id="viewer-image" src="" alt="Product Image">
     </div>
 
+    <!-- MAKE AN OFFER MODAL -->
+    <!-- OFFER MODAL - Simple & Centered -->
+    <div id="offer-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 10000; justify-content: center; align-items: center;">
+        <div style="background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%); border: 2px solid #d4af37; border-radius: 16px; max-width: 450px; width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(212,175,55,0.3);">
+            
+            <!-- Header -->
+            <div style="background: linear-gradient(135deg, #d4af37 0%, #f4d03f 100%); padding: 1.25rem; display: flex; justify-content: space-between; align-items: center; border-radius: 14px 14px 0 0;">
+                <h3 style="margin: 0; color: #000; font-size: 1.5rem; font-weight: 800; display: flex; align-items: center; gap: 0.5rem;">
+                    💰 Make an Offer
+                </h3>
+                <button onclick="closeOfferModal()" style="background: rgba(0,0,0,0.2); border: none; width: 36px; height: 36px; border-radius: 50%; color: #000; font-size: 1.5rem; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: 700; transition: all 0.2s;">
+                    ×
+                </button>
+            </div>
+            
+            <!-- Body -->
+            <div style="padding: 1.5rem;">
+                
+                <!-- Product Info -->
+                <div id="offer-product-info" style="margin-bottom: 1.5rem; padding: 1rem; background: linear-gradient(135deg, rgba(212,175,55,0.15) 0%, rgba(212,175,55,0.05) 100%); border-radius: 12px; border: 1px solid rgba(212,175,55,0.3);">
+                    <!-- Product info will be inserted here -->
+                </div>
+                
+                <!-- Highest Offer Display -->
+                <div id="highest-offer-display" style="margin-bottom: 1.5rem; padding: 1rem; background: linear-gradient(135deg, rgba(76,175,80,0.15) 0%, rgba(76,175,80,0.05) 100%); border-radius: 12px; border: 1px solid rgba(76,175,80,0.3); text-align: center;">
+                    <div style="color: #66bb6a; font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.5rem;">Highest Offer</div>
+                    <div id="highest-offer-amount" style="color: #4CAF50; font-size: 2rem; font-weight: 800;">€0</div>
+                    <div style="color: rgba(255,255,255,0.5); font-size: 0.8rem; margin-top: 0.25rem;">Beat this offer!</div>
+                </div>
+                
+                <!-- Offer Amount Input -->
+                <div style="margin-bottom: 1.25rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; color: #d4af37; font-weight: 700; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">💶 Your Offer</label>
+                    <input type="number" 
+                           id="offer-amount" 
+                           placeholder="Enter amount in €" 
+                           min="1" 
+                           step="0.01"
+                           style="width: 100%; padding: 1rem; background: rgba(255,255,255,0.05); border: 2px solid rgba(212,175,55,0.3); border-radius: 10px; color: #fff; font-size: 1.25rem; font-weight: 700; text-align: center; transition: all 0.3s;"
+                           onfocus="this.style.borderColor='#d4af37'; this.style.background='rgba(255,255,255,0.08)';"
+                           onblur="this.style.borderColor='rgba(212,175,55,0.3)'; this.style.background='rgba(255,255,255,0.05)';">
+                </div>
+                
+                <!-- Name Input -->
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; color: rgba(255,255,255,0.7); font-weight: 600; font-size: 0.85rem;">👤 Your Name</label>
+                    <input type="text" 
+                           id="offer-name" 
+                           placeholder="Your name"
+                           style="width: 100%; padding: 0.875rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; font-size: 1rem;">
+                </div>
+                
+                <!-- Contact Input -->
+                <div style="margin-bottom: 1.5rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; color: rgba(255,255,255,0.7); font-weight: 600; font-size: 0.85rem;">📞 Contact (Phone or Email)</label>
+                    <input type="text" 
+                           id="offer-contact" 
+                           placeholder="Phone or email"
+                           style="width: 100%; padding: 0.875rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; font-size: 1rem;">
+                </div>
+                
+                <!-- Submit Button -->
+                <button onclick="submitOffer()" 
+                        id="submit-offer-btn"
+                        style="width: 100%; padding: 1.125rem; background: linear-gradient(135deg, #4CAF50, #66BB6A); border: none; border-radius: 10px; color: #fff; font-weight: 800; font-size: 1.1rem; text-transform: uppercase; cursor: pointer; letter-spacing: 1px; box-shadow: 0 4px 15px rgba(76,175,80,0.4); transition: all 0.3s;"
+                        onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(76,175,80,0.6)';"
+                        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(76,175,80,0.4)';">
+                    🚀 Submit Offer
+                </button>
+                
+                <p style="text-align: center; margin-top: 1rem; font-size: 0.8rem; color: rgba(255,255,255,0.4);">
+                    ⚡ We'll review and respond within 24 hours
+                </p>
+            </div>
+        </div>
+    </div>
+
     <!-- TOAST CONTAINER -->
     <div id="toast-container"></div>
 
@@ -1344,6 +1465,25 @@
         let filteredProducts = [];
         let currentFilter = 'all';
         let currentSize = 'all';
+        let highestOffers = {}; // Store highest offers by product_id
+
+        // RELOAD HIGHEST OFFERS FROM API
+        async function reloadOffers() {
+            try {
+                console.log('🔄 Reloading highest offers...');
+                const response = await fetch('/api/offers/highest');
+                const data = await response.json();
+                
+                if (data.success && data.offers) {
+                    highestOffers = data.offers;
+                    console.log('✅ Offers reloaded:', Object.keys(highestOffers).length, 'products');
+                    return true;
+                }
+            } catch (error) {
+                console.error('❌ Failed to reload offers:', error);
+            }
+            return false;
+        }
 
         // INITIALIZE ANALYTICS
         const analytics = new SBSAnalytics();
@@ -1362,13 +1502,26 @@
         // LOAD PRODUCTS FROM API
         async function loadProducts() {
             try {
-                const response = await fetch('/api/products');
-                const data = await response.json();
+                // Load products and highest offers in parallel
+                const [productsResponse, offersResponse] = await Promise.all([
+                    fetch('/api/products'),
+                    fetch('/api/offers/highest')
+                ]);
 
-                if (data.success && data.products) {
-                    allProducts = data.products;
+                const productsData = await productsResponse.json();
+                const offersData = await offersResponse.json();
+
+                if (productsData.success && productsData.products) {
+                    allProducts = productsData.products;
                     filteredProducts = [...allProducts];
+                    
+                    // Store highest offers map
+                    if (offersData.success && offersData.offers) {
+                        highestOffers = offersData.offers;
+                    }
+
                     console.log('✅ Loaded products:', allProducts.length);
+                    console.log('💰 Loaded offers for', Object.keys(highestOffers).length, 'products');
                     console.log('📦 Sample product:', allProducts[0]);
                     renderProducts();
                 } else {
@@ -1389,14 +1542,37 @@
 
         // RENDER PRODUCTS
         function renderProducts() {
+            console.log('📦 renderProducts CALLED');
+            console.log('   Filtered Products Count:', filteredProducts.length);
+            
             const grid = document.getElementById('products-grid');
 
             if (filteredProducts.length === 0) {
                 grid.innerHTML = '<div class="cart-empty">No products found matching your filters.</div>';
+                console.log('   No products to display');
                 return;
             }
 
             grid.innerHTML = filteredProducts.map(product => createProductCard(product)).join('');
+            console.log('   Products rendered to grid');
+            
+            // Verify buttons exist after render
+            setTimeout(() => {
+                const offerButtons = document.querySelectorAll('.make-offer-btn');
+                const cartButtons = document.querySelectorAll('.add-to-cart');
+                console.log('   Offer Buttons Found:', offerButtons.length);
+                console.log('   Cart Buttons Found:', cartButtons.length);
+                
+                // Test first offer button
+                if (offerButtons.length > 0) {
+                    const firstBtn = offerButtons[0];
+                    console.log('   First Offer Button:');
+                    console.log('     - onclick:', firstBtn.onclick);
+                    console.log('     - getAttribute onclick:', firstBtn.getAttribute('onclick'));
+                }
+            }, 100);
+            
+            console.log('✅ renderProducts COMPLETE');
         }
 
         // 🎯 UNIFIED SIZE RECOGNITION SYSTEM - 2-in-1 Admin & Shop
@@ -1496,6 +1672,8 @@
 
         // CREATE PRODUCT CARD V5 - WITH FILENAME DECODER SYSTEM
         function createProductCard(product) {
+            console.log('🎴 Creating card for product:', product.id);
+            
             // 🎯 USE FILENAME DECODER SYSTEM - Single Source of Truth
             const productData = getProductData(product);
 
@@ -1508,15 +1686,44 @@
 
             // Check if product is reserved
             const isReserved = product.status === 'reserved';
+            console.log('   Is Reserved:', isReserved);
 
-            // BUG #10 FIX: Handle missing prices gracefully
-            const hasPrice = typeof product.price === 'number';
-            const priceDisplay = hasPrice ? `£${product.price.toFixed(2)}` : 'Price TBD';
-            const addToCartDisabled = isReserved || !hasPrice;
-            const buttonText = isReserved ? 'Reserved' : (!hasPrice ? 'Price TBD' : 'Add to Basket');
+            // Handle optional prices - hide if not set
+            const hasPrice = typeof product.price === 'number' && product.price > 0;
+            const priceDisplay = hasPrice ? `€${product.price.toFixed(2)}` : null;
+            console.log('   Has Price:', hasPrice, priceDisplay);
             
-            return `
-                <div class="product-card ${isReserved ? 'reserved' : ''}">
+            // Get highest offer for this product from global state
+            const offerData = highestOffers[product.id];
+            const highestOffer = offerData ? offerData.highest_offer : null;
+            const offerCount = offerData ? offerData.offer_count : 0;
+            console.log('   Offer Data:', { highestOffer, offerCount });
+            
+            // Generate button HTML
+            let buttonHTML = '';
+            if (!isReserved) {
+                const cartButtonText = hasPrice ? 'Add to Basket' : 'Reserve';
+                buttonHTML = `
+                    <button class="add-to-cart" onclick="console.log('🔴 Cart button clicked'); addToCart('${product.id}', '${productData.category}', '${formattedSize}', '${imageUrl}'); event.stopPropagation();">
+                        ${cartButtonText}
+                    </button>
+                    <button class="make-offer-btn" onclick="console.log('🟠 Offer button clicked'); openOfferModal('${product.id}', '${productData.category}', '${formattedSize}', '${imageUrl}'); event.stopPropagation();">
+                        💰 Offer
+                    </button>
+                `;
+                console.log('   Buttons Generated: Cart + Offer');
+                console.log('   Cart Button Text:', cartButtonText);
+            } else {
+                buttonHTML = `
+                    <button class="add-to-cart" disabled style="width: 100%;">
+                        Reserved
+                    </button>
+                `;
+                console.log('   Button Generated: Reserved Only');
+            }
+            
+            const cardHTML = `
+                <div class="product-card ${isReserved ? 'reserved' : ''}" data-product-id="${product.id}">
                     <div class="product-image" onclick="openImageViewer('${imageUrl}', '${product.id}')">
                         <img src="${imageUrl}" alt="${productData.category}" loading="lazy"
                              onerror="this.src='/placeholder.svg'">
@@ -1526,14 +1733,18 @@
                         <div class="product-pills">
                             <span class="product-pill">${productData.category.toUpperCase()}</span>
                             <span class="product-pill">SIZE ${formattedSize.toUpperCase()}</span>
-                            ${hasPrice ? `<span class="product-pill price-pill">${priceDisplay}</span>` : ''}
+                            ${priceDisplay ? `<span class="product-pill price-pill">${priceDisplay}</span>` : '<span class="product-pill offer-pill">📸 Check Photo</span>'}
+                            ${highestOffer ? `<span class="product-pill highest-offer-pill">🔥 ${offerCount} Offer${offerCount > 1 ? 's' : ''}: €${highestOffer.toFixed(2)}</span>` : ''}
                         </div>
-                        <button class="add-to-cart" ${addToCartDisabled ? 'disabled' : ''} onclick="${addToCartDisabled ? 'return false;' : `addToCart('${product.id}', '${productData.category}', '${formattedSize}', '${imageUrl}')`}">
-                            ${buttonText}
-                        </button>
+                        <div class="product-actions" style="display: flex; gap: 0.5rem;">
+                            ${buttonHTML}
+                        </div>
                     </div>
                 </div>
             `;
+            
+            console.log('✅ Card HTML generated for', product.id);
+            return cardHTML;
         }
 
         // FILTER FUNCTIONS
@@ -1625,7 +1836,15 @@
 
         // CART FUNCTIONS
         function addToCart(productId, category, size, imageUrl) {
+            console.log('🛒 addToCart CALLED');
+            console.log('   Product ID:', productId);
+            console.log('   Category:', category);
+            console.log('   Size:', size);
+            console.log('   Image URL:', imageUrl);
+            
             const product = allProducts.find(p => p.id === productId);
+            console.log('   Product Found:', !!product);
+            
             const item = {
                 id: productId,
                 name: product?.name || category,
@@ -1636,12 +1855,18 @@
                 price: typeof product?.price === 'number' ? product.price : undefined,
                 condition: product?.condition
             };
+            console.log('   Cart Item:', item);
 
             const success = window.SBSCart ? window.SBSCart.addItem(item) : false;
+            console.log('   Add to Cart Success:', success);
+            
             if (!success) {
+                console.log('❌ Failed to add to cart');
                 showToast('Could not add to basket. Please try again.');
                 return;
             }
+
+            console.log('✅ Added to cart successfully');
 
             if (product) {
                 analytics.trackAddToCart({
@@ -1709,6 +1934,246 @@
             viewer.style.display = 'none';
             document.body.style.overflow = '';
         }
+
+        // MAKE AN OFFER SYSTEM
+        let currentOfferProduct = null;
+
+        async function openOfferModal(productId, category, size, imageUrl) {
+            console.log('🟢 openOfferModal CALLED');
+            console.log('   Product ID:', productId);
+            console.log('   Category:', category);
+            console.log('   Size:', size);
+            console.log('   Image URL:', imageUrl);
+            
+            // Check if user is logged in by calling API (cookie is HttpOnly so can't check directly)
+            console.log('   Checking authentication status...');
+            try {
+                const authCheck = await fetch('/api/users/me', {
+                    credentials: 'include'
+                });
+                
+                if (!authCheck.ok) {
+                    console.log('❌ User not logged in - redirecting to login');
+                    showToast('⚠️ Please log in to make an offer');
+                    setTimeout(() => {
+                        window.location.href = '/login.html?redirect=' + encodeURIComponent(window.location.pathname);
+                    }, 1500);
+                    return;
+                }
+                
+                const authData = await authCheck.json();
+                console.log('✅ User authenticated:', authData.user?.social_handle || authData.user?.email);
+            } catch (error) {
+                console.error('❌ Authentication check failed:', error);
+                showToast('⚠️ Please log in to make an offer');
+                setTimeout(() => {
+                    window.location.href = '/login.html?redirect=' + encodeURIComponent(window.location.pathname);
+                }, 1500);
+                return;
+            }
+            
+            currentOfferProduct = { id: productId, category, size, imageUrl };
+            console.log('   Current Offer Product Set:', currentOfferProduct);
+            
+            // Check if modal exists
+            const modal = document.getElementById('offer-modal');
+            console.log('   Modal Element Found:', !!modal);
+            
+            if (!modal) {
+                console.error('❌ OFFER MODAL NOT FOUND IN DOM');
+                showToast('❌ Error: Offer modal not found. Please refresh the page.');
+                return;
+            }
+            
+            // Show product info with new styling
+            const productInfoEl = document.getElementById('offer-product-info');
+            console.log('   Product Info Element Found:', !!productInfoEl);
+            
+            if (productInfoEl) {
+                productInfoEl.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <img src="${imageUrl}" alt="${category}" style="width: 70px; height: 125px; object-fit: cover; border-radius: 8px; border: 2px solid rgba(212,175,55,0.3);">
+                        <div style="flex: 1;">
+                            <div style="font-weight: 800; color: #d4af37; margin-bottom: 0.5rem; font-size: 1.1rem;">${category}</div>
+                            <div style="color: rgba(255,255,255,0.7); font-size: 0.9rem; margin-bottom: 0.25rem;">📏 Size: <strong style="color: #fff;">${size}</strong></div>
+                            <div style="color: rgba(255,255,255,0.5); font-size: 0.85rem;">📸 Price shown in photo</div>
+                        </div>
+                    </div>
+                `;
+                console.log('   Product Info Updated');
+            }
+            
+            // Fetch and display highest offer
+            const highestOfferEl = document.getElementById('highest-offer-amount');
+            console.log('   Highest Offer Element Found:', !!highestOfferEl);
+            
+            if (highestOfferEl) {
+                // Check if we have offer data in highestOffers
+                const offerData = highestOffers && highestOffers[productId];
+                console.log('   Offer Data:', offerData);
+                
+                if (offerData && offerData.highest_offer > 0) {
+                    highestOfferEl.textContent = `€${offerData.highest_offer.toFixed(2)}`;
+                    console.log('   Highest Offer Set:', offerData.highest_offer);
+                } else {
+                    highestOfferEl.textContent = '€0';
+                    highestOfferEl.parentElement.querySelector('div:last-child').textContent = 'Be the first to make an offer!';
+                    console.log('   No offers yet - showing €0');
+                }
+            }
+            
+            // Clear form
+            document.getElementById('offer-amount').value = '';
+            document.getElementById('offer-name').value = '';
+            document.getElementById('offer-contact').value = '';
+            console.log('   Form Fields Cleared');
+            
+            // Show modal
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+            console.log('   Modal Displayed');
+            
+            // Track analytics
+            try {
+                analytics.track('offer_modal_opened', {
+                    product_id: productId,
+                    category: category,
+                    size: size
+                });
+                console.log('   Analytics Tracked');
+            } catch (e) {
+                console.warn('   Analytics tracking failed:', e);
+            }
+            
+            console.log('✅ openOfferModal COMPLETE');
+        }
+
+        function closeOfferModal() {
+            console.log('🟡 closeOfferModal CALLED');
+            const modal = document.getElementById('offer-modal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+            document.body.style.overflow = '';
+            currentOfferProduct = null;
+            console.log('✅ closeOfferModal COMPLETE');
+        }
+
+        async function submitOffer() {
+            console.log('🔵 submitOffer CALLED');
+            console.log('   Current Offer Product:', currentOfferProduct);
+            
+            const amount = document.getElementById('offer-amount').value;
+            const name = document.getElementById('offer-name').value;
+            const contact = document.getElementById('offer-contact').value;
+            
+            console.log('   Form Values:');
+            console.log('     Amount:', amount);
+            console.log('     Name:', name);
+            console.log('     Contact:', contact);
+            
+            // Validation
+            if (!amount || parseFloat(amount) <= 0) {
+                console.log('❌ Validation Failed: Invalid amount');
+                showToast('❌ Please enter a valid offer amount');
+                return;
+            }
+            
+            if (!name || name.trim().length < 2) {
+                console.log('❌ Validation Failed: Invalid name');
+                showToast('❌ Please enter your name');
+                return;
+            }
+            
+            if (!contact || contact.trim().length < 5) {
+                console.log('❌ Validation Failed: Invalid contact');
+                showToast('❌ Please enter your phone or email');
+                return;
+            }
+            
+            console.log('✅ Validation Passed');
+            
+            const submitBtn = document.getElementById('submit-offer-btn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Submitting...';
+            
+            const payload = {
+                product_id: currentOfferProduct.id,
+                product_category: currentOfferProduct.category,
+                product_size: currentOfferProduct.size,
+                product_image: currentOfferProduct.imageUrl,
+                offer_amount: parseFloat(amount),
+                customer_name: name.trim(),
+                customer_contact: contact.trim(),
+                timestamp: new Date().toISOString()
+            };
+            
+            console.log('   Payload:', payload);
+            
+            try {
+                console.log('   Sending POST to /api/offers/submit...');
+                const response = await fetch('/api/offers/submit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                console.log('   Response Status:', response.status);
+                const data = await response.json();
+                console.log('   Response Data:', data);
+                
+                if (data.success) {
+                    console.log('✅ Offer Submitted Successfully');
+                    
+                    // Reload offers to update highest offer immediately
+                    await reloadOffers();
+                    console.log('   Offers data refreshed');
+                    
+                    // Track analytics
+                    try {
+                        analytics.track('offer_submitted', {
+                            product_id: currentOfferProduct.id,
+                            offer_amount: parseFloat(amount),
+                            category: currentOfferProduct.category
+                        });
+                        console.log('   Analytics Tracked');
+                    } catch (e) {
+                        console.warn('   Analytics tracking failed:', e);
+                    }
+                    
+                    showToast('✅ Offer submitted! We\'ll get back to you soon.');
+                    closeOfferModal();
+                } else {
+                    // Check if authentication is required
+                    if (data.requiresLogin) {
+                        showToast('⚠️ Please log in to make an offer');
+                        closeOfferModal();
+                        setTimeout(() => {
+                            window.location.href = '/login.html?redirect=' + encodeURIComponent(window.location.pathname);
+                        }, 1500);
+                        return;
+                    }
+                    throw new Error(data.error || 'Failed to submit offer');
+                }
+            } catch (error) {
+                console.error('❌ Offer submission error:', error);
+                showToast('❌ Failed to submit offer. Please try again or contact us directly.');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit Offer';
+                console.log('✅ submitOffer COMPLETE');
+            }
+        }
+
+        // Make functions global - CRITICAL for onclick handlers
+        console.log('🔧 Setting up global functions...');
+        window.openOfferModal = openOfferModal;
+        window.closeOfferModal = closeOfferModal;
+        window.submitOffer = submitOffer;
+        console.log('   window.openOfferModal:', typeof window.openOfferModal);
+        console.log('   window.closeOfferModal:', typeof window.closeOfferModal);
+        console.log('   window.submitOffer:', typeof window.submitOffer);
+        console.log('✅ Global functions registered');
 
         // TOAST NOTIFICATIONS
         function showToast(message) {

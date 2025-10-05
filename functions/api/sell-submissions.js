@@ -282,8 +282,7 @@ export async function onRequestGet(context) {
                 seller_response_at,
                 final_price,
                 admin_notes,
-                created_at,
-                updated_at
+                created_at
             FROM sell_submissions
             ${whereClause}
             ORDER BY datetime(created_at) DESC

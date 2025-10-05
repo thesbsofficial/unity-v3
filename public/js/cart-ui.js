@@ -328,7 +328,7 @@
       if (!totals.hasPricedItems) {
         this.els.items.insertAdjacentHTML('afterbegin', `
           <div class="cart-notice" role="status">
-            <strong>Heads up:</strong> Prices will be confirmed at collection. Checkout will unlock once totals are available.
+            <strong>💰 Pay at Collection:</strong> Final prices will be confirmed when you collect your items. Continue to reserve now!
           </div>
         `);
       }
@@ -339,7 +339,8 @@
         this.els.total.classList.toggle('cart-total--pending', !totals.hasPricedItems);
       }
       if (this.els.checkout) {
-        const disabled = !totals.hasPricedItems;
+        // ALLOW CHECKOUT EVEN WITHOUT PRICES (Pay at collection model)
+        const disabled = false; // Changed from: !totals.hasPricedItems
         this.els.checkout.disabled = disabled;
         if (disabled) {
           this.els.checkout.setAttribute('aria-disabled', 'true');

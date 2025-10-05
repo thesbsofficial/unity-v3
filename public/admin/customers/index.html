@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Management - SBS Admin</title>
+    <link rel="stylesheet" href="/css/admin.css">
+    <style>
+        .customers-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .search-box {
+            margin-bottom: 2rem;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 1rem;
+            font-size: 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--card-bg);
+        }
+
+        .customers-table {
+            width: 100%;
+            background: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .customers-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .customers-table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: left;
+            padding: 1rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+        }
+
+        .customers-table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .customers-table tr:hover {
+            background: rgba(102, 126, 234, 0.05);
+            cursor: pointer;
+        }
+
+        .customer-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .customer-contact {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-orders {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .badge-offers {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        .badge-pending {
+            background: #fff9c4;
+            color: #f57f17;
+        }
+
+        .badge-completed {
+            background: #e8f5e9;
+            color: #388e3c;
+        }
+
+        .activity-date {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .view-btn {
+            padding: 0.5rem 1rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+
+        .view-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-secondary);
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-secondary);
+        }
+
+        .spending-amount {
+            font-weight: 600;
+            color: #388e3c;
+        }
+
+        @media (max-width: 768px) {
+            .customers-table {
+                overflow-x: auto;
+            }
+
+            .customers-table table {
+                min-width: 800px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-wrapper">
+        <!-- SIDEBAR -->
+        <aside class="admin-sidebar">
+            <div class="admin-logo">
+                <h2>SBS Admin</h2>
+            </div>
+            <nav class="admin-nav">
+                <a href="/admin/index.html">
+                    <span class="nav-icon">📊</span>
+                    Dashboard
+                </a>
+                <a href="/admin/inventory/index.html">
+                    <span class="nav-icon">📦</span>
+                    Inventory
+                </a>
+                <a href="/admin/customers/index.html" class="active">
+                    <span class="nav-icon">👥</span>
+                    Customers
+                </a>
+                <a href="/admin/analytics/index.html">
+                    <span class="nav-icon">📈</span>
+                    Analytics
+                </a>
+                <a href="/admin/settings.html">
+                    <span class="nav-icon">⚙️</span>
+                    Settings
+                </a>
+            </nav>
+            <div class="admin-user">
+                <div class="user-info">
+                    <div class="user-name">Admin</div>
+                    <button onclick="logout()" style="background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 0.85rem;">
+                        Logout
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="admin-main">
+            <div class="customers-container">
+                <div class="page-header">
+                    <h1 class="page-title">👥 Customer Management</h1>
+                </div>
+
+                <!-- STATS GRID -->
+                <div class="stats-grid" id="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Total Customers</div>
+                        <div class="stat-value" id="stat-total">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Total Orders</div>
+                        <div class="stat-value" id="stat-orders">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Total Offers</div>
+                        <div class="stat-value" id="stat-offers">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Pending Offers</div>
+                        <div class="stat-value" id="stat-pending">-</div>
+                    </div>
+                </div>
+
+                <!-- SEARCH BOX -->
+                <div class="search-box">
+                    <input 
+                        type="text" 
+                        id="search-input" 
+                        placeholder="🔍 Search by name, email, or phone..."
+                        oninput="filterCustomers()"
+                    >
+                </div>
+
+                <!-- CUSTOMERS TABLE -->
+                <div class="customers-table">
+                    <table id="customers-table">
+                        <thead>
+                            <tr>
+                                <th>Customer</th>
+                                <th>Orders</th>
+                                <th>Offers</th>
+                                <th>Total Spent</th>
+                                <th>Last Activity</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="customers-tbody">
+                            <tr>
+                                <td colspan="6" class="loading">
+                                    Loading customers...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        let allCustomers = [];
+        let filteredCustomers = [];
+
+        // Load customers on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadCustomers();
+        });
+
+        async function loadCustomers() {
+            try {
+                // TODO: Re-enable auth after testing
+                // const token = localStorage.getItem('admin_token');
+                // if (!token) {
+                //     window.location.href = '/admin/login.html';
+                //     return;
+                // }
+
+                const response = await fetch('/api/admin/customers');
+                const data = await response.json();
+
+                if (data.success) {
+                    allCustomers = data.customers;
+                    filteredCustomers = [...allCustomers];
+                    
+                    // Update stats
+                    document.getElementById('stat-total').textContent = data.stats.total_customers;
+                    document.getElementById('stat-orders').textContent = data.stats.total_orders;
+                    document.getElementById('stat-offers').textContent = data.stats.total_offers;
+                    document.getElementById('stat-pending').textContent = data.stats.pending_offers;
+
+                    renderCustomers();
+                } else {
+                    throw new Error(data.error || 'Failed to load customers');
+                }
+            } catch (error) {
+                console.error('Load customers error:', error);
+                document.getElementById('customers-tbody').innerHTML = `
+                    <tr>
+                        <td colspan="6" class="empty-state">
+                            <div class="empty-state-icon">⚠️</div>
+                            <div>Failed to load customers</div>
+                            <div style="margin-top: 1rem;">
+                                <button onclick="loadCustomers()" class="view-btn">Retry</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        function renderCustomers() {
+            const tbody = document.getElementById('customers-tbody');
+
+            if (filteredCustomers.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="empty-state">
+                            <div class="empty-state-icon">👤</div>
+                            <div>No customers found</div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = filteredCustomers.map(customer => `
+                <tr onclick="viewCustomer('${customer.contact}')">
+                    <td>
+                        <div class="customer-name">${customer.name}</div>
+                        <div class="customer-contact">
+                            ${customer.email ? `📧 ${customer.email}` : ''}
+                            ${customer.phone ? `📱 ${customer.phone}` : ''}
+                        </div>
+                    </td>
+                    <td>
+                        <span class="badge badge-orders">
+                            ${customer.order_count} Orders
+                        </span>
+                        ${customer.completed_orders > 0 ? `
+                            <br><span class="badge badge-completed" style="margin-top: 0.5rem;">
+                                ${customer.completed_orders} Completed
+                            </span>
+                        ` : ''}
+                    </td>
+                    <td>
+                        <span class="badge badge-offers">
+                            ${customer.offer_count} Offers
+                        </span>
+                        ${customer.pending_offers > 0 ? `
+                            <br><span class="badge badge-pending" style="margin-top: 0.5rem;">
+                                ${customer.pending_offers} Pending
+                            </span>
+                        ` : ''}
+                    </td>
+                    <td>
+                        <span class="spending-amount">€${customer.total_spent.toFixed(2)}</span>
+                        ${customer.highest_offer > 0 ? `
+                            <br><span style="font-size: 0.85rem; color: var(--text-secondary);">
+                                Highest Offer: €${customer.highest_offer.toFixed(2)}
+                            </span>
+                        ` : ''}
+                    </td>
+                    <td>
+                        <div class="activity-date">${formatDate(customer.last_activity)}</div>
+                    </td>
+                    <td>
+                        <button class="view-btn" onclick="viewCustomer('${customer.contact}'); event.stopPropagation();">
+                            View Details
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function filterCustomers() {
+            const search = document.getElementById('search-input').value.toLowerCase();
+
+            filteredCustomers = allCustomers.filter(customer => {
+                return customer.name.toLowerCase().includes(search) ||
+                       (customer.email && customer.email.toLowerCase().includes(search)) ||
+                       (customer.phone && customer.phone.toLowerCase().includes(search));
+            });
+
+            renderCustomers();
+        }
+
+        function viewCustomer(contact) {
+            window.location.href = `/admin/customers/detail.html?contact=${encodeURIComponent(contact)}`;
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return 'Never';
+            
+            const date = new Date(dateString);
+            const now = new Date();
+            const diff = now - date;
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+
+            if (days === 0) return 'Today';
+            if (days === 1) return 'Yesterday';
+            if (days < 7) return `${days} days ago`;
+            if (days < 30) return `${Math.floor(days / 7)} weeks ago`;
+            
+            return date.toLocaleDateString('en-IE', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+            });
+        }
+
+        function logout() {
+            localStorage.removeItem('admin_token');
+            window.location.href = '/admin/login.html';
+        }
+    </script>
+</body>
+</html>

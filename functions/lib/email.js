@@ -1,7 +1,8 @@
 /**
- * Email Utility Functions
- * Cloudflare Email Workers (via MailChannels)
- * Free email sending without external API keys
+ * Email Token Management Utilities
+ * 
+ * NOTE: Email sending is handled by email-service.ts with beautiful SBS templates
+ * This file only manages verification tokens in the database
  */
 
 const enc = new TextEncoder();
@@ -21,111 +22,6 @@ async function hashToken(token) {
     return Array.from(new Uint8Array(hashBuffer))
         .map(b => b.toString(16).padStart(2, '0'))
         .join('');
-}
-
-/**
- * Send verification email using Cloudflare Email Workers
- * Uses MailChannels (free for Cloudflare Pages)
- */
-export async function sendVerificationEmail(email, token, siteUrl) {
-    const verifyUrl = `${siteUrl}/verify-email.html?token=${token}`;
-
-    const emailContent = {
-        personalizations: [
-            {
-                to: [{ email: email }],
-                dkim_domain: 'thesbsofficial.com',
-                dkim_selector: 'mailchannels'
-            }
-        ],
-        from: {
-            email: 'noreply@thesbsofficial.com',
-            name: 'SBS Unity'
-        },
-        subject: '✅ Verify Your SBS Account',
-        content: [
-            {
-                type: 'text/html',
-                value: `
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-</head>
-<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background: #0a0a0a; color: #ffffff;">
-    <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
-        <!-- Header -->
-        <div style="text-align: center; margin-bottom: 40px;">
-            <h1 style="color: #FFD700; font-size: 32px; font-weight: 900; margin: 0;">SBS</h1>
-            <p style="color: #cccccc; margin: 8px 0 0 0;">Dublin's Premier Streetwear</p>
-        </div>
-        
-        <!-- Main Content -->
-        <div style="background: #1a1a1a; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 32px;">
-            <h2 style="color: #FFD700; font-size: 24px; margin: 0 0 16px 0;">Welcome to SBS Unity! 🎉</h2>
-            
-            <p style="color: #ffffff; font-size: 16px; line-height: 1.6; margin: 0 0 24px 0;">
-                Thanks for signing up! Please verify your email address to activate your account and start selling or shopping.
-            </p>
-            
-            <!-- CTA Button -->
-            <div style="text-align: center; margin: 32px 0;">
-                <a href="${verifyUrl}" 
-                   style="display: inline-block; background: #FFD700; color: #000000; padding: 16px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px;">
-                    ✅ Verify Email Address
-                </a>
-            </div>
-            
-            <p style="color: #cccccc; font-size: 14px; line-height: 1.6; margin: 24px 0 0 0;">
-                Or copy and paste this link into your browser:
-            </p>
-            <div style="background: #0a0a0a; border: 1px solid rgba(255, 215, 0, 0.2); border-radius: 8px; padding: 12px; margin: 12px 0; word-break: break-all;">
-                <code style="color: #FFD700; font-size: 14px;">${verifyUrl}</code>
-            </div>
-            
-            <p style="color: #999999; font-size: 12px; line-height: 1.6; margin: 24px 0 0 0; border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 16px;">
-                ⏰ This link expires in 24 hours.<br>
-                🔒 If you didn't create this account, you can safely ignore this email.
-            </p>
-        </div>
-        
-        <!-- Footer -->
-        <div style="text-align: center; margin-top: 32px; color: #666666; font-size: 14px;">
-            <p style="margin: 0 0 8px 0;">SBS Unity - Dublin's Premier Streetwear</p>
-            <p style="margin: 0;">📍 Dublin, Ireland</p>
-        </div>
-    </div>
-</body>
-</html>
-                `
-            }
-        ]
-    };
-
-    try {
-        const response = await fetch('https://api.mailchannels.net/tx/v1/send', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(emailContent)
-        });
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('MailChannels error:', errorText);
-            console.error('MailChannels status:', response.status);
-            throw new Error(`Email send failed: ${response.status} - ${errorText}`);
-        }
-
-        console.log('Email sent successfully via MailChannels');
-        return { success: true };
-    } catch (error) {
-        console.error('Failed to send email:', error);
-        console.error('Error details:', error.message);
-        throw error; // Re-throw so we can see the actual error
-    }
 }
 
 /**

@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Details - SBS Admin</title>
+    <link rel="stylesheet" href="/css/admin.css">
+    <style>
+        .detail-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            text-decoration: none;
+            margin-bottom: 2rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .back-button:hover {
+            background: rgba(102, 126, 234, 0.1);
+            border-color: #667eea;
+        }
+
+        .customer-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .customer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1.5rem;
+        }
+
+        .customer-name {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .customer-contact-info {
+            display: flex;
+            gap: 2rem;
+            font-size: 0.95rem;
+            opacity: 0.95;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .stat-box {
+            text-align: center;
+        }
+
+        .stat-box-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-box-label {
+            font-size: 0.85rem;
+            opacity: 0.9;
+        }
+
+        .content-tabs {
+            display: flex;
+            gap: 1rem;
+            border-bottom: 2px solid var(--border-color);
+            margin-bottom: 2rem;
+        }
+
+        .tab-button {
+            padding: 1rem 2rem;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+        }
+
+        .tab-button.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .history-section {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .history-item {
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            transition: all 0.2s;
+        }
+
+        .history-item:hover {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-color: #667eea;
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .history-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .history-meta {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .history-status {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-pending {
+            background: #fff9c4;
+            color: #f57f17;
+        }
+
+        .status-completed {
+            background: #e8f5e9;
+            color: #388e3c;
+        }
+
+        .status-accepted {
+            background: #e8f5e9;
+            color: #388e3c;
+        }
+
+        .status-rejected {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .status-countered {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .history-details {
+            margin-top: 1rem;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .detail-value {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .order-items {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .order-items-title {
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: var(--text-primary);
+        }
+
+        .order-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem;
+            background: rgba(102, 126, 234, 0.05);
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+        }
+
+        .order-item-image {
+            width: 60px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+
+        .order-item-info {
+            flex: 1;
+        }
+
+        .order-item-name {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .order-item-meta {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-secondary);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-secondary);
+        }
+
+        .offer-image {
+            width: 100px;
+            height: 133px;
+            object-fit: cover;
+            border-radius: 6px;
+            margin-top: 1rem;
+        }
+
+        .admin-notes {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(255, 152, 0, 0.1);
+            border-left: 3px solid #ff9800;
+            border-radius: 4px;
+        }
+
+        .admin-notes-title {
+            font-weight: 600;
+            color: #f57c00;
+            margin-bottom: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .customer-header {
+                flex-direction: column;
+            }
+
+            .customer-contact-info {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .stats-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .content-tabs {
+                overflow-x: auto;
+            }
+
+            .tab-button {
+                white-space: nowrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-wrapper">
+        <!-- SIDEBAR -->
+        <aside class="admin-sidebar">
+            <div class="admin-logo">
+                <h2>SBS Admin</h2>
+            </div>
+            <nav class="admin-nav">
+                <a href="/admin/index.html">
+                    <span class="nav-icon">📊</span>
+                    Dashboard
+                </a>
+                <a href="/admin/inventory/index.html">
+                    <span class="nav-icon">📦</span>
+                    Inventory
+                </a>
+                <a href="/admin/customers/index.html" class="active">
+                    <span class="nav-icon">👥</span>
+                    Customers
+                </a>
+                <a href="/admin/analytics/index.html">
+                    <span class="nav-icon">📈</span>
+                    Analytics
+                </a>
+                <a href="/admin/settings.html">
+                    <span class="nav-icon">⚙️</span>
+                    Settings
+                </a>
+            </nav>
+            <div class="admin-user">
+                <div class="user-info">
+                    <div class="user-name">Admin</div>
+                    <button onclick="logout()" style="background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 0.85rem;">
+                        Logout
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="admin-main">
+            <div class="detail-container">
+                <a href="/admin/customers/index.html" class="back-button">
+                    ← Back to Customers
+                </a>
+
+                <!-- CUSTOMER INFO CARD -->
+                <div class="customer-card" id="customer-card">
+                    <div class="loading">Loading customer details...</div>
+                </div>
+
+                <!-- TABS -->
+                <div class="content-tabs">
+                    <button class="tab-button active" onclick="switchTab('orders')">
+                        📦 Order History
+                    </button>
+                    <button class="tab-button" onclick="switchTab('offers')">
+                        💰 Offers History
+                    </button>
+                    <button class="tab-button" onclick="switchTab('timeline')">
+                        📅 Timeline
+                    </button>
+                </div>
+
+                <!-- ORDERS TAB -->
+                <div id="tab-orders" class="tab-content active">
+                    <div class="history-section" id="orders-section">
+                        <div class="loading">Loading orders...</div>
+                    </div>
+                </div>
+
+                <!-- OFFERS TAB -->
+                <div id="tab-offers" class="tab-content">
+                    <div class="history-section" id="offers-section">
+                        <div class="loading">Loading offers...</div>
+                    </div>
+                </div>
+
+                <!-- TIMELINE TAB -->
+                <div id="tab-timeline" class="tab-content">
+                    <div class="history-section" id="timeline-section">
+                        <div class="loading">Loading timeline...</div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        let customerData = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const contact = urlParams.get('contact');
+
+            if (!contact) {
+                window.location.href = '/admin/customers/index.html';
+                return;
+            }
+
+            loadCustomerDetails(contact);
+        });
+
+        async function loadCustomerDetails(contact) {
+            try {
+                // TODO: Re-enable auth after testing
+                // const token = localStorage.getItem('admin_token');
+                // if (!token) {
+                //     window.location.href = '/admin/login.html';
+                //     return;
+                // }
+
+                const response = await fetch(`/api/admin/customers/${encodeURIComponent(contact)}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    customerData = data;
+                    renderCustomerCard();
+                    renderOrders();
+                    renderOffers();
+                    renderTimeline();
+                } else {
+                    throw new Error(data.error || 'Failed to load customer');
+                }
+            } catch (error) {
+                console.error('Load customer error:', error);
+                document.getElementById('customer-card').innerHTML = `
+                    <div class="empty-state">
+                        <div>⚠️ Failed to load customer details</div>
+                        <div style="margin-top: 1rem;">
+                            <button onclick="window.location.reload()" class="view-btn" style="background: white; color: #667eea;">
+                                Retry
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function renderCustomerCard() {
+            const { customer, stats } = customerData;
+
+            document.getElementById('customer-card').innerHTML = `
+                <div class="customer-header">
+                    <div>
+                        <div class="customer-name">${customer.name}</div>
+                        <div class="customer-contact-info">
+                            ${customer.email ? `
+                                <div class="contact-item">
+                                    <span>📧</span>
+                                    <span>${customer.email}</span>
+                                </div>
+                            ` : ''}
+                            ${customer.phone ? `
+                                <div class="contact-item">
+                                    <span>📱</span>
+                                    <span>${customer.phone}</span>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stats-row">
+                    <div class="stat-box">
+                        <div class="stat-box-value">${stats.total_orders}</div>
+                        <div class="stat-box-label">Total Orders</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-box-value">${stats.completed_orders}</div>
+                        <div class="stat-box-label">Completed</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-box-value">€${stats.total_spent.toFixed(2)}</div>
+                        <div class="stat-box-label">Total Spent</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-box-value">${stats.total_offers}</div>
+                        <div class="stat-box-label">Offers Made</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-box-value">${stats.pending_offers}</div>
+                        <div class="stat-box-label">Pending Offers</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-box-value">€${stats.highest_offer.toFixed(2)}</div>
+                        <div class="stat-box-label">Highest Offer</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderOrders() {
+            const { orders } = customerData;
+            const section = document.getElementById('orders-section');
+
+            if (orders.length === 0) {
+                section.innerHTML = `
+                    <div class="empty-state">
+                        <div>📦 No orders yet</div>
+                    </div>
+                `;
+                return;
+            }
+
+            section.innerHTML = orders.map(order => `
+                <div class="history-item">
+                    <div class="history-header">
+                        <div>
+                            <div class="history-title">Order #${order.order_id}</div>
+                            <div class="history-meta">
+                                ${formatDateTime(order.created_at)}
+                            </div>
+                        </div>
+                        <div class="history-status status-${order.order_status}">
+                            ${order.order_status}
+                        </div>
+                    </div>
+
+                    <div class="history-details">
+                        <div class="detail-row">
+                            <span class="detail-label">Total Amount</span>
+                            <span class="detail-value">€${order.total_amount.toFixed(2)}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Items</span>
+                            <span class="detail-value">${order.item_count} items</span>
+                        </div>
+                        ${order.collection_notes ? `
+                            <div class="detail-row">
+                                <span class="detail-label">Notes</span>
+                                <span class="detail-value">${order.collection_notes}</span>
+                            </div>
+                        ` : ''}
+                    </div>
+
+                    ${order.items && order.items.length > 0 ? `
+                        <div class="order-items">
+                            <div class="order-items-title">Order Items:</div>
+                            ${order.items.map(item => `
+                                <div class="order-item">
+                                    ${item.image ? `
+                                        <img src="${item.image}" alt="${item.category}" class="order-item-image">
+                                    ` : ''}
+                                    <div class="order-item-info">
+                                        <div class="order-item-name">${item.category}</div>
+                                        <div class="order-item-meta">Size: ${item.size}</div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+
+        function renderOffers() {
+            const { offers } = customerData;
+            const section = document.getElementById('offers-section');
+
+            if (offers.length === 0) {
+                section.innerHTML = `
+                    <div class="empty-state">
+                        <div>💰 No offers yet</div>
+                    </div>
+                `;
+                return;
+            }
+
+            section.innerHTML = offers.map(offer => `
+                <div class="history-item">
+                    <div class="history-header">
+                        <div>
+                            <div class="history-title">
+                                ${offer.product_category} - Size ${offer.product_size}
+                            </div>
+                            <div class="history-meta">
+                                Offer ID: ${offer.offer_id}<br>
+                                ${formatDateTime(offer.created_at)}
+                            </div>
+                        </div>
+                        <div class="history-status status-${offer.status}">
+                            ${offer.status}
+                        </div>
+                    </div>
+
+                    <div class="history-details">
+                        <div class="detail-row">
+                            <span class="detail-label">Offer Amount</span>
+                            <span class="detail-value">€${offer.offer_amount.toFixed(2)}</span>
+                        </div>
+                        ${offer.counter_offer_amount ? `
+                            <div class="detail-row">
+                                <span class="detail-label">Counter Offer</span>
+                                <span class="detail-value">€${offer.counter_offer_amount.toFixed(2)}</span>
+                            </div>
+                        ` : ''}
+                        ${offer.responded_at ? `
+                            <div class="detail-row">
+                                <span class="detail-label">Responded</span>
+                                <span class="detail-value">${formatDateTime(offer.responded_at)}</span>
+                            </div>
+                        ` : ''}
+                    </div>
+
+                    ${offer.product_image ? `
+                        <img src="${offer.product_image}" alt="Product" class="offer-image">
+                    ` : ''}
+
+                    ${offer.admin_notes ? `
+                        <div class="admin-notes">
+                            <div class="admin-notes-title">Admin Notes</div>
+                            <div>${offer.admin_notes}</div>
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+
+        function renderTimeline() {
+            const { orders, offers } = customerData;
+            const section = document.getElementById('timeline-section');
+
+            // Combine orders and offers into timeline
+            const timeline = [];
+
+            orders.forEach(order => {
+                timeline.push({
+                    type: 'order',
+                    date: order.created_at,
+                    title: `Order #${order.order_id}`,
+                    status: order.order_status,
+                    amount: order.total_amount,
+                    data: order
+                });
+            });
+
+            offers.forEach(offer => {
+                timeline.push({
+                    type: 'offer',
+                    date: offer.created_at,
+                    title: `Offer on ${offer.product_category}`,
+                    status: offer.status,
+                    amount: offer.offer_amount,
+                    data: offer
+                });
+            });
+
+            // Sort by date (newest first)
+            timeline.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            if (timeline.length === 0) {
+                section.innerHTML = `
+                    <div class="empty-state">
+                        <div>📅 No activity yet</div>
+                    </div>
+                `;
+                return;
+            }
+
+            section.innerHTML = timeline.map(item => `
+                <div class="history-item">
+                    <div class="history-header">
+                        <div>
+                            <div class="history-title">
+                                ${item.type === 'order' ? '📦' : '💰'} ${item.title}
+                            </div>
+                            <div class="history-meta">
+                                ${formatDateTime(item.date)}
+                            </div>
+                        </div>
+                        <div class="history-status status-${item.status}">
+                            ${item.status}
+                        </div>
+                    </div>
+                    <div class="history-details">
+                        <div class="detail-row">
+                            <span class="detail-label">Amount</span>
+                            <span class="detail-value">€${item.amount.toFixed(2)}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function switchTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+        }
+
+        function formatDateTime(dateString) {
+            if (!dateString) return 'N/A';
+            
+            const date = new Date(dateString);
+            return date.toLocaleString('en-IE', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function logout() {
+            localStorage.removeItem('admin_token');
+            window.location.href = '/admin/login.html';
+        }
+    </script>
+</body>
+</html>

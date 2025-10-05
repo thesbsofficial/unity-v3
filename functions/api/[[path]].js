@@ -51,7 +51,13 @@ function secHeaders(origin, env) {
 const COOKIE_NAME = "sbs_session";
 const cookieAttrs = "; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=2592000"; // 30d
 const setCookie = (token) => `${COOKIE_NAME}=${token}${cookieAttrs}`;
-const clearCookie = () => `${COOKIE_NAME}=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Lax`;
+const clearCookie = () =>
+  `${COOKIE_NAME}=; Path=/; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; Secure; SameSite=Lax`;
+
+const headersWithClearedCookie = (headers = {}) => ({
+  ...headers,
+  "Set-Cookie": clearCookie(),
+});
 
 function getCookie(request, name) {
   const h = request.headers.get("Cookie") || "";
@@ -262,21 +268,36 @@ async function readSession(env, tokenRaw) {
 }
 
 async function destroySession(env, tokenRaw) {
-  if (!tokenRaw) return;
-  const tokenHash = await sha256b64(tokenRaw);
-  try {
-    await env.DB.prepare(`DELETE FROM session_tokens WHERE token_hash = ?`).bind(tokenHash).run();
-  } catch (e) {
-    // table may not exist; ignore
+  if (!tokenRaw) {
+    console.log('⚠️ destroySession: No token provided');
+    return;
   }
+  
+  console.log('🔐 destroySession: Hashing token...');
+  const tokenHash = await sha256b64(tokenRaw);
+  console.log('🔐 Token hash generated');
+  
   try {
-    await env.DB.prepare(`DELETE FROM sessions WHERE token = ? OR token = ?`).bind(tokenRaw, tokenHash).run();
+    console.log('🗑️ Deleting from session_tokens table...');
+    const result1 = await env.DB.prepare(`DELETE FROM session_tokens WHERE token_hash = ?`).bind(tokenHash).run();
+    console.log('✅ session_tokens delete result:', result1.meta?.changes || 0, 'rows');
+  } catch (e) {
+    console.log('⚠️ session_tokens table not available:', e.message);
+  }
+  
+  try {
+    console.log('🗑️ Deleting from sessions table (both token formats)...');
+    const result2 = await env.DB.prepare(`DELETE FROM sessions WHERE token = ? OR token = ?`).bind(tokenRaw, tokenHash).run();
+    console.log('✅ sessions delete result:', result2.meta?.changes || 0, 'rows');
   } catch (err) {
+    console.log('⚠️ Primary sessions delete failed:', err.message);
     // At minimum ensure plaintext token is cleared if present (best-effort)
     try {
-      await env.DB.prepare(`DELETE FROM sessions WHERE token = ?`).bind(tokenRaw).run();
+      console.log('🗑️ Trying fallback: delete plaintext token only...');
+      const result3 = await env.DB.prepare(`DELETE FROM sessions WHERE token = ?`).bind(tokenRaw).run();
+      console.log('✅ Fallback delete result:', result3.meta?.changes || 0, 'rows');
     } catch (legacyErr) {
-      console.warn('Failed to remove session token:', legacyErr);
+      console.warn('❌ Failed to remove session token:', legacyErr.message);
     }
   }
 }
@@ -380,10 +401,16 @@ export async function onRequest(context) {
       // Send verification email if email was provided
       if (body.email && userId) {
         try {
-          const { createVerificationToken, sendVerificationEmail } = await import('../lib/email.js');
+          const { createVerificationToken } = await import('../lib/email.js');
+          const EmailService = (await import('../lib/email-service.ts')).default;
+          
           const token = await createVerificationToken(env.DB, userId);
           const siteUrl = env.SITE_URL || 'https://thesbsofficial.com';
-          await sendVerificationEmail(body.email, token, siteUrl);
+          const verifyUrl = `${siteUrl}/verify-email.html?token=${token}`;
+          const userName = [body.first_name, body.last_name].filter(Boolean).join(' ') || 'there';
+          
+          const emailService = new EmailService(env.RESEND_API_KEY);
+          await emailService.sendBeautifulVerificationEmail(body.email, userName, verifyUrl);
 
           return json(
             {
@@ -444,7 +471,7 @@ export async function onRequest(context) {
       }
 
       if (!user || !(await verifyPassword(password, user)))
-        return json({ success: false, error: "Invalid credentials" }, 401, headers);
+        return json({ success: false, error: "Invalid credentials" }, 401, headersWithClearedCookie(headers));
 
       // Check if email verification is required
       if (user.email && user.email_verified === 0) {
@@ -453,7 +480,7 @@ export async function onRequest(context) {
           error: "Please verify your email before logging in. Check your inbox for the verification link.",
           email_verification_required: true,
           email: user.email
-        }, 403, headers);
+        }, 403, headersWithClearedCookie(headers));
       }
 
       // Optional: auto-promote via allowlist (ADMIN_ALLOWLIST_HANDLES=fredbademosi,admin)
@@ -487,7 +514,19 @@ export async function onRequest(context) {
     }
 
     if (path === "/api/users/logout" && method === "POST") {
-      if (sessionCookie) await destroySession(env, sessionCookie);
+      console.log('🚪 LOGOUT REQUEST RECEIVED');
+      console.log('Session cookie:', sessionCookie ? 'Present' : 'Missing');
+      console.log('Session data:', session ? JSON.stringify({ user_id: session.user_id, role: session.role }) : 'No session');
+      
+      if (sessionCookie) {
+        console.log('🗑️ Destroying session...');
+        await destroySession(env, sessionCookie);
+        console.log('✅ Session destroyed');
+      } else {
+        console.log('⚠️ No session cookie to destroy');
+      }
+      
+      console.log('🍪 Clearing cookie and returning response');
       return json({ success: true }, 200, { ...headers, "Set-Cookie": clearCookie() });
     }
 
@@ -548,19 +587,19 @@ export async function onRequest(context) {
       }
 
       try {
-        // Use Resend email system with beautiful templates
+        // Use Resend email system with beautiful SBS templates
         const { createVerificationToken } = await import('../lib/email.js');
-        const { sendBeautifulVerificationEmail } = await import('../lib/resend-wrapper.js');
+        const EmailService = (await import('../lib/email-service.ts')).default;
 
         const token = await createVerificationToken(env.DB, user.id);
         const siteUrl = env.SITE_URL || 'https://thesbsofficial.com';
+        const verifyUrl = `${siteUrl}/verify-email.html?token=${token}`;
 
-        await sendBeautifulVerificationEmail(
-          env.RESEND_API_KEY,
+        const emailService = new EmailService(env.RESEND_API_KEY);
+        await emailService.sendBeautifulVerificationEmail(
           user.email,
           user.first_name || 'there',
-          token,
-          siteUrl
+          verifyUrl
         );
 
         return json({
@@ -586,17 +625,19 @@ export async function onRequest(context) {
       }
 
       try {
-        const { sendVerificationEmail } = await import('../lib/email.js');
-        const testToken = 'test-' + Math.random().toString(36).substring(2, 15);
+        const EmailService = (await import('../lib/email-service.ts')).default;
         const siteUrl = env.SITE_URL || 'https://thesbsofficial.com';
+        const testToken = 'test-' + Math.random().toString(36).substring(2, 15);
+        const verifyUrl = `${siteUrl}/verify-email.html?token=${testToken}`;
 
-        const result = await sendVerificationEmail(email, testToken, siteUrl);
+        const emailService = new EmailService(env.RESEND_API_KEY);
+        await emailService.sendBeautifulVerificationEmail(email, 'Test User', verifyUrl);
 
         return json({
           success: true,
           message: `Test verification email sent to ${email}`,
-          note: 'This is a test email with a dummy token',
-          mailChannelsResponse: result
+          note: 'This is a beautiful test email with SBS branding',
+          template: 'Beautiful SBS verification template with logo and social links'
         }, 200, headers);
       } catch (error) {
         console.error('Test email error:', error);
@@ -723,28 +764,209 @@ export async function onRequest(context) {
     }
 
     // AUTH REQUIRED
-    if (!session) return json({ success: false, error: "Unauthorized" }, 401, headers);
+  if (!session) return json({ success: false, error: "Unauthorized" }, 401, headersWithClearedCookie(headers));
 
     if (path === "/api/users/me" && method === "GET") {
+      // Fetch full user data from DB for consistency and GDPR compliance
+      const user = await env.DB.prepare(
+        `SELECT id, social_handle, email, phone, first_name, last_name, address, city, eircode,
+         preferred_contact, role, created_at, is_allowlisted
+         FROM users WHERE id=?`
+      )
+        .bind(session.user_id)
+        .first();
+
+      if (!user) return json({ success: false, error: "User not found" }, 404, headers);
+
       const csrfToken = await csrfTokenFromSecret(session.csrf_secret);
-      return json(
-        {
-          success: true,
-          user: {
-            id: session.user_id,
-            social_handle: session.social_handle,
-            email: session.email,
-            role: session.role,
-            first_name: session.first_name,
-            last_name: session.last_name,
-            is_allowlisted: session.is_allowlisted,
-          },
-          csrf_token: csrfToken,
+
+      return json({
+        success: true,
+        user: {
+          ...user,
           is_admin: isAdmin(session),
         },
-        200,
-        headers
-      );
+        csrf_token: csrfToken
+      }, 200, headers);
+    }
+
+    // OFFERS - Submit customer offer on a product
+    if (path === "/api/offers/submit" && method === "POST") {
+      console.log('📝 Offer submission request received');
+      console.log('Session:', session ? `User ID: ${session.user_id}` : 'No session');
+      
+      if (!session?.user_id) {
+        console.log('❌ No session - authentication required');
+        return json({ success: false, error: "Authentication required" }, 401, headersWithClearedCookie(headers));
+      }
+
+      try {
+        console.log('📦 Parsing request body...');
+        const body = await request.json();
+        console.log('Body received:', JSON.stringify(body, null, 2));
+        
+        const { productId, amount, customerName, customerContact, category, size, imageUrl } = body;
+
+        console.log('🔍 Validating fields...');
+        console.log('  - productId:', productId);
+        console.log('  - amount:', amount, typeof amount);
+        console.log('  - customerName:', customerName);
+        console.log('  - customerContact:', customerContact);
+        console.log('  - category:', category);
+        console.log('  - size:', size);
+
+        // Validation
+        if (!productId || !amount || !customerName || !customerContact) {
+          console.log('❌ Missing required fields');
+          return json({ 
+            success: false, 
+            error: "Missing required fields: productId, amount, customerName, customerContact" 
+          }, 400, headers);
+        }
+
+        if (typeof amount !== 'number' || amount <= 0) {
+          console.log('❌ Invalid amount type or value');
+          return json({ 
+            success: false, 
+            error: "Invalid offer amount" 
+          }, 400, headers);
+        }
+
+        console.log('✅ Validation passed');
+
+        // Generate unique offer ID
+        const offerId = `OFFER-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
+        console.log('🎫 Generated offer ID:', offerId);
+
+        // Check if customer_offers table exists
+        console.log('🔍 Checking if customer_offers table exists...');
+        try {
+          const tableCheck = await env.DB.prepare(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='customer_offers'"
+          ).first();
+          console.log('Table check result:', tableCheck);
+          
+          if (!tableCheck) {
+            console.error('❌ customer_offers table does not exist!');
+            return json({
+              success: false,
+              error: "Database table not initialized. Please contact administrator.",
+              debug: "customer_offers table missing"
+            }, 500, headers);
+          }
+        } catch (tableError) {
+          console.error('❌ Error checking table:', tableError);
+        }
+
+        // Insert offer into database
+        console.log('💾 Inserting offer into database...');
+        console.log('Binding values:', {
+          offerId,
+          productId,
+          category: category || null,
+          size: size || null,
+          imageUrl: imageUrl || null,
+          amount,
+          customerName,
+          customerContact
+        });
+
+        const result = await env.DB.prepare(`
+          INSERT INTO customer_offers (
+            offer_id, product_id, product_category, product_size, product_image,
+            offer_amount, customer_name, customer_contact, status, created_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', CURRENT_TIMESTAMP)
+        `).bind(
+          offerId,
+          productId,
+          category || null,
+          size || null,
+          imageUrl || null,
+          amount,
+          customerName,
+          customerContact
+        ).run();
+
+        console.log('Database result:', result);
+        const insertedId = result.meta?.last_row_id;
+        console.log('Inserted ID:', insertedId);
+
+        console.log(`✅ Offer ${offerId} created successfully (ID: ${insertedId})`);
+
+        return json({
+          success: true,
+          message: "Offer submitted successfully! We'll review it and get back to you soon.",
+          offer: {
+            id: insertedId,
+            offer_id: offerId,
+            product_id: productId,
+            amount: amount,
+            status: 'pending',
+            created_at: new Date().toISOString()
+          }
+        }, 201, headers);
+
+      } catch (error) {
+        console.error('❌ Offer submission error:', error);
+        console.error('Error name:', error.name);
+        console.error('Error message:', error.message);
+        console.error('Error stack:', error.stack);
+        console.error('Error cause:', error.cause);
+        
+        return json({ 
+          success: false, 
+          error: "Failed to submit offer",
+          details: error.message,
+          errorType: error.name,
+          stack: error.stack
+        }, 500, headers);
+      }
+    }
+
+    // Get offers for a product (public - no auth required for viewing highest offer)
+    if (path === "/api/offers/product" && method === "GET") {
+      try {
+        const url = new URL(request.url);
+        const productId = url.searchParams.get('productId');
+
+        if (!productId) {
+          return json({ success: false, error: "productId required" }, 400, headers);
+        }
+
+        // Get highest offer for this product
+        const highestOffer = await env.DB.prepare(`
+          SELECT MAX(offer_amount) as highest_offer
+          FROM customer_offers
+          WHERE product_id = ? AND status IN ('pending', 'countered')
+        `).bind(productId).first();
+
+        // Get all offers if user is admin
+        let allOffers = null;
+        if (session && isAdmin(session)) {
+          const offersResult = await env.DB.prepare(`
+            SELECT offer_id, offer_amount, customer_name, customer_contact, 
+                   status, counter_offer_amount, created_at, responded_at
+            FROM customer_offers
+            WHERE product_id = ?
+            ORDER BY created_at DESC
+          `).bind(productId).all();
+          allOffers = offersResult.results || [];
+        }
+
+        return json({
+          success: true,
+          product_id: productId,
+          highest_offer: highestOffer?.highest_offer || 0,
+          offers: allOffers
+        }, 200, headers);
+
+      } catch (error) {
+        console.error('❌ Get offers error:', error);
+        return json({ 
+          success: false, 
+          error: "Failed to fetch offers" 
+        }, 500, headers);
+      }
     }
 
     // ADMIN
@@ -922,6 +1144,110 @@ export async function onRequest(context) {
             events: [],
             message: "Analytics events table not yet created. Events will appear after first deployment with schema."
           }, 200, headers);
+        }
+      }
+
+      // Admin Bids Management - Get all customer offers (bids)
+      if (path === "/api/admin/bids" && method === "GET") {
+        try {
+          const { results } = await env.DB.prepare(`
+            SELECT 
+              co.id,
+              co.offer_id,
+              co.product_id,
+              co.product_category,
+              co.product_size,
+              co.product_image,
+              co.offer_amount,
+              co.customer_name,
+              co.customer_contact,
+              co.status,
+              co.counter_offer_amount,
+              co.admin_notes,
+              co.created_at,
+              co.responded_at
+            FROM customer_offers co
+            ORDER BY co.created_at DESC
+          `).all();
+
+          return json({
+            success: true,
+            bids: results || [],
+            total: results?.length || 0,
+            pending: results?.filter(b => b.status === 'pending').length || 0,
+            accepted: results?.filter(b => b.status === 'accepted').length || 0,
+            rejected: results?.filter(b => b.status === 'rejected').length || 0,
+            timestamp: new Date().toISOString()
+          }, 200, headers);
+        } catch (error) {
+          console.error('Bids management error:', error);
+          return json({
+            success: false,
+            error: "Failed to fetch bids",
+            details: error.message
+          }, 500, headers);
+        }
+      }
+
+      // Admin Update Bid Status
+      if (path === "/api/admin/bids/update" && method === "POST") {
+        try {
+          const body = await request.json();
+          const { bidId, status, counterOffer, adminNotes } = body;
+
+          if (!bidId || !status) {
+            return json({ 
+              success: false, 
+              error: "bidId and status required" 
+            }, 400, headers);
+          }
+
+          const validStatuses = ['pending', 'accepted', 'rejected', 'countered'];
+          if (!validStatuses.includes(status)) {
+            return json({ 
+              success: false, 
+              error: `Invalid status. Must be one of: ${validStatuses.join(', ')}` 
+            }, 400, headers);
+          }
+
+          // Build update query
+          const updates = ['status = ?', 'responded_at = CURRENT_TIMESTAMP'];
+          const values = [status];
+
+          if (counterOffer !== undefined && counterOffer !== null) {
+            updates.push('counter_offer_amount = ?');
+            values.push(counterOffer);
+          }
+
+          if (adminNotes !== undefined) {
+            updates.push('admin_notes = ?');
+            values.push(adminNotes);
+          }
+
+          values.push(bidId);
+
+          await env.DB.prepare(
+            `UPDATE customer_offers SET ${updates.join(', ')} WHERE id = ?`
+          ).bind(...values).run();
+
+          // Get updated bid
+          const updatedBid = await env.DB.prepare(
+            `SELECT * FROM customer_offers WHERE id = ?`
+          ).bind(bidId).first();
+
+          return json({
+            success: true,
+            message: "Bid updated successfully",
+            bid: updatedBid
+          }, 200, headers);
+
+        } catch (error) {
+          console.error('Update bid error:', error);
+          return json({
+            success: false,
+            error: "Failed to update bid",
+            details: error.message
+          }, 500, headers);
         }
       }
 
@@ -1376,7 +1702,7 @@ export async function onRequest(context) {
 
     // ORDERS (example) — CSRF required on mutations
     if (path === "/api/orders" && method === "POST") {
-      if (!session?.user_id) return json({ success: false, error: "Authentication required" }, 401, headers);
+  if (!session?.user_id) return json({ success: false, error: "Authentication required" }, 401, headersWithClearedCookie(headers));
 
       const ok = await assertCsrf(request, session);
       if (!ok) return json({ success: false, error: "Invalid CSRF token" }, 403, headers);
@@ -1531,7 +1857,7 @@ export async function onRequest(context) {
     }
 
     if (path === "/api/orders" && method === "GET") {
-      if (!session?.user_id) return json({ success: false, error: "Authentication required" }, 401, headers);
+  if (!session?.user_id) return json({ success: false, error: "Authentication required" }, 401, headersWithClearedCookie(headers));
 
       const rows = await env.DB.prepare(
         `SELECT id, order_number, items_json, subtotal, total, status, delivery_method, delivery_fee,
@@ -1565,22 +1891,11 @@ export async function onRequest(context) {
     // USER DATA & GDPR ENDPOINTS
 
     // Get user's data (GDPR: Right to Access)
-    if (path === "/api/users/me" && method === "GET") {
-      const user = await env.DB.prepare(
-        `SELECT id, social_handle, email, phone, first_name, last_name, address, city, eircode,
-         preferred_contact, role, created_at FROM users WHERE id=?`
-      )
-        .bind(session.user_id)
-        .first();
-
-      if (!user) return json({ success: false, error: "User not found" }, 404, headers);
-
-      return json({ success: true, user }, 200, headers);
-    }
+    // (Handled above in consolidated /api/users/me GET endpoint)
 
     // Get user's orders
     if (path === "/api/users/me/orders" && method === "GET") {
-      if (!session?.user_id) return json({ success: false, error: "Authentication required" }, 401, headers);
+  if (!session?.user_id) return json({ success: false, error: "Authentication required" }, 401, headersWithClearedCookie(headers));
 
       const ordersStmt = await env.DB.prepare(
         `SELECT id, order_number, items_json, total_amount, delivery_address, delivery_city,
@@ -1734,7 +2049,7 @@ export async function onRequest(context) {
           .first();
 
         if (!user || !(await verifyPassword(body.current_password, user))) {
-          return json({ success: false, error: "Current password incorrect" }, 401, headers);
+          return json({ success: false, error: "Current password incorrect" }, 401, headersWithClearedCookie(headers));
         }
 
         // Hash new password
@@ -1884,7 +2199,7 @@ export async function onRequest(context) {
       `).bind(email).first();
 
       if (!user || !(await verifyPassword(password, user))) {
-        return json({ success: false, error: "Invalid credentials" }, 401, headers);
+  return json({ success: false, error: "Invalid credentials" }, 401, headersWithClearedCookie(headers));
       }
 
       if (!user.is_allowlisted) {
@@ -1935,14 +2250,14 @@ export async function onRequest(context) {
     if (path === "/api/admin/verify" && method === "GET") {
       const authHeader = request.headers.get('Authorization');
       if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return json({ success: false, error: "No token provided" }, 401, headers);
+  return json({ success: false, error: "No token provided" }, 401, headersWithClearedCookie(headers));
       }
 
       const token = authHeader.substring(7);
       const adminSession = await readSession(env, token);
 
       if (!adminSession || !isAdmin(adminSession)) {
-        return json({ success: false, error: "Invalid admin session" }, 401, headers);
+  return json({ success: false, error: "Invalid admin session" }, 401, headersWithClearedCookie(headers));
       }
 
       return json({

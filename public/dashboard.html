@@ -90,6 +90,12 @@
             font-weight: 900;
         }
 
+        .logo img {
+            max-height: 50px;
+            width: auto;
+            object-fit: contain;
+        }
+
         .nav-link {
             color: var(--text-primary);
             text-decoration: none;
@@ -814,7 +820,7 @@
                     <span></span>
                     <span></span>
                 </button>
-                <button class="btn-outline" id="signOutBtn">Sign Out</button>
+                <button type="button" class="btn-outline" id="signOutBtn">Sign Out</button>
             </div>
         </nav>
     </header>
@@ -829,7 +835,7 @@
             <a href="/shop" class="mobile-menu-item">🛍️ Shop</a>
             <a href="/sell" class="mobile-menu-item">💰 Sell</a>
             <a href="/dashboard" class="mobile-menu-item">📊 Dashboard</a>
-            <button class="mobile-menu-item btn-style" type="button" id="mobile-signout">🚪 Sign Out</button>
+            <button type="button" class="mobile-menu-item btn-style" id="mobile-signout">🚪 Sign Out</button>
         </div>
     </div>
 
@@ -1432,9 +1438,27 @@
             document.getElementById('profileEmail').textContent = user.email || '';
         }
 
-        function handleSignOut() {
+        async function handleSignOut(e) {
+            if (e) {
+                e.preventDefault(); // Prevent default link behavior
+                e.stopPropagation(); // Stop cart-ui.js from interfering
+            }
+            
+            try {
+                await fetch('/api/users/logout', {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+            } catch (error) {
+                console.error('Logout error:', error);
+            }
+            
+            // Clear all storage
             sessionStorage.clear();
-            window.location.href = '/login.html';
+            localStorage.clear();
+            
+            // Force hard redirect with cache busting to prevent showing cached dashboard
+            window.location.replace('/login.html?logout=true&t=' + Date.now());
         }
 
         const signOutButton = document.getElementById('signOutBtn');

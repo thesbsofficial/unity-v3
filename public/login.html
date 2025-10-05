@@ -771,7 +771,17 @@
             }
         }
 
-        checkExistingSession();
+        const searchParams = new URLSearchParams(window.location.search);
+        const isLogoutFlow = searchParams.get('logout') === 'true';
+
+        if (!isLogoutFlow) {
+            checkExistingSession();
+        } else {
+            // Ensure any lingering session data is cleared when arriving from logout
+            sessionStorage.removeItem('sbs_user');
+            sessionStorage.removeItem('sbs_csrf_token');
+            sessionStorage.removeItem('sbs_login_time');
+        }
 
         document.getElementById('loginForm').addEventListener('submit', async function (e) {
             e.preventDefault();

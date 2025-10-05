@@ -214,25 +214,49 @@ export async function onRequestPost({ request, env }) {
 
         // 📊 AUTO-SYNC TO D1 SMART INVENTORY
         try {
+            // Build image URL from Cloudflare Images
+            const imagesHash = env.CLOUDFLARE_IMAGES_HASH || '7B8CAeDtA5h1f1Dyh_X-hg';
+            const imageUrl = `https://imagedelivery.net/${imagesHash}/${imageId}/public`;
+            
+            // Generate SKU
+            const sku = `${cfMetadata.category}-${imageId.substring(0, 8).toUpperCase()}`;
+            
+            // Insert product with full details
             await env.DB.prepare(`
                 INSERT INTO products (
-                    image_id, category, size, condition, 
-                    status, quantity_total, quantity_available,
-                    created_at, updated_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
+                    image_id,
+                    cloudflare_image_id,
+                    image_url,
+                    category,
+                    size,
+                    brand,
+                    description,
+                    condition,
+                    status,
+                    sku,
+                    quantity_available,
+                    price,
+                    created_at,
+                    updated_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
             `).bind(
-                imageId,
-                cfMetadata.category || 'BN-CLOTHES',
-                cfMetadata.size || null,
-                uploadMetadata.category?.includes('BN') ? 'Brand New' : 'Pre-Owned',
-                cfMetadata.status || 'active',
-                1, // quantity_total
-                1  // quantity_available
+                imageId,                                                          // image_id
+                imageId,                                                          // cloudflare_image_id
+                imageUrl,                                                         // image_url (INSTANT ACCESS)
+                cfMetadata.category || 'BN-CLOTHES',                            // category
+                cfMetadata.size || 'One Size',                                  // size
+                cfMetadata.brand || 'Unknown',                                  // brand
+                cfMetadata.description || cfMetadata.name || productName,       // description
+                uploadMetadata.category?.includes('BN') ? 'new' : 'good',      // condition
+                'available',                                                     // status
+                sku,                                                             // sku
+                1,                                                               // quantity_available
+                0                                                                // price (0 = make offer)
             ).run();
             
-            console.log(`✅ Product ${imageId} synced to D1 inventory`);
+            console.log(`✅ Product ${imageId} synced to D1 inventory with image URL`);
         } catch (dbError) {
-            console.warn('⚠️ D1 sync failed (non-critical):', dbError.message);
+            console.error('⚠️ D1 sync failed:', dbError.message);
             // Continue even if D1 sync fails - image is still in CF
         }
 

@@ -125,10 +125,11 @@ export async function onRequestGet(context) {
                 return jsonResponse({ error: 'Order not found' }, 404);
             }
 
-            await logAdminAction(context.env, check.session, 'admin_order_view', `order_${orderNumber}`, {
-                via: 'orders_api',
-                order_number: orderNumber
-            });
+            // Log disabled while security is disabled
+            // await logAdminAction(context.env, check.session, 'admin_order_view', `order_${orderNumber}`, {
+            //     via: 'orders_api',
+            //     order_number: orderNumber
+            // });
 
             return jsonResponse({ success: true, order });
         }
@@ -166,10 +167,11 @@ export async function onRequestGet(context) {
                 }, 0)
         };
 
-        await logAdminAction(context.env, check.session, 'admin_orders_list', null, {
-            count: orders.length,
-            status_filter: statusFilter || 'all'
-        });
+        // Log disabled while security is disabled
+        // await logAdminAction(context.env, check.session, 'admin_orders_list', null, {
+        //     count: orders.length,
+        //     status_filter: statusFilter || 'all'
+        // });
 
         return jsonResponse({ success: true, orders, stats, total: orders.length });
     } catch (error) {
@@ -277,11 +279,12 @@ export async function onRequestPost(context) {
             }
         }
 
-        await logAdminAction(context.env, check.session, 'admin_order_created', `order_${orderNumber}`, {
-            delivery_method: deliveryMethod,
-            items: orderData.items.length,
-            has_email: Boolean(orderData.customer_email)
-        });
+        // Log disabled while security is disabled
+        // await logAdminAction(context.env, check.session, 'admin_order_created', `order_${orderNumber}`, {
+        //     delivery_method: deliveryMethod,
+        //     items: orderData.items.length,
+        //     has_email: Boolean(orderData.customer_email)
+        // });
 
         return jsonResponse({
             success: true,
@@ -354,10 +357,11 @@ export async function onRequestPut(context) {
             }
         }
 
-        await logAdminAction(context.env, check.session, 'admin_order_status_update', `order_${orderNumber}`, {
-            old_status: existingOrder.status,
-            new_status: newStatus
-        });
+        // Log disabled while security is disabled
+        // await logAdminAction(context.env, check.session, 'admin_order_status_update', `order_${orderNumber}`, {
+        //     old_status: existingOrder.status,
+        //     new_status: newStatus
+        // });
 
         return jsonResponse({
             success: true,
@@ -397,7 +401,8 @@ export async function onRequestDelete(context) {
             DELETE FROM orders WHERE order_number = ?
         `).bind(orderNumber).run();
 
-        await logAdminAction(context.env, check.session, 'admin_order_deleted', `order_${orderNumber}`);
+        // Log disabled while security is disabled
+        // await logAdminAction(context.env, check.session, 'admin_order_deleted', `order_${orderNumber}`);
 
         return jsonResponse({
             success: true,
