@@ -56,9 +56,29 @@
         },
 
         // Sign out
-        signOut() {
-            sessionStorage.clear();
-            window.location.href = '/login.html';
+        async signOut(event) {
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+
+            try {
+                await fetch('/api/users/logout', {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+            } catch (error) {
+                console.error('Logout request failed:', error);
+            }
+
+            try {
+                sessionStorage.clear();
+                localStorage.clear();
+            } catch (storageError) {
+                console.warn('Failed to clear storage during sign out:', storageError);
+            }
+
+            window.location.replace('/login.html?logout=true&t=' + Date.now());
         },
 
         // Protect pages that require login
@@ -160,7 +180,7 @@
                 navRight.innerHTML = `
                     <a href="/dashboard" class="nav-link">👤 ${firstName}</a>
                     ${isAdmin ? '<a href="/admin/inventory/" class="nav-link">⚙️ Admin</a>' : ''}
-                    <button class="btn-outline" onclick="window.SBS.auth.signOut()" style="font-family: inherit; font-size: 1rem;">Sign Out</button>
+                    <button class="btn-outline" id="nav-signout" onclick="window.SBS.auth.signOut(event)" style="font-family: inherit; font-size: 1rem;">Sign Out</button>
                     <button class="cart-toggle" type="button">
                         Basket
                         <span class="cart-count" id="cart-count">0</span>
