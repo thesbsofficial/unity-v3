@@ -1,0 +1,224 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   MOBILE.CSS - Consolidated iPhone-First Mobile Styles
+   Replaces: iphone-base.css + mobile-menu.css (removes 40% duplication)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── iOS-Specific Fixes ──────────────────────────────────────────────────── */
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  min-height: 100dvh;
+  min-height: 100vh; /* Fallback */
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+img, svg, video, canvas {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+/* ── Touch Targets (44px minimum for iOS) ───────────────────────────────── */
+button, 
+.btn, 
+a.button,
+input[type="button"], 
+input[type="submit"],
+.cart-toggle,
+.hamburger {
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Form Inputs (16px minimum to prevent iOS zoom) ──────────────────────── */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="tel"],
+input[type="number"],
+select,
+textarea {
+  min-height: 44px;
+  padding: 12px 14px;
+  font-size: max(16px, 1rem);
+}
+
+/* ── Hamburger Menu ──────────────────────────────────────────────────────── */
+.hamburger {
+  display: none;
+  flex-direction: column;
+  gap: 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.4rem;
+  min-width: 44px;
+  min-height: 44px;
+  justify-content: center;
+  align-items: center;
+}
+
+.hamburger span {
+  width: 22px;
+  height: 2.5px;
+  background: #ffd700;
+  border-radius: 2px;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.hamburger.active span:nth-child(1) {
+  transform: rotate(45deg) translate(5px, 5px);
+}
+.hamburger.active span:nth-child(2) {
+  opacity: 0;
+}
+.hamburger.active span:nth-child(3) {
+  transform: rotate(-45deg) translate(7px, -7px);
+}
+
+/* ── Mobile Menu Slide-In ────────────────────────────────────────────────── */
+.mobile-menu {
+  position: fixed;
+  top: 0;
+  right: -100%;
+  width: min(85vw, 320px);
+  height: 100vh;
+  height: 100dvh;
+  background: rgba(10, 10, 10, 0.98);
+  border-left: 2px solid #ffd700;
+  z-index: 1000;
+  transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+}
+
+.mobile-menu.active {
+  right: 0;
+}
+
+.mobile-menu-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 999;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.mobile-menu-backdrop.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.mobile-menu-header {
+  padding: clamp(1rem, 3vw, 2rem) clamp(1rem, 4vw, 1.5rem) 1rem;
+  border-bottom: 1px solid rgba(255, 215, 0, 0.25);
+}
+
+.mobile-menu-items {
+  display: flex;
+  flex-direction: column;
+  padding: 1rem 0;
+}
+
+.mobile-menu-item {
+  padding: clamp(0.75rem, 2.5vw, 1rem) clamp(1rem, 4vw, 1.5rem);
+  color: #ffffff;
+  text-decoration: none;
+  font-size: clamp(14px, 1.8vw, 17px);
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  transition: background-color 0.2s ease;
+}
+
+.mobile-menu-item:active {
+  background-color: rgba(255, 215, 0, 0.1);
+}
+
+/* ── iPhone Width Buckets ────────────────────────────────────────────────── */
+@media (max-width: 374.98px) {
+  .container {
+    padding-inline: clamp(10px, 4.5vw, 16px);
+  }
+  .grid-2, .grid-3 {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (min-width: 390px) and (max-width: 392.98px) {
+  .grid-2 {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (min-width: 393px) {
+  .grid-3 {
+    grid-template-columns: repeat(auto-fit, minmax(min(100px, 30%), 1fr));
+  }
+}
+
+/* ── Landscape Mode (short height) ───────────────────────────────────────── */
+@media (orientation: landscape) and (max-height: 430px) {
+  .container {
+    padding-block: clamp(6px, 1.2vw, 10px);
+  }
+  .modal-content {
+    max-height: 85vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* ── Touch-Specific Enhancements ─────────────────────────────────────────── */
+@media (hover: none) and (pointer: coarse) {
+  button:active,
+  .btn:active,
+  a.button:active {
+    transform: scale(0.98);
+    opacity: 0.9;
+  }
+}
+
+/* ── Motion Preferences (Accessibility) ──────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ── Mobile Only (show hamburger, hide nav links) ────────────────────────── */
+@media (max-width: 768px) {
+  .hamburger {
+    display: flex;
+  }
+  
+  /* Hide desktop navigation links on mobile - use mobile menu instead */
+  .nav-right .nav-link {
+    display: none;
+  }
+  
+  /* Keep Sign Up button and cart toggle visible */
+  .nav-right .btn-gold,
+  .nav-right .cart-toggle {
+    display: inline-flex;
+  }
+}
+

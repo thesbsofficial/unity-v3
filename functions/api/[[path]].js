@@ -770,7 +770,7 @@ export async function onRequest(context) {
       // Fetch full user data from DB for consistency and GDPR compliance
       const user = await env.DB.prepare(
         `SELECT id, social_handle, email, phone, first_name, last_name, address, city, eircode,
-         preferred_contact, role, created_at, is_allowlisted
+         preferred_contact, role, created_at, is_allowlisted, bidding_username
          FROM users WHERE id=?`
       )
         .bind(session.user_id)
@@ -788,6 +788,203 @@ export async function onRequest(context) {
         },
         csrf_token: csrfToken
       }, 200, headers);
+    }
+
+    // GET USER'S BIDS
+    if (path === "/api/users/me/bids" && method === "GET") {
+      if (!session?.user_id) {
+        return json({ success: false, error: "Authentication required" }, 401, headersWithClearedCookie(headers));
+      }
+
+      try {
+        // Fetch all bids for this user
+        const bidsResult = await env.DB.prepare(`
+          SELECT 
+            co.id,
+            co.offer_id,
+            co.product_id,
+            co.product_category,
+            co.product_size,
+            co.product_image,
+            co.offer_amount,
+            co.status,
+            co.counter_offer_amount,
+            co.admin_notes,
+            co.created_at,
+            co.responded_at
+          FROM customer_offers co
+          WHERE co.user_id = ?
+          ORDER BY co.created_at DESC
+        `).bind(session.user_id).all();
+
+        const userBids = bidsResult.results || [];
+
+        // Get highest offers for all products in one query (more efficient)
+        if (userBids.length > 0) {
+          const productIds = [...new Set(userBids.map(b => b.product_id))];
+          const placeholders = productIds.map(() => '?').join(',');
+          
+          const highestOffersResult = await env.DB.prepare(`
+            SELECT 
+              product_id,
+              MAX(offer_amount) as highest_offer
+            FROM customer_offers
+            WHERE product_id IN (${placeholders})
+            AND status IN ('pending', 'countered')
+            GROUP BY product_id
+          `).bind(...productIds).all();
+
+          // Create a map for quick lookup
+          const highestOffersMap = {};
+          (highestOffersResult.results || []).forEach(row => {
+            highestOffersMap[row.product_id] = row.highest_offer;
+          });
+
+          // Add is_highest_offer flag
+          const bidsWithFlags = userBids.map(bid => ({
+            ...bid,
+            is_highest_offer: parseFloat(bid.offer_amount) === parseFloat(highestOffersMap[bid.product_id] || 0)
+          }));
+
+          return json({
+            success: true,
+            bids: bidsWithFlags
+          }, 200, headers);
+        }
+
+        // No bids found
+        return json({
+          success: true,
+          bids: []
+        }, 200, headers);
+      } catch (error) {
+        console.error('❌ Fetch bids error:', error);
+        return json({
+          success: false,
+          error: 'Failed to fetch bids',
+          details: error.message
+        }, 500, headers);
+      }
+    }
+
+    // UPDATE USER PROFILE
+    if (path === "/api/users/update-profile" && method === "PUT") {
+      if (!session?.user_id) {
+        return json({ success: false, error: "Authentication required" }, 401, headersWithClearedCookie(headers));
+      }
+
+      try {
+        const body = await request.json();
+        
+        // Fields that can be updated
+        const allowedFields = [
+          'first_name',
+          'last_name',
+          'social_handle',
+          'email',
+          'phone',
+          'address',
+          'city',
+          'eircode',
+          'instagram',
+          'snapchat',
+          'preferred_contact',
+          'bidding_username'
+        ];
+
+        // Build update query dynamically based on provided fields
+        const updates = {};
+        const updateFields = [];
+        const updateValues = [];
+
+        for (const field of allowedFields) {
+          if (body[field] !== undefined) {
+            updates[field] = body[field];
+            updateFields.push(`${field} = ?`);
+            updateValues.push(body[field]);
+          }
+        }
+
+        // Handle password change separately (requires current password verification)
+        if (body.new_password) {
+          if (!body.current_password) {
+            return json({ 
+              success: false, 
+              error: "Current password required to change password" 
+            }, 400, headers);
+          }
+
+          // Verify current password
+          const user = await env.DB.prepare(
+            "SELECT password_hash, password_salt, password_hash_type, password_iterations FROM users WHERE id = ?"
+          ).bind(session.user_id).first();
+
+          if (!user || !(await verifyPassword(body.current_password, user))) {
+            return json({ 
+              success: false, 
+              error: "Current password is incorrect" 
+            }, 401, headers);
+          }
+
+          // Validate new password
+          if (body.new_password.length < 6) {
+            return json({ 
+              success: false, 
+              error: "New password must be at least 6 characters" 
+            }, 400, headers);
+          }
+
+          if (!/\d/.test(body.new_password)) {
+            return json({ 
+              success: false, 
+              error: "New password must contain at least 1 number" 
+            }, 400, headers);
+          }
+
+          // Hash new password
+          const { hash, salt, type, iterations } = await hashPassword(body.new_password);
+          updateFields.push('password_hash = ?', 'password_salt = ?', 'password_hash_type = ?', 'password_iterations = ?');
+          updateValues.push(hash, salt, type, iterations);
+        }
+
+        if (updateFields.length === 0) {
+          return json({ 
+            success: false, 
+            error: "No fields to update" 
+          }, 400, headers);
+        }
+
+        // Add updated_at timestamp
+        updateFields.push('updated_at = CURRENT_TIMESTAMP');
+
+        // Execute update
+        updateValues.push(session.user_id); // For WHERE clause
+        
+        await env.DB.prepare(
+          `UPDATE users SET ${updateFields.join(', ')} WHERE id = ?`
+        ).bind(...updateValues).run();
+
+        // Fetch updated user data
+        const updatedUser = await env.DB.prepare(
+          `SELECT id, social_handle, email, phone, first_name, last_name, address, city, eircode,
+           preferred_contact, role, instagram, snapchat, bidding_username, created_at
+           FROM users WHERE id = ?`
+        ).bind(session.user_id).first();
+
+        return json({
+          success: true,
+          message: "Profile updated successfully",
+          user: updatedUser
+        }, 200, headers);
+
+      } catch (error) {
+        console.error('❌ Profile update error:', error);
+        return json({
+          success: false,
+          error: 'Failed to update profile',
+          details: error.message
+        }, 500, headers);
+      }
     }
 
     // OFFERS - Submit customer offer on a product
@@ -829,6 +1026,62 @@ export async function onRequest(context) {
           return json({ 
             success: false, 
             error: "Invalid offer amount" 
+          }, 400, headers);
+        }
+
+        // Define min/max limits based on category
+        const bidLimits = {
+          'PO-CLOTHES': { min: 50, max: 180 },
+          'BN-CLOTHES': { min: 80, max: 250 },
+          'BN-SHOES': { min: 70, max: 250 },
+          'PO-SHOES': { min: 20, max: 180 }
+        };
+
+        const limits = bidLimits[category];
+        if (!limits) {
+          console.log('❌ Invalid category:', category);
+          return json({ 
+            success: false, 
+            error: "Invalid product category" 
+          }, 400, headers);
+        }
+
+        // Check minimum bid
+        if (amount < limits.min) {
+          console.log(`❌ Offer too low: €${amount} (min: €${limits.min})`);
+          return json({ 
+            success: false, 
+            error: `Minimum offer for ${category} is €${limits.min}` 
+          }, 400, headers);
+        }
+
+        // Check maximum bid
+        if (amount > limits.max) {
+          console.log(`❌ Offer too high: €${amount} (max: €${limits.max})`);
+          return json({ 
+            success: false, 
+            error: `Maximum offer for ${category} is €${limits.max}` 
+          }, 400, headers);
+        }
+
+        // Check if user already bid on this item in the last 5 minutes
+        const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+        const recentOffer = await env.DB.prepare(`
+          SELECT offer_amount, created_at 
+          FROM customer_offers 
+          WHERE product_id = ? 
+          AND customer_contact = ?
+          AND created_at > ?
+          ORDER BY created_at DESC 
+          LIMIT 1
+        `).bind(productId, customerContact, fiveMinutesAgo).first();
+
+        if (recentOffer) {
+          const timeRemaining = Math.ceil((new Date(recentOffer.created_at).getTime() + 5 * 60 * 1000 - Date.now()) / 1000 / 60);
+          console.log(`❌ User already bid within 5 minutes (${timeRemaining} min remaining)`);
+          return json({ 
+            success: false, 
+            error: `You can only submit 1 offer per item every 5 minutes. Please wait ${timeRemaining} more minute(s).` 
           }, 400, headers);
         }
 

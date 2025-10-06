@@ -1,0 +1,365 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   GLOBAL.CSS - Shared Base Styles Across All Pages
+   Extracted from inline <style> blocks to eliminate duplication
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── CSS Reset ───────────────────────────────────────────────────────────── */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* ── CSS Variables (Design Tokens) ───────────────────────────────────────── */
+:root {
+  --primary-black: #000000;
+  --primary-gold: #ffd700;
+  --accent-gold: #FFD700;
+  --bg-dark: #0a0a0a;
+  --bg-card: #1a1a1a;
+  --bg-hover: #242424;
+  --text-primary: #ffffff;
+  --text-secondary: #cccccc;
+  --border-subtle: rgba(255, 255, 255, 0.1);
+  --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.3);
+  --success-green: #4caf50;
+  --warning-orange: #ff9800;
+  --danger-red: #f44336;
+  
+  /* Legacy mappings */
+  --white: #ffffff;
+  --cta-sell: #E53935;
+  --cta-sell-hover: #C62828;
+  --cta-shadow-sell: 0 10px 25px rgba(229, 57, 53, 0.35);
+}
+
+/* ── Base Styles ─────────────────────────────────────────────────────────── */
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg-dark);
+  color: var(--text-primary);
+  line-height: 1.6;
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+/* ── Container ───────────────────────────────────────────────────────────── */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 0 1rem;
+  }
+}
+
+/* ── Header/Navigation ───────────────────────────────────────────────────── */
+.header {
+  background: rgba(0, 0, 0, 0.95);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border-subtle);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  padding: 1rem 0;
+}
+
+.nav {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+}
+
+.nav-left {
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+}
+
+.nav-right {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: var(--primary-gold);
+  font-size: 1.5rem;
+  font-weight: 900;
+}
+
+.logo img {
+  max-height: 50px;
+  width: auto;
+  object-fit: contain;
+}
+
+.nav-link {
+  color: var(--text-primary);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.nav-link:hover {
+  color: var(--primary-gold);
+}
+
+@media (max-width: 768px) {
+  .header {
+    padding: 0.5rem 0;
+  }
+  
+  .nav {
+    padding: 0 0.75rem;
+    gap: 0.5rem;
+  }
+  
+  .nav-right {
+    gap: 0.5rem;
+  }
+  
+  .logo img {
+    max-height: 32px;
+  }
+  
+  .nav-link {
+    display: none;
+  }
+  
+  /* Optimize button sizes for mobile nav */
+  .btn-gold {
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
+    letter-spacing: 0.3px;
+  }
+  
+  .cart-toggle {
+    padding: 0.5rem 0.9rem;
+    font-size: 0.75rem;
+    letter-spacing: 0.3px;
+    gap: 0.3rem;
+  }
+  
+  .cart-count {
+    min-width: 18px;
+    height: 18px;
+    font-size: 0.7rem;
+    padding: 0 4px;
+  }
+}
+
+/* ── Buttons ─────────────────────────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: inherit;
+}
+
+.btn-gold {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.6rem 1.5rem;
+  background: var(--primary-gold);
+  color: var(--primary-black);
+  border: 2px solid var(--primary-gold);
+  border-radius: 25px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: inherit;
+}
+
+.btn-gold:hover {
+  background: transparent;
+  color: var(--primary-gold);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(255, 215, 0, 0.3);
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--text-primary);
+  border: 1px solid var(--border-subtle);
+}
+
+.btn-outline:hover {
+  border-color: var(--primary-gold);
+  color: var(--primary-gold);
+}
+
+/* Cart/Basket Button */
+.cart-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.25rem;
+  background: transparent;
+  color: var(--primary-gold);
+  border: 2px solid var(--primary-gold);
+  border-radius: 25px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  font-family: inherit;
+}
+
+.cart-toggle:hover {
+  background: var(--primary-gold);
+  color: var(--primary-black);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(255, 215, 0, 0.3);
+}
+
+.cart-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  background: #ff4444;
+  color: white;
+  border-radius: 10px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.btn-danger {
+  background: var(--danger-red);
+  color: white;
+}
+
+.btn-danger:hover {
+  background: #d32f2f;
+  transform: translateY(-2px);
+}
+
+/* ── Forms ───────────────────────────────────────────────────────────────── */
+input, select, textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-family: inherit;
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--primary-gold);
+}
+
+label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+/* ── Cards ───────────────────────────────────────────────────────────────── */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+/* ── Badges ──────────────────────────────────────────────────────────────── */
+.badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.badge-pending {
+  background: rgba(255, 152, 0, 0.2);
+  color: var(--warning-orange);
+}
+
+.badge-delivered {
+  background: rgba(76, 175, 80, 0.2);
+  color: var(--success-green);
+}
+
+.badge-completed {
+  background: rgba(76, 175, 80, 0.2);
+  color: var(--success-green);
+}
+
+.badge-cancelled {
+  background: rgba(244, 67, 54, 0.2);
+  color: var(--danger-red);
+}
+
+/* ── Loading/Spinner ─────────────────────────────────────────────────────── */
+.loading {
+  text-align: center;
+  padding: 3rem;
+  color: var(--text-secondary);
+}
+
+.spinner {
+  border: 3px solid var(--border-subtle);
+  border-top: 3px solid var(--primary-gold);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ── Utility Classes ─────────────────────────────────────────────────────── */
+.text-center {
+  text-align: center;
+}
+
+.mb-1 { margin-bottom: 0.5rem; }
+.mb-2 { margin-bottom: 1rem; }
+.mb-3 { margin-bottom: 1.5rem; }
+
+.mt-1 { margin-top: 0.5rem; }
+.mt-2 { margin-top: 1rem; }
+.mt-3 { margin-top: 1.5rem; }

@@ -129,6 +129,16 @@ export const CATEGORY_LABELS = {
 };
 
 /**
+ * CONDITION LABELS (Simplified - for product cards)
+ */
+export const CONDITION_LABELS = {
+    'BN-CLOTHES': 'Brand New',
+    'BN-SHOES': 'Brand New',
+    'PO-CLOTHES': 'Pre-Owned',
+    'PO-SHOES': 'Pre-Owned'
+};
+
+/**
  * VALIDATION FUNCTIONS
  */
 export function isValidCategory(category) {
@@ -150,6 +160,10 @@ export function getSizeLabelsForCategory(category) {
 
 export function getCategoryLabel(category) {
     return CATEGORY_LABELS[category] || category;
+}
+
+export function getConditionLabel(category) {
+    return CONDITION_LABELS[category] || category;
 }
 
 /**
@@ -178,11 +192,13 @@ export default {
     SIZES,
     SIZE_LABELS,
     CATEGORY_LABELS,
+    CONDITION_LABELS,
     isValidCategory,
     isValidSize,
     getSizesForCategory,
     getSizeLabelsForCategory,
     getCategoryLabel,
+    getConditionLabel,
     isShoeCategory,
     isClothesCategory,
     TAXONOMY_VERSION,

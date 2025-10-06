@@ -9,7 +9,8 @@
     <link rel="icon" type="image/png" href="/favicon.ico">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/css/helper.css">
-    <link rel="stylesheet" href="/css/mobile-menu.css">
+    <link rel="stylesheet" href="/css/global.css">
+    <link rel="stylesheet" href="/css/mobile.css">
     <link rel="stylesheet" href="/css/cart-overlay.css">
     <script src="https://unpkg.com/lucide@latest" defer></script>
     <script src="/js/analytics-tracker.js" defer></script>
@@ -18,172 +19,7 @@
     <script src="/js/mobile-menu.js" defer></script>
     <script src="/js/app.js" defer></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        :root {
-            --primary-black: #0a0a0a;
-            --primary-gold: #ffd700;
-            --text-primary: #ffffff;
-            --text-secondary: #999;
-            --border-subtle: rgba(255, 255, 255, 0.1);
-        }
-
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: var(--primary-black);
-            color: var(--text-primary);
-            line-height: 1.6;
-            overflow-x: hidden;
-        }
-
-        .header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-            background: rgba(10, 10, 10, 0.95);
-            border-bottom: 1px solid var(--border-subtle);
-            backdrop-filter: blur(10px);
-            width: 100%;
-        }
-
-        .nav {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 1rem 2rem;
-            display: grid;
-            grid-template-columns: 1fr auto 1fr;
-            align-items: center;
-            gap: 2rem;
-        }
-
-        .nav-left,
-        .nav-right {
-            display: flex;
-            gap: 1.5rem;
-            align-items: center;
-        }
-
-        .nav-left {
-            justify-content: flex-start;
-        }
-
-        .nav-right {
-            justify-content: flex-end;
-        }
-
-        .nav-center {
-            display: flex;
-            justify-content: center;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            font-weight: 800;
-            color: var(--primary-gold);
-            text-decoration: none;
-            font-size: 1.5rem;
-            letter-spacing: 2px;
-        }
-
-        .logo img {
-            height: 38px;
-            width: auto;
-        }
-
-        .nav-link {
-            color: var(--text-primary);
-            text-decoration: none;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-size: 0.85rem;
-            transition: color 0.2s ease;
-        }
-
-        .nav-link:hover {
-            color: var(--primary-gold);
-        }
-
-        .btn-gold {
-            background: var(--primary-gold);
-            color: var(--primary-black);
-            border: 2px solid var(--primary-gold);
-            padding: 0.5rem 1.5rem;
-            border-radius: 25px;
-            font-weight: 700;
-            text-decoration: none;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            font-size: 0.85rem;
-        }
-
-        .btn-gold:hover {
-            background: transparent;
-            color: var(--primary-gold);
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(255, 215, 0, 0.3);
-        }
-
-        .cart-toggle {
-            background: none;
-            border: 2px solid var(--primary-gold);
-            color: var(--primary-gold);
-            padding: 0.5rem 1rem;
-            border-radius: 25px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            position: relative;
-            text-transform: uppercase;
-            font-size: 0.85rem;
-            letter-spacing: 1px;
-        }
-
-        .cart-toggle:hover {
-            background: var(--primary-gold);
-            color: var(--primary-black);
-        }
-
-        .cart-count {
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            background: #ff4444;
-            color: white;
-            border-radius: 50%;
-            width: 18px;
-            height: 18px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 10px;
-            font-weight: 700;
-        }
-
-        .hamburger {
-            display: none;
-            flex-direction: column;
-            gap: 5px;
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 0.5rem;
-        }
-
-        .hamburger span {
-            width: 25px;
-            height: 3px;
-            background: var(--primary-gold);
-            transition: all 0.3s ease;
-            border-radius: 2px;
-        }
+        /* PRIVACY POLICY PAGE STYLES (Base styles in global.css) */
 
         .main {
             padding: 120px 0 0;
@@ -336,10 +172,6 @@
     <header class="header">
         <nav class="nav">
             <div class="nav-left">
-                <a href="/shop" class="nav-link">Shop</a>
-                <a href="/sell" class="nav-link">Sell</a>
-            </div>
-            <div class="nav-center">
                 <a href="/" class="logo" aria-label="SBS home">
                     <img src="/SBS (Your Story).png" alt="SBS"
                         onerror="this.style.display='none'; this.parentNode.textContent='SBS';">
@@ -347,12 +179,11 @@
             </div>
             <div class="nav-right">
                 <!-- Auth state dynamically updates this section -->
+                <a href="/shop" class="nav-link">Shop</a>
+                <a href="/sell" class="nav-link">Sell</a>
                 <a href="/login" class="nav-link">Sign In</a>
                 <a href="/register" class="btn-gold">Sign Up</a>
-                <button class="cart-toggle" type="button">
-                    Basket
-                    <span class="cart-count" id="cart-count">0</span>
-                </button>
+                <!-- Hamburger Menu Button (Mobile Only) - FAR RIGHT -->
                 <button class="hamburger" type="button" aria-label="Menu">
                     <span></span>
                     <span></span>
@@ -369,10 +200,10 @@
             <a href="/" class="logo">SBS</a>
         </div>
         <div class="mobile-menu-items">
-            <a href="/shop" class="mobile-menu-item">🛍️ Shop</a>
+            <a href="/shop" class="mobile-menu-item">🛍️ Buy</a>
             <a href="/sell" class="mobile-menu-item">💰 Sell</a>
             <a href="/login" class="mobile-menu-item">🔐 Sign In</a>
-            <a href="/register" class="mobile-menu-item">✨ Sign Up</a>
+            <a href="/register" class="mobile-menu-item btn-style">✨ Sign Up</a>
             <a href="/sell" class="mobile-menu-item btn-style">Start Selling</a>
         </div>
     </div>

@@ -1,305 +1,458 @@
-/**
- * 🚀 SBS UNIFIED APP SCRIPT
- * Consolidated authentication, navigation, cart, and error handling
- * Replaces: auth-state.js, nav-lite.js, error-logger.js
- */
+﻿/**/**
 
-(function () {
-    'use strict';
+ * 🚀 SBS MOBILE-FIRST APP SCRIPT *  SBS MOBILE-FIRST APP SCRIPT
 
-    // ============================================================================
-    // 🔐 AUTHENTICATION MODULE
-    // ============================================================================
+ * Lightweight, works WITH existing HTML structure * Lightweight, works WITH existing HTML structure
 
-    const Auth = {
-        // Check if user is logged in (client-side check)
-        isLoggedIn() {
-            const user = sessionStorage.getItem('sbs_user');
-            const token = sessionStorage.getItem('sbs_csrf_token');
-            return !!(user && token);
-        },
+ * No dynamic nav replacement - just enhances what's there * No dynamic nav replacement - just enhances what's there
 
-        // Verify session with server
-        async verifySession() {
-            try {
-                const response = await fetch('/api/users/me');
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data.success && data.user) {
-                        // Update session storage with fresh data
-                        sessionStorage.setItem('sbs_user', JSON.stringify(data.user));
-                        if (data.csrfToken) {
-                            sessionStorage.setItem('sbs_csrf_token', data.csrfToken);
-                        }
-                        return true;
-                    }
-                }
-                // Session invalid, clear storage
-                sessionStorage.clear();
-                return false;
-            } catch (error) {
-                console.error('Session verification failed:', error);
-                return false;
-            }
-        },
+ */ */
 
-        // Get current user
-        getCurrentUser() {
-            const userStr = sessionStorage.getItem('sbs_user');
-            if (!userStr) return null;
-            try {
-                return JSON.parse(userStr);
-            } catch (e) {
-                console.error('Failed to parse user data:', e);
-                return null;
-            }
-        },
 
-        // Sign out
-        signOut() {
-            sessionStorage.clear();
-            window.location.href = '/login.html';
-        },
 
-        // Protect pages that require login
-        requireAuth(redirectUrl = '/login.html') {
-            if (!this.isLoggedIn()) {
-                window.location.href = redirectUrl;
-                return false;
-            }
-            return true;
-        },
+(function () {(function () {
 
-        // Redirect if already logged in
-        redirectIfLoggedIn(redirectUrl = '/dashboard.html') {
-            if (this.isLoggedIn()) {
-                window.location.href = redirectUrl;
-                return true;
-            }
-            return false;
-        },
+    'use strict';    'use strict';
 
-        // Check session expiry
-        checkSessionExpiry() {
-            const loginTime = sessionStorage.getItem('sbs_login_time');
-            if (!loginTime) return;
 
-            const now = Date.now();
-            const elapsed = now - parseInt(loginTime);
-            const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
 
-            if (elapsed > TWENTY_FOUR_HOURS) {
-                console.log('Session expired');
-                this.signOut();
-            }
+    // ============================================================================    // ============================================================================
+
+    // 🔐 AUTH MODULE - Read-only, no nav manipulation    //  AUTH MODULE - Read-only, no nav manipulation
+
+    // ============================================================================    // ============================================================================
+
+
+
+    const Auth = {    const Auth = {
+
+        isLoggedIn() {        isLoggedIn() {
+
+            const user = sessionStorage.getItem('sbs_user');            const user = sessionStorage.getItem('sbs_user');
+
+            const token = sessionStorage.getItem('sbs_csrf_token');            const token = sessionStorage.getItem('sbs_csrf_token');
+
+            return !!(user && token);            return !!(user && token);
+
+        },        },
+
+
+
+        async verifySession() {        async verifySession() {
+
+            if (!this.isLoggedIn()) return false;            if (!this.isLoggedIn()) return false;
+
+                        
+
+            try {            try {
+
+                const response = await fetch('/api/users/me', {                const response = await fetch('/api/users/me', {
+
+                    credentials: 'include'                    credentials: 'include'
+
+                });                });
+
+                                
+
+                if (response.ok) {                if (response.ok) {
+
+                    const data = await response.json();                    const data = await response.json();
+
+                    if (data.success && data.user) {                    if (data.success && data.user) {
+
+                        sessionStorage.setItem('sbs_user', JSON.stringify(data.user));                        sessionStorage.setItem('sbs_user', JSON.stringify(data.user));
+
+                        if (data.csrfToken) {                        if (data.csrfToken) {
+
+                            sessionStorage.setItem('sbs_csrf_token', data.csrfToken);                            sessionStorage.setItem('sbs_csrf_token', data.csrfToken);
+
+                        }                        }
+
+                        return true;                        return true;
+
+                    }                    }
+
+                }                }
+
+                                
+
+                sessionStorage.clear();                sessionStorage.clear();
+
+                return false;                return false;
+
+            } catch (error) {            } catch (error) {
+
+                console.error('Session verification failed:', error);                console.error('Session verification failed:', error);
+
+                return false;                return false;
+
+            }            }
+
+        },        },
+
+
+
+        getCurrentUser() {        getCurrentUser() {
+
+            const userStr = sessionStorage.getItem('sbs_user');            const userStr = sessionStorage.getItem('sbs_user');
+
+            if (!userStr) return null;            if (!userStr) return null;
+
+            try {            try {
+
+                return JSON.parse(userStr);                return JSON.parse(userStr);
+
+            } catch (e) {            } catch (e) {
+
+                return null;                return null;
+
+            }            }
+
+        },        },
+
+
+
+        checkSessionExpiry() {        checkSessionExpiry() {
+
+            const loginTime = sessionStorage.getItem('sbs_login_time');            const loginTime = sessionStorage.getItem('sbs_login_time');
+
+            if (!loginTime) return;            if (!loginTime) return;
+
+
+
+            const now = Date.now();            const now = Date.now();
+
+            const elapsed = now - parseInt(loginTime);            const elapsed = now - parseInt(loginTime);
+
+            const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;            const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
+
+
+
+            if (elapsed > TWENTY_FOUR_HOURS) {            if (elapsed > TWENTY_FOUR_HOURS) {
+
+                console.log('Session expired');                console.log('Session expired');
+
+                this.signOut();                this.signOut();
+
+            }            }
+
+        },        },
+
+
+
+        signOut() {        signOut() {
+
+            sessionStorage.clear();            sessionStorage.clear();
+
+            localStorage.removeItem('sbs_new_bid_submitted');            localStorage.removeItem('sbs_new_bid_submitted');
+
+            window.location.href = '/login.html';            window.location.href = '/login.html';
+
+        }        }
+
+    };    };
+
+
+
+    // ============================================================================    // ============================================================================
+
+    // 🛒 CART MODULE - Just updates counts, doesn't touch nav structure    //  CART MODULE - Just updates counts, doesn't touch nav structure
+
+    // ============================================================================    // ============================================================================
+
+
+
+    const Cart = {    const Cart = {
+
+        parseCart() {        parseCart() {
+
+            try {            try {
+
+                return JSON.parse(localStorage.getItem('sbs-basket')) || [];                return JSON.parse(localStorage.getItem('sbs-basket')) || [];
+
+            } catch (error) {            } catch (error) {
+
+                return [];                return [];
+
+            }            }
+
+        },        },
+
+
+
+        updateCartCount() {        updateCartCount() {
+
+            const cartItems = this.parseCart();            const cartItems = this.parseCart();
+
+            const count = cartItems.length;            const count = cartItems.length;
+
+            const formatted = count > 9 ? '9+' : String(count);            const formatted = count > 9 ? '9+' : String(count);
+
+
+
+            // Update ALL cart count elements            const cartCounts = document.querySelectorAll('#cart-count, .cart-count, #nav-cart-count, #mobile-cart-count');
+
+            const cartCounts = document.querySelectorAll('#cart-count, .cart-count, #nav-cart-count, #mobile-cart-count');            cartCounts.forEach(element => {
+
+            cartCounts.forEach(element => {                if (element) {
+
+                if (element && element.textContent !== formatted) {                    element.textContent = formatted;
+
+                    element.textContent = formatted;                    
+
+                                        if (element.textContent !== formatted) {
+
+                    // Animate count change                        element.classList.remove('count-bump');
+
+                    element.classList.remove('count-bump');                        void element.offsetWidth;
+
+                    void element.offsetWidth;                        element.classList.add('count-bump');
+
+                    element.classList.add('count-bump');                    }
+
+                }                }
+
+            });            });
+
+        }        }
+
+    };    };
+
+
+
+    // ============================================================================    // ============================================================================
+
+    // 🧭 MOBILE MENU MODULE - Only updates menu items, not main nav    //  MOBILE MENU MODULE - Only updates menu items, not main nav
+
+    // ============================================================================    // ============================================================================
+
+
+
+    const MobileMenu = {    const MobileMenu = {
+
+        updateMenuItems() {        updateMenuItems() {
+
+            const menuItems = document.querySelector('.mobile-menu-items');            const menuItems = document.querySelector('.mobile-menu-items');
+
+            if (!menuItems) return;            if (!menuItems) return;
+
+
+
+            if (Auth.isLoggedIn()) {            if (Auth.isLoggedIn()) {
+
+                const user = Auth.getCurrentUser();                const user = Auth.getCurrentUser();
+
+                const isAdmin = user?.role === 'admin';                const isAdmin = user?.role === 'admin';
+
+
+
+                // Logged in: Buy, Sell, Dashboard, Admin?, Sign Out                menuItems.innerHTML = 
+
+                menuItems.innerHTML = `                    <a href="/shop" class="mobile-menu-item"> Buy</a>
+
+                    <a href="/shop" class="mobile-menu-item">🛍️ Buy</a>                    <a href="/sell" class="mobile-menu-item"> Sell</a>
+
+                    <a href="/sell" class="mobile-menu-item">💰 Sell</a>                    <a href="/dashboard" class="mobile-menu-item"> Dashboard</a>
+
+                    <a href="/dashboard" class="mobile-menu-item">👤 Dashboard</a>                    +(isAdmin ? '<a href="/admin/inventory/" class="mobile-menu-item"> Admin</a>' : '')+
+
+                    ${isAdmin ? '<a href="/admin/inventory/" class="mobile-menu-item">⚙️ Admin</a>' : ''}                    <button type="button" class="mobile-menu-item btn-style" id="mobile-signout"> Sign Out</button>
+
+                    <button type="button" class="mobile-menu-item btn-style" id="mobile-signout">🚪 Sign Out</button>                ;
+
+                `;            } else {
+
+            } else {                menuItems.innerHTML = 
+
+                // Logged out: Buy, Sell, Sign In, Sign Up                    <a href="/shop" class="mobile-menu-item"> Buy</a>
+
+                menuItems.innerHTML = `                    <a href="/sell" class="mobile-menu-item"> Sell</a>
+
+                    <a href="/shop" class="mobile-menu-item">🛍️ Buy</a>                    <a href="/login" class="mobile-menu-item"> Sign In</a>
+
+                    <a href="/sell" class="mobile-menu-item">💰 Sell</a>                    <a href="/register" class="mobile-menu-item btn-style"> Sign Up</a>
+
+                    <a href="/login" class="mobile-menu-item">🔐 Sign In</a>                ;
+
+                    <a href="/register" class="mobile-menu-item btn-style">✨ Sign Up</a>            }
+
+                `;        }
+
+            }    };
+
         }
-    };
 
-    // ============================================================================
-    // 🛒 CART MODULE
-    // ============================================================================
+    };    // ============================================================================
 
-    const Cart = {
-        // Accessibility and animation preferences
-        prefersReducedMotion: window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : { matches: false },
+    //  ERROR HANDLING
 
-        // Format cart count display
-        formatCartCount(count) {
-            return count > 9 ? '9+' : String(count);
-        },
+    // ============================================================================    // ============================================================================
 
-        // Animate count change
-        triggerCountBump(element) {
-            if (!element || this.prefersReducedMotion.matches) return;
-            element.classList.remove('count-bump');
-            void element.offsetWidth;
-            element.classList.add('count-bump');
-        },
+    // 🚨 ERROR HANDLING
 
-        // Parse cart from localStorage
-        parseCart() {
-            try {
-                return JSON.parse(localStorage.getItem('sbs-basket')) || [];
-            } catch (error) {
-                return [];
-            }
-        },
+    // ============================================================================    const ErrorHandler = {
 
-        // Update cart count display
-        updateCartCount() {
-            const cartItems = this.parseCart();
-            const totalItems = cartItems.length;
-            const formatted = this.formatCartCount(totalItems);
-
-            // Update navigation cart count
-            const cartCounts = document.querySelectorAll('#cart-count, #nav-cart-count, #mobile-cart-count');
-            cartCounts.forEach(element => {
-                if (element && element.textContent !== formatted) {
-                    element.textContent = formatted;
-                    this.triggerCountBump(element);
-                }
-            });
-        }
-    };
-
-    // ============================================================================
-    // 🧭 NAVIGATION MODULE
-    // ============================================================================
-
-    const Navigation = {
-        // Update navigation based on login state
-        updateNavigation() {
-            const navRight = document.querySelector('.nav-right');
-            if (!navRight) return;
-
-            if (Auth.isLoggedIn()) {
-                const user = Auth.getCurrentUser();
-                const firstName = user?.first_name || 'Account';
-                const isAdmin = user?.role === 'admin';
-
-                navRight.innerHTML = `
-                    <a href="/dashboard" class="nav-link">👤 ${firstName}</a>
-                    ${isAdmin ? '<a href="/admin/inventory/" class="nav-link">⚙️ Admin</a>' : ''}
-                    <button type="button" class="btn-outline" id="signOutBtn" style="font-family: inherit; font-size: 1rem;">Sign Out</button>
-                    <button class="cart-toggle" type="button">
-                        Basket
-                        <span class="cart-count" id="cart-count">0</span>
-                    </button>
-                    <button class="hamburger" aria-label="Menu" aria-expanded="false" aria-controls="site-mobile-menu">
-                        <span></span>
-                        <span></span>
-                        <span></span>
-                    </button>
-                `;
-            } else {
-                navRight.innerHTML = `
-                    <a href="/login" class="nav-link">Sign In</a>
-                    <a href="/register" class="btn-gold">Sign Up</a>
-                    <button class="cart-toggle" type="button">
-                        Basket
-                        <span class="cart-count" id="cart-count">0</span>
-                    </button>
-                    <button class="hamburger" aria-label="Menu" aria-expanded="false" aria-controls="site-mobile-menu">
-                        <span></span>
-                        <span></span>
-                        <span></span>
-                    </button>
-                `;
-            }
-
-            // Update cart count after navigation update
-            Cart.updateCartCount();
-        }
-    };
-
-    // ============================================================================
-    // 🚨 ERROR HANDLING MODULE
-    // ============================================================================
-
-    const ErrorHandler = {
-        errors: [],
-        maxErrors: 50,
-        sessionId: 'SBS_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
-
-        // Log error
-        logError(type, details, severity = 'ERROR') {
-            const error = {
-                id: this.errors.length + 1,
-                type,
-                severity,
-                details,
-                timestamp: new Date().toISOString(),
-                sessionId: this.sessionId,
-                page: window.location.pathname,
-                userAgent: navigator.userAgent.substr(0, 100)
-            };
-
-            this.errors.push(error);
-
-            // Keep only recent errors
-            if (this.errors.length > this.maxErrors) {
-                this.errors = this.errors.slice(-this.maxErrors);
-            }
-
-            // Log to console for development
-            if (severity === 'ERROR') {
-                console.error(`🚨 ${type}:`, details);
-            } else {
-                console.warn(`⚠️ ${type}:`, details);
-            }
-        },
-
-        // Initialize error handling
         init() {
-            // Catch JavaScript errors
-            window.addEventListener('error', (event) => {
-                this.logError('JAVASCRIPT_ERROR', {
-                    message: event.message,
-                    filename: event.filename,
-                    line: event.lineno,
-                    column: event.colno,
-                    stack: event.error?.stack
-                });
-            });
 
-            // Catch unhandled promise rejections
-            window.addEventListener('unhandledrejection', (event) => {
-                this.logError('PROMISE_REJECTION', {
-                    message: event.reason?.message || event.reason,
-                    stack: event.reason?.stack
-                });
-            });
+    const ErrorHandler = {            window.addEventListener('error', (event) => {
+
+        init() {                console.error('JS Error:', event.message, event.filename, event.lineno);
+
+            window.addEventListener('error', (event) => {            });
+
+                console.error('JS Error:', event.message, event.filename, event.lineno);
+
+            });            window.addEventListener('unhandledrejection', (event) => {
+
+                console.error('Unhandled Promise:', event.reason);
+
+            window.addEventListener('unhandledrejection', (event) => {            });
+
+                console.error('Unhandled Promise:', event.reason);        }
+
+            });    };
+
         }
-    };
 
-    // ============================================================================
-    // 🚀 MAIN APP INITIALIZATION
-    // ============================================================================
+    };    // ============================================================================
 
-    async function init() {
-        // Initialize error handling first
+    //  MAIN INITIALIZATION
+
+    // ============================================================================    // ============================================================================
+
+    // 🚀 MAIN INITIALIZATION
+
+    // ============================================================================    async function init() {
+
         ErrorHandler.init();
 
-        // Verify session with server if user appears logged in
-        if (Auth.isLoggedIn()) {
-            const sessionValid = await Auth.verifySession();
-            if (!sessionValid) {
-                console.log('Session expired, clearing local state');
-            }
+    async function init() {
+
+        // Initialize error handling        if (Auth.isLoggedIn()) {
+
+        ErrorHandler.init();            await Auth.verifySession();
+
         }
 
-        // Check session expiry
-        Auth.checkSessionExpiry();
+        // Verify session if logged in
 
-        // Update navigation
-        Navigation.updateNavigation();
+        if (Auth.isLoggedIn()) {        Auth.checkSessionExpiry();
 
-        // Update cart count
-        Cart.updateCartCount();
+            await Auth.verifySession();        MobileMenu.updateMenuItems();
 
-        // Listen for storage changes (multi-tab sync)
-        window.addEventListener('storage', (e) => {
-            if (e.key === 'sbs_user' || e.key === 'sbs_csrf_token') {
-                Navigation.updateNavigation();
-            }
-            if (e.key === 'sbs-basket') {
+        }        Cart.updateCartCount();
+
+
+
+        // Check session expiry        window.addEventListener('storage', (e) => {
+
+        Auth.checkSessionExpiry();            if (e.key === 'sbs_user' || e.key === 'sbs_csrf_token') {
+
+                MobileMenu.updateMenuItems();
+
+        // Update mobile menu items based on auth state            }
+
+        MobileMenu.updateMenuItems();            if (e.key === 'sbs-basket') {
+
                 Cart.updateCartCount();
-            }
-        });
 
-        // SBS App initialization complete
-    }
+        // Update cart count            }
 
-    // ============================================================================
-    // 📤 PUBLIC API EXPORT
-    // ============================================================================
+        Cart.updateCartCount();        });
 
-    // Export unified API
-    window.SBS = {
+
+
+        // Listen for storage changes (multi-tab sync)        document.addEventListener('click', async function(e) {
+
+        window.addEventListener('storage', (e) => {            const signOutBtn = e.target.closest('#signOutBtn, #heroSignOutBtn, #mobile-signout, .hero-signout-btn, [data-signout]');
+
+            if (e.key === 'sbs_user' || e.key === 'sbs_csrf_token') {            if (signOutBtn) {
+
+                MobileMenu.updateMenuItems();                e.preventDefault();
+
+            }                e.stopPropagation();
+
+            if (e.key === 'sbs-basket') {                
+
+                Cart.updateCartCount();                try {
+
+            }                    await fetch('/api/users/logout', {
+
+        });                        method: 'POST',
+
+                        credentials: 'include'
+
+        // Global sign out handler (works for all sign out buttons)                    });
+
+        document.addEventListener('click', async function(e) {                } catch (error) {
+
+            const signOutBtn = e.target.closest('#signOutBtn, #heroSignOutBtn, #mobile-signout, .hero-signout-btn, [data-signout]');                    console.error('Logout error:', error);
+
+            if (signOutBtn) {                }
+
+                e.preventDefault();                
+
+                e.stopPropagation();                sessionStorage.clear();
+
+                                localStorage.removeItem('sbs_new_bid_submitted');
+
+                try {                window.location.replace('/login.html?logout=true&t=' + Date.now());
+
+                    await fetch('/api/users/logout', {            }
+
+                        method: 'POST',        });
+
+                        credentials: 'include'
+
+                    });        console.log(' SBS App initialized (mobile-first)');
+
+                } catch (error) {    }
+
+                    console.error('Logout error:', error);
+
+                }    // ============================================================================
+
+                    //  PUBLIC API
+
+                // Clear all storage    // ============================================================================
+
+                sessionStorage.clear();
+
+                localStorage.removeItem('sbs_new_bid_submitted');    window.SBS = {
+
+                        auth: Auth,
+
+                // Redirect        cart: Cart,
+
+                window.location.replace('/login.html?logout=true&t=' + Date.now());        mobileMenu: MobileMenu,
+
+            }        init
+
+        });    };
+
+
+
+        console.log('✅ SBS App initialized (mobile-first)');    window.sbsAuth = Auth;
+
+    }    window.updateCartCount = Cart.updateCartCount.bind(Cart);
+
+
+
+    // ============================================================================    if (document.readyState === 'loading') {
+
+    // 📤 PUBLIC API        document.addEventListener('DOMContentLoaded', init);
+
+    // ============================================================================    } else {
+
+        init();
+
+    window.SBS = {    }
+
         auth: Auth,
-        cart: Cart,
-        navigation: Navigation,
-        errors: ErrorHandler,
+
+        cart: Cart,})();
+
+        mobileMenu: MobileMenu,
         init
     };
 

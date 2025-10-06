@@ -1,3 +1,53 @@
+<!--
+    ==============================================================
+    SBS DASHBOARD — INLINE GUIDE FOR QUICK EDITS (Non-coder friendly)
+    ==============================================================
+    What this file is:
+    - The HTML, CSS, and JS for the My Account (Dashboard) page.
+    - Everything is in one file so you can edit in place.
+
+    How the page is structured (search these markers):
+    1) HEADER/NAV               — starts at: <header class="header">
+    2) MOBILE MENU              — starts at: <div class="mobile-menu" ...>
+    3) MAIN CONTAINER           — starts at: <div class="container">
+         3a) PAGE HEADER (title)  — inside container: <div class="page-header"> with .page-title and .page-subtitle
+         3b) DASHBOARD GRID       — <div class="dashboard-grid"> splits sidebar + content
+                 3b-i) SIDEBAR        — <aside class="sidebar"> (profile + menu links)
+                 3b-ii) MAIN CONTENT  — <main class="main-content" id="mainContent"> (loads dynamic sections)
+
+    Quick things you may want to change:
+    - Page title/subtitle text: Search for "<h1 class=\"page-title\">My Account" and edit that line and the <p class="page-subtitle"> below it.
+    - Sidebar menu items: Search for "<ul class=\"sidebar-menu\">" and edit/add/remove the <li><a ...> links.
+    - Colors: At the top of the CSS there is a :root section with variables like --primary-gold and --bg-dark. Change those values to adjust the theme.
+    - Spacing on mobile: Search for "@media (max-width: 768px)" — values inside there control phone layout (font-sizes, paddings, gaps).
+    - Logo size: Search for ".logo img" and change max-height.
+    - Reduce the big title on phones: In the same mobile block, adjust .page-title font-size.
+
+    Safe editing tips:
+    - Only edit values on the right side of ":" in CSS. Example: font-size: 1.5rem; — change 1.5rem to 1.25rem.
+    - For text, edit between the tags. Example: <h1>New Title</h1>.
+    - Avoid deleting entire blocks unless you are sure. Instead, comment them out by wrapping with <!-- ... --> in HTML or /* ... */ in CSS.
+    - Keep class names as-is; they are used by the JavaScript.
+
+    How to make the mobile layout tighter (most common requests):
+    - Reduce container padding (search: ".container { padding:")
+    - Reduce page header margin (search: ".page-header { margin-bottom:")
+    - Reduce title size (search: ".page-title { font-size:")
+    - Adjust grid gap (search: ".dashboard-grid { gap:")
+
+    How the sidebar links work:
+    - Each link has data-section (e.g., data-section="overview"). When you tap it, JS loads that section into <main id="mainContent">.
+
+    How to deploy your changes (PowerShell):
+    - npx wrangler pages deploy public --project-name=unity-v3 --branch=MAIN --commit-dirty=true
+    (We usually run this from the folder: unity-v3/public (4))
+
+    If you break something:
+    - Undo the last change (Ctrl+Z), save, deploy again.
+    - Or ask for help and mention what you changed.
+
+    This entire guide is a comment and won’t show on the page. You can safely leave it here.
+-->
 <!DOCTYPE html>
 <html lang="en">
 
@@ -7,177 +57,9 @@
     <title>My Account - SBS</title>
 
     <style>
-        /* CSS RESET & VARIABLES */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        :root {
-            --primary-black: #000000;
-            --primary-gold: #ffd700;
-            --bg-dark: #0a0a0a;
-            --bg-card: #1a1a1a;
-            --text-primary: #ffffff;
-            --text-secondary: #cccccc;
-            --border-subtle: rgba(255, 255, 255, 0.1);
-            --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.3);
-            --success-green: #4caf50;
-            --warning-orange: #ff9800;
-            --danger-red: #f44336;
-        }
-
-        html {
-            overflow-x: hidden;
-        }
-
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: var(--bg-dark);
-            color: var(--text-primary);
-            min-height: 100vh;
-            margin: 0;
-            padding: 0;
-            overflow-x: hidden;
-        }
-
-        /* Header */
-        .header {
-            background: rgba(0, 0, 0, 0.95);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid var(--border-subtle);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            padding: 1rem 0;
-        }
-
-        .nav {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 2rem;
-            display: grid;
-            grid-template-columns: 1fr auto 1fr;
-            align-items: center;
-            gap: 2rem;
-        }
-
-        .nav-left {
-            display: flex;
-            gap: 2rem;
-            align-items: center;
-        }
-
-        .nav-center {
-            display: flex;
-            justify-content: center;
-        }
-
-        .nav-right {
-            display: flex;
-            gap: 1.5rem;
-            align-items: center;
-            justify-content: flex-end;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            text-decoration: none;
-            color: var(--primary-gold);
-            font-size: 1.5rem;
-            font-weight: 900;
-        }
-
-        .logo img {
-            max-height: 50px;
-            width: auto;
-            object-fit: contain;
-        }
-
-        .nav-link {
-            color: var(--text-primary);
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.3s ease;
-        }
-
-        .nav-link:hover {
-            color: var(--primary-gold);
-        }
-
-        .btn-gold {
-            background: var(--primary-gold);
-            color: var(--primary-black);
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            border: none;
-            cursor: pointer;
-        }
-
-        .btn-gold:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(255, 215, 0, 0.3);
-        }
-
-        .btn-outline {
-            background: transparent;
-            color: var(--text-primary);
-            padding: 0.75rem 1.5rem;
-            border: 1px solid var(--border-subtle);
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-
-        .btn-outline:hover {
-            border-color: var(--primary-gold);
-            color: var(--primary-gold);
-        }
-
-        .btn-danger {
-            background: var(--danger-red);
-            color: white;
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
-            border: none;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .btn-danger:hover {
-            background: #d32f2f;
-            transform: translateY(-2px);
-        }
-
-        /* Main Content */
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 3rem 2rem;
-        }
-
-        .page-header {
-            margin-bottom: 3rem;
-        }
-
-        .page-title {
-            font-size: 2.5rem;
-            font-weight: 800;
-            margin-bottom: 0.5rem;
-        }
-
-        .page-subtitle {
-            color: var(--text-secondary);
-            font-size: 1.1rem;
-        }
+        /* ═══════════════════════════════════════════════════════════════════════
+           DASHBOARD PAGE STYLES (Base styles in global.css)
+           ═══════════════════════════════════════════════════════════════════ */
 
         /* Dashboard Grid */
         .dashboard-grid {
@@ -188,8 +70,41 @@
         }
 
         @media (max-width: 768px) {
+            .header {
+                padding: 0.75rem 0;
+            }
+
+            .nav {
+                padding: 0 1rem;
+                gap: 1rem;
+            }
+
+            .logo img {
+                max-height: 35px;
+            }
+
+            .container {
+                padding: 1.25rem 1rem;
+            }
+
+            .page-header {
+                margin-bottom: 1rem;
+            }
+
+            .page-title {
+                font-size: 1.5rem;
+                margin-bottom: 0.25rem;
+                line-height: 1.2;
+            }
+
+            .page-subtitle {
+                font-size: 0.875rem;
+                line-height: 1.4;
+            }
+
             .dashboard-grid {
                 grid-template-columns: 1fr;
+                gap: 1.5rem;
             }
         }
 
@@ -475,6 +390,20 @@
             gap: 1.5rem;
         }
 
+        .bids-grid {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .bid-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .bid-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+        }
+
         .order-status-timeline {
             display: flex;
             gap: 1.5rem;
@@ -739,6 +668,24 @@
             .gdpr-actions {
                 flex-direction: column;
             }
+
+            .bids-grid {
+                gap: 1rem;
+            }
+
+            .bid-card {
+                padding: 1rem !important;
+            }
+
+            .bid-card img {
+                width: 60px !important;
+                height: 60px !important;
+            }
+
+            .bid-card .btn-outline {
+                padding: 0.4rem 0.75rem !important;
+                font-size: 0.8rem !important;
+            }
         }
 
         /* Modal */
@@ -785,7 +732,8 @@
             margin-top: 2rem;
         }
     </style>
-    <link rel="stylesheet" href="/css/mobile-menu.css">
+    <link rel="stylesheet" href="/css/global.css">
+    <link rel="stylesheet" href="/css/mobile.css">
     <link rel="stylesheet" href="/css/cart-overlay.css">
     <script src="/js/analytics-tracker.js" defer></script>
     <script src="/js/cart-manager.js" defer></script>
@@ -795,14 +743,10 @@
 </head>
 
 <body>
-    <!-- Header -->
+    <!-- SECTION: HEADER / NAV -->
     <header class="header">
         <nav class="nav">
             <div class="nav-left">
-                <a href="/shop" class="nav-link">Shop</a>
-                <a href="/sell" class="nav-link">Sell</a>
-            </div>
-            <div class="nav-center">
                 <a href="/" class="logo">
                     <img src="/SBS (Your Story).png" alt="SBS"
                         onerror="this.style.display='none'; this.parentNode.innerHTML='SBS'">
@@ -811,21 +755,22 @@
             <div class="nav-right">
                 <!-- Auth state dynamically updates this section -->
                 <a href="/dashboard" class="nav-link">Dashboard</a>
+                <button type="button" class="btn-outline hero-signout-btn" id="heroSignOutBtn">Sign Out</button>
                 <button class="cart-toggle" type="button">
                     Basket
                     <span class="cart-count" id="cart-count">0</span>
                 </button>
+                <!-- Hamburger Menu Button (Mobile Only) - FAR RIGHT -->
                 <button class="hamburger" aria-label="Menu">
                     <span></span>
                     <span></span>
                     <span></span>
                 </button>
-                <button type="button" class="btn-outline" id="signOutBtn">Sign Out</button>
             </div>
         </nav>
     </header>
 
-    <!-- Mobile Menu -->
+    <!-- SECTION: MOBILE MENU (Slide-in) -->
     <div class="mobile-menu-backdrop"></div>
     <div class="mobile-menu" aria-hidden="true">
         <div class="mobile-menu-header">
@@ -835,19 +780,20 @@
             <a href="/shop" class="mobile-menu-item">🛍️ Shop</a>
             <a href="/sell" class="mobile-menu-item">💰 Sell</a>
             <a href="/dashboard" class="mobile-menu-item">📊 Dashboard</a>
-            <button type="button" class="mobile-menu-item btn-style" id="mobile-signout">🚪 Sign Out</button>
         </div>
     </div>
 
-    <!-- Main Content -->
+    <!-- SECTION: MAIN CONTAINER (Page header + grid) -->
     <div class="container">
         <div class="page-header">
-            <h1 class="page-title">My Account</h1>
-            <p class="page-subtitle">Manage your orders, sell submissions, and account settings</p>
+            <div class="page-header-content">
+                <h1 class="page-title">My Account</h1>
+                <p class="page-subtitle">Manage your orders, sell submissions, and account settings</p>
+            </div>
         </div>
 
         <div class="dashboard-grid">
-            <!-- Sidebar -->
+            <!-- SECTION: SIDEBAR (Profile + Menu) -->
             <aside class="sidebar">
                 <div class="profile-section">
                     <div class="profile-avatar" id="profileAvatar">?</div>
@@ -862,6 +808,7 @@
                             style="color: var(--primary-gold); font-size: 0.85rem; padding: 0 1rem; display: block; margin-bottom: 0.5rem;">BUY</strong>
                     </li>
                     <li><a href="#" data-section="orders">My Orders <small>(Coming Soon)</small></a></li>
+                    <li><a href="#" data-section="bids">My Bids 💰</a></li>
                     <li style="margin-top: 1rem; padding: 0.5rem 0; border-top: 1px solid var(--border-subtle);">
                         <strong
                             style="color: var(--primary-gold); font-size: 0.85rem; padding: 0 1rem; display: block; margin-bottom: 0.5rem;">SELL</strong>
@@ -876,7 +823,7 @@
                 </ul>
             </aside>
 
-            <!-- Main Content -->
+            <!-- SECTION: MAIN CONTENT (Dynamic sections render here) -->
             <main class="main-content" id="mainContent">
                 <!-- Content loads here dynamically -->
             </main>
@@ -1461,15 +1408,14 @@
             window.location.replace('/login.html?logout=true&t=' + Date.now());
         }
 
-        const signOutButton = document.getElementById('signOutBtn');
-        if (signOutButton) {
-            signOutButton.addEventListener('click', handleSignOut);
-        }
-
-        const mobileSignOutBtn = document.getElementById('mobile-signout');
-        if (mobileSignOutBtn) {
-            mobileSignOutBtn.addEventListener('click', handleSignOut);
-        }
+        // Use event delegation to handle all sign out buttons
+        document.addEventListener('click', function(e) {
+            const target = e.target.closest('#signOutBtn, #heroSignOutBtn, #mobile-signout, .hero-signout-btn');
+            if (target) {
+                e.preventDefault();
+                handleSignOut(e);
+            }
+        });
 
         // Load section content
         async function loadSection(section) {
@@ -1489,6 +1435,9 @@
                 case 'orders':
                     await loadOrders();
                     break;
+                case 'bids':
+                    await loadBids();
+                    break;
                 case 'submissions':
                     await loadSubmissions();
                     break;
@@ -1501,6 +1450,109 @@
             }
         }
 
+        // 🎯 SHARED: Render Bid Card (used by Overview and My Bids)
+        function renderBidCard(bid, compact = false) {
+            const statusColors = {
+                'pending': '#ff9800',
+                'accepted': '#4caf50',
+                'rejected': '#f44336',
+                'countered': '#2196f3'
+            };
+
+            const statusLabels = {
+                'pending': '⏳ Pending',
+                'accepted': '✅ Accepted',
+                'rejected': '❌ Rejected',
+                'countered': '🔄 Counter Offer'
+            };
+
+            // HTML escape function to prevent XSS
+            const escapeHtml = (text) => {
+                if (!text) return '';
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            };
+
+            // Safe data extraction with defaults
+            const statusColor = statusColors[bid.status] || '#999';
+            const statusLabel = statusLabels[bid.status] || escapeHtml(bid.status);
+            const isHighest = bid.is_highest_offer;
+            const offerAmount = typeof bid.offer_amount === 'number' ? bid.offer_amount.toFixed(2) : '0.00';
+            const counterAmount = typeof bid.counter_offer_amount === 'number' ? bid.counter_offer_amount.toFixed(2) : null;
+            const productCategory = escapeHtml(bid.product_category) || 'Product';
+            const productSize = escapeHtml(bid.product_size) || 'N/A';
+            const adminNotes = escapeHtml(bid.admin_notes);
+            const productImage = bid.product_image || '/placeholder.svg';
+            const productId = bid.product_id || '';
+
+            // Safe date formatting
+            let dateString = 'Unknown date';
+            try {
+                if (bid.created_at) {
+                    const date = new Date(bid.created_at);
+                    if (!isNaN(date.getTime())) {
+                        dateString = date.toLocaleDateString('en-US', { 
+                            month: 'short', 
+                            day: 'numeric', 
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        });
+                    }
+                }
+            } catch (e) {
+                console.warn('Date parsing error:', e);
+            }
+
+            return `
+                <div class="bid-card" style="background: var(--bg-card); border-radius: 12px; padding: 1.5rem; border: 1px solid var(--border-subtle);">
+                    <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                        <div style="flex-shrink: 0;">
+                            <img src="${productImage}" 
+                                 alt="Product" 
+                                 style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;"
+                                 onerror="this.src='/placeholder.svg'">
+                        </div>
+                        <div style="flex: 1;">
+                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+                                <div>
+                                    <div style="font-weight: 700; font-size: 1.1rem; color: var(--text-primary);">
+                                        €${offerAmount}
+                                    </div>
+                                    <div style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.25rem;">
+                                        ${productCategory} • ${productSize}
+                                    </div>
+                                </div>
+                                <span style="background: ${statusColor}; color: white; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; white-space: nowrap;">
+                                    ${statusLabel}
+                                </span>
+                            </div>
+                            ${isHighest ? `
+                                <div style="background: linear-gradient(135deg, #d4af37 0%, #f4d03f 100%); color: #000; padding: 0.5rem; border-radius: 6px; font-size: 0.8rem; font-weight: 700; text-align: center; margin-top: 0.5rem;">
+                                    🔥 HIGHEST BID
+                                </div>
+                            ` : ''}
+                            ${counterAmount ? `
+                                <div style="background: rgba(33, 150, 243, 0.1); border: 1px solid #2196f3; padding: 0.5rem; border-radius: 6px; margin-top: 0.5rem; font-size: 0.85rem;">
+                                    <strong style="color: #2196f3;">Counter Offer:</strong> €${counterAmount}
+                                    ${adminNotes ? `<br><span style="color: var(--text-secondary); font-size: 0.8rem;">${adminNotes}</span>` : ''}
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                    <div style="padding-top: 1rem; border-top: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center;">
+                        <span style="color: var(--text-secondary); font-size: 0.85rem;">
+                            ${dateString}
+                        </span>
+                        <a href="/shop?product=${productId}" class="btn-outline" style="padding: 0.5rem 1rem; font-size: 0.85rem;">
+                            View Product
+                        </a>
+                    </div>
+                </div>
+            `;
+        }
+
         // Load Overview
         async function loadOverview() {
             const content = document.getElementById('mainContent');
@@ -1508,6 +1560,14 @@
             const token = sessionStorage.getItem('sbs_csrf_token');
 
             content.innerHTML = `
+                <div class="section">
+                    <div class="section-header">
+                        <h2 class="section-title">💰 My Bids</h2>
+                        <a href="#" class="section-link" onclick="loadSection('bids'); return false;">View all</a>
+                    </div>
+                    <div id="recentBids" class="loading"><div class="spinner"></div></div>
+                </div>
+
                 <div class="section">
                     <div class="section-header">
                         <h2 class="section-title">Recent Orders</h2>
@@ -1524,6 +1584,41 @@
                     <div id="recentSubmissions" class="loading"><div class="spinner"></div></div>
                 </div>
             `;
+
+            // Load Recent Bids
+            const recentBidsEl = document.getElementById('recentBids');
+            if (recentBidsEl) {
+                recentBidsEl.innerHTML = `
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p style="margin-top: 0.5rem;">Loading your recent bids...</p>
+                    </div>
+                `;
+
+                try {
+                    const response = await fetch('/api/users/me/bids', {
+                        credentials: 'include'
+                    });
+                    const data = await response.json();
+
+                    if (!response.ok || !data.success || !data.bids || data.bids.length === 0) {
+                        recentBidsEl.innerHTML = `
+                            <div class="empty-state">
+                                <p>No bids yet. <a href="/shop.html" style="color: var(--primary-gold);">Start bidding!</a></p>
+                            </div>
+                        `;
+                    } else {
+                        recentBidsEl.innerHTML = data.bids.slice(0, 3).map(bid => renderBidCard(bid, true)).join('');
+                    }
+                } catch (bidsError) {
+                    console.warn('Recent bids load error:', bidsError);
+                    recentBidsEl.innerHTML = `
+                        <div class="empty-state">
+                            <p>We couldn't fetch your bids right now. Try refreshing shortly.</p>
+                        </div>
+                    `;
+                }
+            }
 
             const recentOrdersEl = document.getElementById('recentOrders');
             if (recentOrdersEl) {
@@ -1671,6 +1766,177 @@
                     refreshOrders(true);
                 });
             }
+        }
+
+        // Load Bids
+        async function loadBids() {
+            // Get user data for bidding username display
+            const user = JSON.parse(sessionStorage.getItem('sbs_user') || '{}');
+            
+            // Check if there's a new bid submitted from shop page
+            const newBidTimestamp = localStorage.getItem('sbs_new_bid_submitted');
+            const hasNewBid = newBidTimestamp && (Date.now() - parseInt(newBidTimestamp) < 60000); // Within last minute
+            
+            const content = document.getElementById('mainContent');
+            content.innerHTML = `
+                <div class="section">
+                    ${hasNewBid ? `
+                        <div id="newBidNotice" style="background: linear-gradient(135deg, #4caf50 0%, #45a049 100%); padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; color: white; display: flex; align-items: center; gap: 0.75rem;">
+                            <span style="font-size: 1.5rem;">✅</span>
+                            <div>
+                                <strong style="display: block; margin-bottom: 0.25rem;">Bid Submitted Successfully!</strong>
+                                <span style="opacity: 0.9; font-size: 0.9rem;">Your new bid appears below.</span>
+                            </div>
+                        </div>
+                    ` : ''}
+                    <div style="background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(218, 165, 32, 0.05) 100%); border: 1px solid rgba(255, 215, 0, 0.3); padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem;">
+                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                <span style="font-size: 1.5rem;">🏆</span>
+                                <div>
+                                    <div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.25rem;">Bidding As</div>
+                                    <div id="biddingUsernameDisplay" style="font-size: 1.1rem; font-weight: 700; color: var(--primary-gold);">
+                                        ${user?.bidding_username || '<span style="color: var(--text-secondary); font-style: italic;">Not set</span>'}
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="button" class="btn-outline" onclick="loadSection('profile'); return false;" style="font-size: 0.85rem; padding: 0.5rem 1rem;">
+                                ✏️ Edit
+                            </button>
+                        </div>
+                    </div>
+                    <div class="section-header">
+                        <h2 class="section-title">💰 My Bids</h2>
+                        <button type="button" class="btn-outline" id="refreshBidsBtn">🔄 Refresh</button>
+                    </div>
+                    <div id="bidsLoading" class="loading">
+                        <div class="spinner"></div>
+                        <p style="margin-top: 0.5rem;">Loading your bids...</p>
+                    </div>
+                    <div id="bidsContainer" style="display: none;">
+                        <div id="bidsSummary" class="stats-grid" style="margin-bottom: 2rem;"></div>
+                        <div id="bidsList"></div>
+                    </div>
+                </div>
+            `;
+            
+            // Clear the new bid flag after showing notice
+            if (hasNewBid) {
+                localStorage.removeItem('sbs_new_bid_submitted');
+                
+                // Auto-hide notice after 5 seconds
+                setTimeout(() => {
+                    const notice = document.getElementById('newBidNotice');
+                    if (notice) {
+                        notice.style.transition = 'opacity 0.3s ease';
+                        notice.style.opacity = '0';
+                        setTimeout(() => notice.remove(), 300);
+                    }
+                }, 5000);
+            }
+
+            async function refreshBids() {
+                const loadingBlock = document.getElementById('bidsLoading');
+                const container = document.getElementById('bidsContainer');
+
+                try {
+                    if (loadingBlock) loadingBlock.style.display = 'flex';
+                    if (container) container.style.display = 'none';
+
+                    const response = await fetch('/api/users/me/bids', {
+                        credentials: 'include'
+                    });
+
+                    const data = await response.json();
+
+                    if (!response.ok || !data.success) {
+                        throw new Error(data.error || 'Failed to load bids');
+                    }
+
+                    renderBids(data.bids || []);
+
+                    if (loadingBlock) loadingBlock.style.display = 'none';
+                    if (container) container.style.display = 'block';
+                } catch (error) {
+                    console.error('Bids load error:', error);
+                    if (loadingBlock) {
+                        loadingBlock.innerHTML = `
+                            <p style="color: var(--danger-red);">❌ Failed to load bids</p>
+                            <button type="button" class="btn-outline" onclick="loadSection('bids')">Try Again</button>
+                        `;
+                    }
+                }
+            }
+
+            function renderBids(bids) {
+                const summaryEl = document.getElementById('bidsSummary');
+                const listEl = document.getElementById('bidsList');
+
+                // Ensure bids is an array
+                if (!Array.isArray(bids)) {
+                    bids = [];
+                }
+
+                // Calculate stats with safe defaults
+                const totalBids = bids.length;
+                const activeBids = bids.filter(b => b && b.status === 'pending').length;
+                const acceptedBids = bids.filter(b => b && b.status === 'accepted').length;
+                const totalAmount = bids.reduce((sum, b) => {
+                    const amount = parseFloat(b?.offer_amount);
+                    return sum + (isNaN(amount) ? 0 : amount);
+                }, 0);
+
+                // Render summary
+                if (summaryEl) {
+                    summaryEl.innerHTML = `
+                        <div class="stat-card">
+                            <div class="stat-value">${totalBids}</div>
+                            <div class="stat-label">Total Bids</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">${activeBids}</div>
+                            <div class="stat-label">Active</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">${acceptedBids}</div>
+                            <div class="stat-label">Accepted</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">€${totalAmount.toFixed(2)}</div>
+                            <div class="stat-label">Total Offered</div>
+                        </div>
+                    `;
+                }
+
+                // Render bids list
+                if (listEl) {
+                    if (bids.length === 0) {
+                        listEl.innerHTML = `
+                            <div class="empty-state">
+                                <p style="font-size: 3rem; margin-bottom: 1rem;">💰</p>
+                                <h3>No Bids Yet</h3>
+                                <p>Start making offers on items you love!</p>
+                                <a href="/shop" class="btn-primary" style="margin-top: 1rem; display: inline-block;">Browse Shop</a>
+                            </div>
+                        `;
+                    } else {
+                        listEl.innerHTML = `
+                            <div class="bids-grid">
+                                ${bids.map(bid => renderBidCard(bid)).join('')}
+                            </div>
+                        `;
+                    }
+                }
+            }
+
+            // Refresh button handler
+            const refreshBtn = document.getElementById('refreshBidsBtn');
+            if (refreshBtn) {
+                refreshBtn.addEventListener('click', refreshBids);
+            }
+
+            // Initial load
+            refreshBids();
         }
 
         // Load Submissions
@@ -2085,6 +2351,7 @@
                 firstName: escapeAttr(user?.first_name || ''),
                 lastName: escapeAttr(user?.last_name || ''),
                 handle: escapeAttr(user?.social_handle || ''),
+                biddingUsername: escapeAttr(user?.bidding_username || ''),
                 email: escapeAttr(user?.email || ''),
                 phone: escapeAttr(user?.phone || ''),
                 address: escapeAttr(user?.address || ''),
@@ -2123,6 +2390,17 @@
                                     <input type="text" id="edit-social-handle" value="${safeUser.handle}"
                                            style="width: 100%; padding: 0.75rem; background: var(--bg-dark); border: 1px solid var(--border-subtle); border-radius: 8px; color: var(--text-primary); font-size: 1rem;">
                                     <small style="color: var(--text-secondary); display: block; margin-top: 0.25rem;">Used for login</small>
+                                </div>
+
+                                <div>
+                                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">🏆 Bidding Username</label>
+                                    <input type="text" id="edit-bidding-username" value="${safeUser.biddingUsername}"
+                                           placeholder="Enter your bidding alias" maxlength="30"
+                                           style="width: 100%; padding: 0.75rem; background: rgba(212,175,55,0.1); border: 2px solid rgba(212,175,55,0.3); border-radius: 8px; color: var(--primary-gold); font-size: 1rem; font-weight: 600;">
+                                    <small style="color: var(--text-secondary); display: block; margin-top: 0.25rem;">
+                                        💡 This name will appear publicly on your bids (others won't see your real name). 
+                                        <strong style="color: var(--primary-gold);">We can still contact you!</strong>
+                                    </small>
                                 </div>
 
                                 <div>
@@ -2253,6 +2531,7 @@
                 first_name: document.getElementById('edit-first-name').value,
                 last_name: document.getElementById('edit-last-name').value,
                 social_handle: document.getElementById('edit-social-handle').value,
+                bidding_username: document.getElementById('edit-bidding-username').value,
                 email: document.getElementById('edit-email').value,
                 phone: document.getElementById('edit-phone').value,
                 address: document.getElementById('edit-address').value,
