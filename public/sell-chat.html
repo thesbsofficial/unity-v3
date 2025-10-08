@@ -1,0 +1,2440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="description" content="Chat with SBS AI to sell streetwear, shoes (UK 8-11), tech (2020+) and jewellery. Get instant offers with photos, price & location.">
+    <title>Sell Your Clothing & Shoes - SBS Assistant</title>
+    <link rel="icon" href="/favicon.ico">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+            background: #000000;
+            height: 100vh;
+            height: 100dvh; /* Dynamic viewport height for mobile */
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+            touch-action: pan-y;
+        }
+
+        /* Chat Container */
+        .chat-container {
+            max-width: 900px;
+            margin: 0 auto;
+            height: 100vh;
+            height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            background: #000000;
+            position: relative;
+        }
+
+        /* Header */
+        .chat-header {
+            background: linear-gradient(135deg, #1a1a1a 0%, #000000 100%);
+            border-bottom: 2px solid #FFD700;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .bot-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+        }
+
+        .bot-info {
+            flex: 1;
+        }
+
+        .bot-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: #FFD700;
+            margin-bottom: 2px;
+        }
+
+        .bot-status {
+            font-size: 13px;
+            color: #888;
+        }
+
+        .bot-status.online {
+            color: #4ade80;
+        }
+
+        .bot-status.online::before {
+            content: "● ";
+        }
+
+        /* Messages Area */
+        .messages-area {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 20px;
+            padding-bottom: 40px; /* Extra space at bottom */
+            background: #0a0a0a;
+            background-image: 
+                repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(255,215,0,.02) 35px, rgba(255,215,0,.02) 70px);
+            -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+            overscroll-behavior: contain; /* Prevent scroll chaining */
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start; /* Messages stack from top */
+        }
+
+        .message {
+            margin-bottom: 16px;
+            animation: fadeIn 0.2s ease-out;
+            will-change: opacity; /* Optimize animation performance */
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* Bot Messages */
+        .message.bot {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .message.bot .avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: #FFD700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+            padding: 4px;
+        }
+        
+        .message.bot .avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .message.bot .bubble {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: #ffffff;
+            padding: 12px 16px;
+            border-radius: 18px;
+            border-top-left-radius: 4px;
+            max-width: 70%;
+            line-height: 1.5;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+        }
+
+        /* User Messages */
+        .message.user {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .message.user .bubble {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            color: #000000;
+            padding: 12px 16px;
+            border-radius: 18px;
+            border-top-right-radius: 4px;
+            max-width: 70%;
+            line-height: 1.5;
+            font-weight: 500;
+            box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+        }
+
+        /* Typing Indicator */
+        .typing-indicator {
+            display: none;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .typing-indicator.show {
+            display: flex;
+        }
+
+        .typing-indicator .avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .typing-indicator .dots {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            padding: 12px 16px;
+            border-radius: 18px;
+            border-top-left-radius: 4px;
+            display: flex;
+            gap: 4px;
+        }
+
+        .typing-indicator .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #FFD700;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-indicator .dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-indicator .dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% {
+                opacity: 0.3;
+                transform: scale(0.8);
+            }
+            30% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* Quick Reply Chips */
+        .quick-replies {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+            padding-left: 45px;
+        }
+
+        .quick-reply-chip {
+            background: #1a1a1a;
+            border: 1.5px solid #FFD700;
+            color: #FFD700;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .quick-reply-chip:hover {
+            background: #FFD700;
+            color: #000000;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+        }
+
+        .quick-reply-chip:active {
+            transform: translateY(0);
+        }
+
+        /* Input Area */
+        .input-area {
+            background: #1a1a1a;
+            border-top: 2px solid #FFD700;
+            padding: 15px;
+            padding-bottom: max(15px, calc(env(safe-area-inset-bottom) + 10px));
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+            position: relative;
+            z-index: 100;
+        }
+        
+        @media (max-width: 768px) {
+            .input-area {
+                padding: 12px;
+                padding-bottom: max(12px, calc(env(safe-area-inset-bottom) + 8px));
+            }
+        }
+
+        .input-wrapper {
+            flex: 1;
+            position: relative;
+            display: flex;
+            align-items: flex-end;
+            gap: 8px;
+        }
+
+        #messageInput {
+            flex: 1;
+            background: #0a0a0a;
+            border: 2px solid #333;
+            border-radius: 25px;
+            padding: 14px 20px;
+            font-size: 16px; /* Prevent zoom on iOS */
+            color: #ffffff;
+            font-family: inherit;
+            transition: height 0.2s ease, border-color 0.3s;
+            -webkit-appearance: none;
+            appearance: none;
+            min-width: 0; /* Prevent flex overflow */
+            overflow-y: auto; /* Scroll when max height reached */
+            line-height: 1.4;
+        }
+        
+        /* Loading state before JS hydrates */
+        #messageInput:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        #messageInput:focus {
+            outline: none;
+            border-color: #FFD700;
+            box-shadow: 0 0 0 4px rgba(255, 215, 0, 0.1);
+        }
+
+        #messageInput::placeholder {
+            color: #666;
+            white-space: normal; /* Allow wrapping */
+            word-wrap: break-word;
+        }
+
+        #sendBtn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            border: none;
+            color: #000000;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            flex-shrink: 0;
+        }
+
+        #sendBtn:hover:not(:disabled) {
+            transform: scale(1.05);
+            box-shadow: 0 4px 20px rgba(255, 215, 0, 0.5);
+        }
+
+        #sendBtn:active:not(:disabled) {
+            transform: scale(0.95);
+        }
+
+        #sendBtn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        /* Success Badge */
+        .success-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #10b981;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-top: 12px;
+        }
+
+        /* Extracted Data Display */
+        .extracted-data {
+            background: #0a0a0a;
+            border: 1px solid #FFD700;
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 12px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .data-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .data-label {
+            font-size: 11px;
+            color: #888;
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .data-value {
+            font-size: 15px;
+            color: #FFD700;
+            font-weight: 600;
+        }
+
+        /* Photo Preview in Messages */
+        .photo-preview {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 8px;
+            margin-bottom: 8px;
+            max-width: 100%;
+        }
+
+        .photo-preview .photo-thumb {
+            position: relative;
+            width: 100%;
+            padding-bottom: 100%; /* 1:1 aspect ratio */
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid #FFD700;
+            background: #1a1a1a;
+        }
+
+        .photo-preview .photo-thumb img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Photo Preview in Input Area */
+        .photo-preview-input .photo-thumb {
+            position: relative;
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid #FFD700;
+            flex-shrink: 0;
+        }
+
+        .photo-preview-input .photo-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .photo-thumb .remove {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            background: rgba(0,0,0,0.9);
+            color: #FFD700;
+            border: 1px solid #FFD700;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            transition: all 0.2s;
+        }
+
+        .photo-thumb .remove:hover {
+            background: #FFD700;
+            color: #000;
+            transform: scale(1.1);
+        }
+
+        /* Icon Button */
+        .icon-btn {
+            background: none;
+            border: none;
+            color: #FFD700;
+            font-size: 22px;
+            cursor: pointer;
+            padding: 10px;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+            flex-shrink: 0;
+            height: 45px;
+            width: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .icon-btn:hover {
+            opacity: 1;
+        }
+
+        /* Error State */
+        .error-banner {
+            background: #ff4444;
+            color: #fff;
+            padding: 12px 20px;
+            text-align: center;
+            font-size: 14px;
+            display: none;
+        }
+
+        .error-banner.show {
+            display: block;
+        }
+
+        .error-banner button {
+            background: #fff;
+            color: #ff4444;
+            border: none;
+            padding: 6px 16px;
+            border-radius: 4px;
+            font-weight: 600;
+            margin: 0 5px;
+            cursor: pointer;
+        }
+
+        /* Condition Chips */
+        .condition-chips {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+
+        .condition-chip {
+            background: #1a1a1a;
+            border: 1px solid #FFD700;
+            color: #FFD700;
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .condition-chip:hover {
+            background: #FFD700;
+            color: #000;
+        }
+
+        /* Scrollbar */
+        .messages-area::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .messages-area::-webkit-scrollbar-track {
+            background: #0a0a0a;
+        }
+
+        .messages-area::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 4px;
+        }
+
+        .messages-area::-webkit-scrollbar-thumb:hover {
+            background: #FFD700;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .message.bot .bubble,
+            .message.user .bubble {
+                max-width: 85%;
+            }
+
+            .quick-replies {
+                padding-left: 0;
+            }
+
+            .chat-header {
+                padding: 15px;
+            }
+
+            .bot-avatar {
+                width: 45px;
+                height: 45px;
+            }
+
+            .input-area {
+                padding: 15px;
+            }
+        }
+        
+        /* 🆘 Floating Help Button */
+        .help-button {
+            position: fixed;
+            bottom: 100px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 4px 16px rgba(255, 215, 0, 0.5);
+            cursor: pointer;
+            z-index: 1000;
+            transition: all 0.3s ease;
+            border: none;
+            outline: none;
+        }
+
+        .help-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(255, 215, 0, 0.7);
+        }
+
+        .help-button:active {
+            transform: scale(0.95);
+        }
+
+        @media (max-width: 768px) {
+            .help-button {
+                width: 48px;
+                height: 48px;
+                font-size: 20px;
+                bottom: 90px;
+                right: 15px;
+            }
+        }
+
+        @media (min-width: 769px) {
+            .help-button {
+                top: 140px;
+                right: 20px;
+                bottom: auto;
+            }
+        }
+        
+        /* 🎓 Help Modal Styles */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+            10%, 90% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        }
+        
+        .help-modal {
+            background: #1a1a1a;
+            border: 2px solid #FFD700;
+            border-radius: 16px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 8px 32px rgba(255, 215, 0, 0.3);
+        }
+        
+        .help-header {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-radius: 14px 14px 0 0;
+        }
+        
+        .help-header h2 {
+            margin: 0;
+            color: #000;
+            font-size: 20px;
+        }
+        
+        .help-close {
+            background: none;
+            border: none;
+            color: #000;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background 0.2s;
+        }
+        
+        .help-close:hover {
+            background: rgba(0,0,0,0.1);
+        }
+        
+        .help-content {
+            padding: 24px;
+            color: #fff;
+        }
+        
+        .help-content section {
+            margin-bottom: 24px;
+        }
+        
+        .help-content h3 {
+            color: #FFD700;
+            font-size: 16px;
+            margin-bottom: 12px;
+        }
+        
+        .help-content p {
+            margin: 8px 0;
+            line-height: 1.6;
+        }
+        
+        .help-content ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .help-content li {
+            padding: 6px 0;
+            padding-left: 20px;
+            position: relative;
+        }
+        
+        .help-content li:before {
+            content: "•";
+            color: #FFD700;
+            position: absolute;
+            left: 0;
+        }
+        
+        .help-example {
+            background: rgba(255, 215, 0, 0.1);
+            border-left: 3px solid #FFD700;
+            padding: 12px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <!-- No-JS Fallback -->
+    <noscript>
+        <div style="position: fixed; inset: 0; background: #000; color: #fff; display: flex; align-items: center; justify-content: center; padding: 20px; text-align: center; font-family: system-ui;">
+            <div>
+                <h1 style="color: #FFD700; margin-bottom: 20px;">SBS Sell Assistant</h1>
+                <p style="margin-bottom: 30px; color: #ccc;">JavaScript is required for the chat. Contact us directly:</p>
+                <a href="https://wa.me/353851234567" style="display: inline-block; background: #25D366; color: #fff; padding: 15px 30px; border-radius: 8px; text-decoration: none; margin: 10px;">📱 WhatsApp</a>
+                <a href="https://instagram.com/thesbsofficial" style="display: inline-block; background: #E4405F; color: #fff; padding: 15px 30px; border-radius: 8px; text-decoration: none; margin: 10px;">📸 Instagram</a>
+                <br><br>
+                <a href="/sell" style="color: #FFD700; text-decoration: underline;">Or use our Sell Form →</a>
+            </div>
+        </div>
+    </noscript>
+
+    <div class="chat-container" id="chatContainer">
+        <!-- Header -->
+        <div class="chat-header">
+            <div class="bot-avatar">
+                👔
+            </div>
+            <div class="bot-info">
+                <div class="bot-name">SBS Sell Assistant</div>
+                <div class="bot-status online" role="status" aria-live="polite" aria-label="Bot status">Online</div>
+            </div>
+        </div>
+
+        <!-- Messages Area -->
+        <div class="messages-area" id="messagesArea">
+            <!-- Welcome message will be added by JS -->
+            
+            <!-- Typing Indicator -->
+            <div class="typing-indicator" id="typingIndicator">
+                <div class="avatar">🤖</div>
+                <div class="dots">
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Privacy Banner (Hidden by default, shown as overlay when needed) -->
+        <div id="privacyBanner" style="position: fixed; bottom: 0; left: 0; right: 0; background: rgba(26,26,26,0.98); backdrop-filter: blur(10px); border-top: 1px solid #FFD700; padding: 12px 20px; font-size: 12px; color: #888; text-align: center; display: none; z-index: 1000; box-shadow: 0 -4px 20px rgba(0,0,0,0.5);">
+            By chatting, you agree to our <a href="/privacy-policy" style="color: #FFD700; text-decoration: underline;">Privacy Policy</a>
+            <button onclick="document.getElementById('privacyBanner').style.display='none'" style="background: #FFD700; color: #000; border: none; padding: 4px 12px; border-radius: 12px; cursor: pointer; margin-left: 10px; font-size: 11px; font-weight: 600;" aria-label="Dismiss privacy notice">Got it</button>
+        </div>
+
+        <!-- Input Area -->
+        <div class="input-area">
+            <div class="input-wrapper">
+                <textarea 
+                    id="messageInput" 
+                    placeholder="Loading chat..."
+                    autocomplete="off"
+                    rows="1"
+                    aria-label="Message input"
+                    disabled
+                    style="resize: none; min-height: 45px; max-height: 120px; padding-top: 12px;"
+                ></textarea>
+                <input 
+                    type="file" 
+                    id="photoInput" 
+                    accept="image/*" 
+                    multiple 
+                    style="display: none;"
+                    aria-label="Upload photos"
+                >
+                <button id="photoBtn" class="icon-btn" aria-label="Attach photos (up to 5, max 10MB each)" title="Attach photos" disabled style="opacity: 0.3;">
+                    📎
+                </button>
+            </div>
+            <button id="sendBtn" disabled aria-label="Send message" aria-disabled="true">➤</button>
+        </div>
+
+        <!-- Quick Exit Links (Collapsible on mobile) -->
+        <div id="quickLinks" style="background: #0a0a0a; padding: 8px 20px; border-top: 1px solid #1a1a1a; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; font-size: 12px; transition: opacity 0.15s ease; overflow: hidden; will-change: opacity;">
+            <a href="https://wa.me/353851234567" style="color: #25D366; text-decoration: none;">📱</a>
+            <a href="https://instagram.com/thesbsofficial" style="color: #E4405F; text-decoration: none;">📸</a>
+            <a href="https://snapchat.com/add/thesbsofficial" style="color: #FFFC00; text-decoration: none;">👻</a>
+            <a href="/sell" style="color: #FFD700; text-decoration: none;">📝</a>
+        </div>
+
+        <!-- Footer (Hidden on mobile when keyboard is open) -->
+        <div id="footer" style="background: #000; padding: 10px 20px; border-top: 2px solid #FFD700; text-align: center; font-size: 11px; color: #888; transition: opacity 0.15s ease; overflow: hidden; will-change: opacity;">
+            <div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 5px;">
+                <a href="https://instagram.com/thesbsofficial" style="color: #FFD700; text-decoration: none;">IG</a>
+                <a href="https://tiktok.com/@thesbsofficial" style="color: #FFD700; text-decoration: none;">TikTok</a>
+                <a href="/links" style="color: #FFD700; text-decoration: none;">Links</a>
+            </div>
+            <div style="font-size: 10px;">© 2025 SBS Dublin</div>
+        </div>
+    </div>
+
+    <!-- 🆘 Floating Help Button -->
+    <button class="help-button" onclick="showHelpModal()" title="Help & Commands" aria-label="Help">
+        ❓
+    </button>
+
+    <script>
+        // Debug helper function
+        window.debugChatDOM = function() {
+            const messagesArea = document.getElementById('messagesArea');
+            console.log('🔍 [DEBUG DOM] Full structure:', {
+                messagesArea: {
+                    exists: !!messagesArea,
+                    id: messagesArea?.id,
+                    className: messagesArea?.className,
+                    childCount: messagesArea?.children.length,
+                    children: Array.from(messagesArea?.children || []).map((child, i) => ({
+                        index: i,
+                        className: child.className,
+                        textContent: child.textContent.substring(0, 50) + '...',
+                        offsetTop: child.offsetTop,
+                        offsetHeight: child.offsetHeight
+                    })),
+                    scrollTop: messagesArea?.scrollTop,
+                    scrollHeight: messagesArea?.scrollHeight,
+                    clientHeight: messagesArea?.clientHeight,
+                    computedStyle: messagesArea ? {
+                        display: getComputedStyle(messagesArea).display,
+                        position: getComputedStyle(messagesArea).position,
+                        overflow: getComputedStyle(messagesArea).overflowY
+                    } : null
+                }
+            });
+            return 'Check console for details';
+        };
+
+        // Error Boundary
+        window.addEventListener('error', (e) => {
+            console.error('🔥 [GLOBAL ERROR]', {
+                message: e.message,
+                filename: e.filename,
+                lineno: e.lineno,
+                colno: e.colno,
+                error: e.error,
+                stack: e.error?.stack
+            });
+            showError('Something went wrong. Please reload the page or try WhatsApp instead.');
+        });
+
+        window.addEventListener('unhandledrejection', (e) => {
+            console.error('🚫 [UNHANDLED REJECTION]', {
+                reason: e.reason,
+                promise: e.promise,
+                stack: e.reason?.stack
+            });
+            showError('Connection issue. Please check your network or use WhatsApp.');
+        });
+
+        const API_URL = 'https://ai-parse-tech.fredbademosi1.workers.dev/chat-sell';
+        const messagesArea = document.getElementById('messagesArea');
+        const messageInput = document.getElementById('messageInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const typingIndicator = document.getElementById('typingIndicator');
+        const photoInput = document.getElementById('photoInput');
+        const photoBtn = document.getElementById('photoBtn');
+        const privacyBanner = document.getElementById('privacyBanner');
+        
+        // 🎓 MODE MANAGEMENT (localStorage persistence)
+        let currentMode = localStorage.getItem('sbsMode') || 'guided';
+        
+        function initializeMode() {
+            currentMode = localStorage.getItem('sbsMode') || 'guided';
+            console.log('🎓 [MODE] Initialized:', currentMode);
+        }
+        
+        function toggleMode() {
+            currentMode = currentMode === 'guided' ? 'express' : 'guided';
+            localStorage.setItem('sbsMode', currentMode);
+            
+            // Show toast notification
+            showModeToast();
+            
+            console.log('🎓 [MODE] Switched to:', currentMode);
+        }
+        
+        function showModeToast() {
+            const toast = document.createElement('div');
+            toast.className = 'mode-toast';
+            toast.innerHTML = currentMode === 'express' 
+                ? '⚡️ EXPRESS MODE: Quick prompts only'
+                : '🎓 GUIDED MODE: Full tips & examples';
+            
+            toast.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: rgba(0, 0, 0, 0.95);
+                color: ${currentMode === 'express' ? '#10b981' : '#FFD700'};
+                padding: 20px 30px;
+                border-radius: 12px;
+                font-size: 16px;
+                font-weight: 700;
+                z-index: 10000;
+                box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+                animation: fadeInOut 2s ease-in-out;
+            `;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 2000);
+        }
+        
+        // 🆘 HELP MODAL
+        function showHelpModal() {
+            const modal = document.createElement('div');
+            modal.className = 'help-modal-overlay';
+            modal.innerHTML = `
+                <div class="help-modal">
+                    <div class="help-header">
+                        <h2>🎓 SBS QUICK GUIDE</h2>
+                        <button class="help-close" onclick="this.closest('.help-modal-overlay').remove()">✕</button>
+                    </div>
+                    <div class="help-content">
+                        <section>
+                            <h3>� MODES:</h3>
+                            <p><strong>🎓 GUIDED:</strong> Full tips + examples (default)</p>
+                            <p><strong>⚡️ EXPRESS:</strong> Quick prompts only</p>
+                            <p><em>Type "express mode" or "guided mode" to switch</em></p>
+                        </section>
+                        
+                        <section>
+                            <h3>📝 COMMANDS:</h3>
+                            <ul>
+                                <li><strong>submit</strong> → List current item</li>
+                                <li><strong>add more</strong> → List another</li>
+                                <li><strong>edit [field]</strong> → Fix mistakes</li>
+                                <li><strong>skip</strong> → Skip optional details</li>
+                                <li><strong>done</strong> → Finish session</li>
+                                <li><strong>help</strong> → Show this guide</li>
+                            </ul>
+                        </section>
+                        
+                        <section>
+                            <h3>✅ BEST PRACTICES:</h3>
+                            <ul>
+                                <li>Include all 4: Brand, Size, Condition, Price</li>
+                                <li>Be specific: "UK-9" not "9", "M" not "medium"</li>
+                                <li>Clear condition: "brand new", "like new", "worn"</li>
+                                <li>Euro prices: "70" or "70 euros"</li>
+                            </ul>
+                        </section>
+                        
+                        <section>
+                            <h3>📦 EXAMPLE:</h3>
+                            <p class="help-example">"Nike UK-9 brand new 70"</p>
+                        </section>
+                    </div>
+                </div>
+            `;
+            
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0,0,0,0.9);
+                z-index: 10000;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 20px;
+                animation: fadeIn 0.3s ease;
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // Close on overlay click
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) modal.remove();
+            });
+        }
+        
+        // Initialize logging
+        console.log('�🚀 [INIT] Chat initialized:', {
+            apiUrl: API_URL,
+            mode: currentMode,
+            messagesArea: messagesArea ? 'Found' : 'MISSING!',
+            messagesAreaId: messagesArea?.id,
+            messagesAreaClass: messagesArea?.className,
+            messagesAreaChildren: messagesArea?.children.length || 0,
+            scrollHeight: messagesArea?.scrollHeight,
+            clientHeight: messagesArea?.clientHeight,
+            timestamp: new Date().toISOString()
+        });
+
+        if (!messagesArea) {
+            console.error('❌ [FATAL] Messages area not found! Chat will not work.');
+        }
+        
+        let sessionId = 'chat-' + Date.now();
+        console.log('🆔 [SESSION] New session ID:', sessionId);
+        
+        let conversationContext = {
+            brand: null,
+            size: null,
+            condition: null
+        };
+        let uploadedPhotos = [];
+        const MAX_PHOTOS = 5;
+        const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+
+        // 🎯 CONVERSATION FLOW STATE MACHINE
+        let conversationFlow = {
+            step: 'welcome', // welcome → type → brand → size → condition → price → photos → complete
+            data: {
+                type: null,        // 'clothes' or 'shoes'
+                brand: null,       // e.g., 'YELIR', 'Nike'
+                size: null,        // e.g., 'M', 'UK 9'
+                condition: null,   // e.g., 'Brand New Tagged', 'Mint'
+                price: null,       // e.g., '50'
+                photos: []         // array of photo data
+            }
+        };
+
+        // Show privacy banner on first interaction
+        let hasInteracted = false;
+        function maybeShowPrivacyBanner() {
+            if (!hasInteracted) {
+                privacyBanner.style.display = 'block';
+                hasInteracted = true;
+            }
+        }
+
+        // Error handling
+        function showError(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-banner show';
+            errorDiv.innerHTML = `
+                ${message}
+                <button onclick="location.reload()">Retry</button>
+                <button onclick="window.location.href='https://wa.me/353851234567'">Open WhatsApp</button>
+            `;
+            document.querySelector('.chat-container').prepend(errorDiv);
+            setTimeout(() => errorDiv.classList.remove('show'), 10000);
+        }
+
+        // Photo upload handling
+        photoBtn.addEventListener('click', () => {
+            console.log('📸 [PHOTO] Button clicked, current photos:', uploadedPhotos.length);
+            if (uploadedPhotos.length >= MAX_PHOTOS) {
+                addBotMessage(`You can only upload ${MAX_PHOTOS} photos max. Remove some first! 😊`);
+                return;
+            }
+            photoInput.click();
+        });
+
+        photoInput.addEventListener('change', (e) => {
+            const files = Array.from(e.target.files);
+            console.log('📸 [PHOTO] Files selected:', files.length);
+            
+            const remaining = MAX_PHOTOS - uploadedPhotos.length;
+            const filesToAdd = files.slice(0, remaining);
+
+            if (filesToAdd.length === 0) {
+                console.log('⚠️ [PHOTO] No files to add');
+                return;
+            }
+
+            let filesProcessed = 0;
+            let filesAdded = 0;
+
+            filesToAdd.forEach((file, index) => {
+                if (file.size > MAX_FILE_SIZE) {
+                    addBotMessage(`"${file.name}" is too large (max 10MB). Try compressing it! 📱`);
+                    filesProcessed++;
+                    return;
+                }
+                if (!file.type.startsWith('image/')) {
+                    addBotMessage(`"${file.name}" isn't an image. Please upload JPG, PNG, or HEIC files! 📷`);
+                    filesProcessed++;
+                    return;
+                }
+
+                console.log(`📸 [PHOTO] Processing file ${index + 1}:`, file.name, `(${(file.size / 1024 / 1024).toFixed(2)}MB)`);
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    uploadedPhotos.push({
+                        name: file.name,
+                        data: e.target.result,
+                        size: file.size
+                    });
+                    filesAdded++;
+                    filesProcessed++;
+                    
+                    console.log(`✅ [PHOTO] Added: ${file.name}, Total: ${uploadedPhotos.length}`);
+                    updatePhotoPreview();
+                    
+                    // Show confirmation when all files processed
+                    if (filesProcessed === filesToAdd.length) {
+                        if (filesAdded > 0) {
+                            const photoWord = filesAdded === 1 ? 'photo' : 'photos';
+                            addBotMessage(`📸 ${filesAdded} ${photoWord} uploaded!`);
+                            
+                            // If we're in the photos step, auto-submit!
+                            if (conversationFlow.step === 'photos') {
+                                setTimeout(() => {
+                                    handlePhotosStep();
+                                }, 500);
+                            }
+                        }
+                    }
+                };
+                reader.onerror = () => {
+                    console.error('❌ [PHOTO] Failed to read:', file.name);
+                    filesProcessed++;
+                    addBotMessage(`Failed to load "${file.name}". Try again! 📸`);
+                };
+                reader.readAsDataURL(file);
+            });
+
+            photoInput.value = '';
+        });
+
+        function updatePhotoPreview() {
+            console.log('🔄 [PHOTO PREVIEW] Updating preview, photos:', uploadedPhotos.length);
+            
+            let existingPreview = document.querySelector('.photo-preview-input');
+            if (!existingPreview) {
+                existingPreview = document.createElement('div');
+                existingPreview.className = 'photo-preview-input';
+                existingPreview.style.cssText = `
+                    display: flex;
+                    gap: 8px;
+                    margin-bottom: 8px;
+                    flex-wrap: wrap;
+                    padding: 8px;
+                    background: rgba(255, 215, 0, 0.1);
+                    border-radius: 8px;
+                `;
+                messageInput.parentElement.insertBefore(existingPreview, messageInput);
+            }
+
+            if (uploadedPhotos.length === 0) {
+                existingPreview.remove();
+                console.log('🗑️ [PHOTO PREVIEW] Removed empty preview');
+                return;
+            }
+
+            existingPreview.innerHTML = `
+                <div style="width: 100%; color: #FFD700; font-size: 12px; margin-bottom: 4px;">
+                    📸 ${uploadedPhotos.length}/${MAX_PHOTOS} photo${uploadedPhotos.length > 1 ? 's' : ''} ready to send
+                </div>
+                ${uploadedPhotos.map((photo, index) => `
+                    <div class="photo-thumb">
+                        <img src="${photo.data}" alt="Photo ${index + 1}">
+                        <button class="remove" onclick="removePhoto(${index})" aria-label="Remove photo ${index + 1}">✕</button>
+                    </div>
+                `).join('')}
+            `;
+            
+            console.log('✅ [PHOTO PREVIEW] Preview updated with', uploadedPhotos.length, 'photos');
+        }
+
+        function removePhoto(index) {
+            uploadedPhotos.splice(index, 1);
+            updatePhotoPreview();
+        }
+
+        // Mobile keyboard handling - hide footer/quick links when keyboard appears
+        let initialHeight = window.innerHeight;
+        const footer = document.getElementById('footer');
+        const quickLinks = document.getElementById('quickLinks');
+        let isFooterVisible = true;
+        let footerAnimating = false;
+        
+        // Helper function for graceful hiding
+        function hideFooterGracefully() {
+            if (!isFooterVisible || footerAnimating) return; // Prevent duplicate calls
+            footerAnimating = true;
+            isFooterVisible = false;
+            
+            footer.style.opacity = '0';
+            quickLinks.style.opacity = '0';
+            privacyBanner.style.display = 'none';
+            
+            setTimeout(() => {
+                footer.style.display = 'none';
+                quickLinks.style.display = 'none';
+                footerAnimating = false;
+            }, 150);
+        }
+        
+        function showFooterGracefully() {
+            if (isFooterVisible || footerAnimating) return; // Prevent duplicate calls
+            footerAnimating = true;
+            isFooterVisible = true;
+            
+            footer.style.display = 'block';
+            quickLinks.style.display = 'flex';
+            
+            requestAnimationFrame(() => {
+                footer.style.opacity = '1';
+                quickLinks.style.opacity = '1';
+                setTimeout(() => { footerAnimating = false; }, 150);
+            });
+        }
+        
+        // Use ONLY visualViewport for keyboard detection (more reliable)
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', () => {
+                const currentHeight = window.visualViewport.height;
+                
+                if (currentHeight < initialHeight * 0.75) {
+                    // Keyboard is open
+                    if (window.innerWidth <= 768) {
+                        hideFooterGracefully();
+                    }
+                } else {
+                    // Keyboard is closed
+                    if (window.innerWidth <= 768) {
+                        showFooterGracefully();
+                    }
+                }
+            });
+        } else {
+            // Fallback for older browsers (no visualViewport API)
+            messageInput.addEventListener('focus', () => {
+                if (window.innerWidth <= 768) {
+                    setTimeout(hideFooterGracefully, 150);
+                }
+            });
+
+            messageInput.addEventListener('blur', () => {
+                if (window.innerWidth <= 768) {
+                    setTimeout(showFooterGracefully, 150);
+                }
+            });
+        }
+
+        // Add welcome message on load
+        // 🧪 TEST: Manual AI prompt trigger (for debugging)
+        window.testAI = async function() {
+            console.log('🧪 [TEST] Manual AI test triggered');
+            const result = await generateAIPrompt('brand', { type: 'clothes' });
+            console.log('🧪 [TEST] Result:', result);
+            return result;
+        };
+
+        window.addEventListener('DOMContentLoaded', () => {
+            try {
+                console.log('🚀 [INIT] ============ CHAT INITIALIZING ============');
+                console.log('🚀 [INIT] API URL:', API_URL);
+                console.log('🚀 [INIT] Session ID:', sessionId);
+                console.log('🚀 [INIT] Conversation Flow:', conversationFlow);
+                console.log('🚀 [INIT] Type "testAI()" in console to test AI worker');
+                
+                // 🎓 Initialize mode system
+                initializeMode();
+                
+                // Mark chat container as loaded
+                document.getElementById('chatContainer').style.opacity = '1';
+                
+                // Enable input and photo button after hydration
+                messageInput.disabled = false;
+                messageInput.placeholder = "Describe your item...";
+                photoBtn.disabled = false;
+                photoBtn.style.opacity = '0.7';
+                
+                setTimeout(() => {
+                    conversationFlow.step = 'type';
+                    addBotMessage(
+                        "👋 Hi! How are you? Would you like to sell clothes or shoes?",
+                        ["👕 Clothes", "👟 Shoes"]
+                    );
+                }, 300);
+            } catch (error) {
+                console.error('Failed to initialize:', error);
+                showError('Failed to load chat. Please refresh or contact us via WhatsApp.');
+            }
+        });
+
+        // Enable/disable send button with debouncing for footer
+        let footerToggleTimeout;
+        messageInput.addEventListener('input', () => {
+            const hasContent = messageInput.value.trim().length > 0;
+            sendBtn.disabled = !hasContent;
+            sendBtn.setAttribute('aria-disabled', !hasContent);
+            
+            // Auto-resize textarea (instant, no lag)
+            messageInput.style.height = 'auto';
+            const newHeight = Math.min(messageInput.scrollHeight, 120);
+            messageInput.style.height = newHeight + 'px';
+            
+            // Debounce footer toggle to prevent rapid changes
+            if (window.innerWidth <= 768) {
+                clearTimeout(footerToggleTimeout);
+                footerToggleTimeout = setTimeout(() => {
+                    if (newHeight > 60 && footer.style.display !== 'none') {
+                        hideFooterGracefully();
+                    } else if (newHeight <= 60 && footer.style.display === 'none' && messageInput.matches(':focus')) {
+                        showFooterGracefully();
+                    }
+                }, 50); // 50ms debounce
+            }
+        });
+
+        // Keyboard handling: Enter sends, Shift+Enter new line
+        messageInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                if (!sendBtn.disabled) {
+                    sendMessage();
+                }
+            }
+        });
+
+        // Send button click
+        sendBtn.addEventListener('click', sendMessage);
+
+        // Prevent double-tap zoom on send button
+        sendBtn.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            if (!sendBtn.disabled) {
+                sendMessage();
+            }
+        });
+
+        function addUserMessage(text, photos = []) {
+            console.log('👤 [USER MESSAGE] Adding:', {
+                text: text.substring(0, 100),
+                photoCount: photos.length,
+                currentScrollTop: messagesArea.scrollTop,
+                scrollHeight: messagesArea.scrollHeight,
+                timestamp: new Date().toISOString()
+            });
+
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message user';
+            
+            let html = '';
+            
+            // Show photos if any
+            if (photos.length > 0) {
+                html += '<div class="photo-preview">';
+                photos.forEach((photo, i) => {
+                    html += `
+                        <div class="photo-thumb">
+                            <img src="${photo.data}" alt="Uploaded photo ${i + 1}">
+                        </div>
+                    `;
+                });
+                html += '</div>';
+            }
+            
+            html += `<div class="bubble">${escapeHtml(text)}</div>`;
+            
+            messageDiv.innerHTML = html;
+            messagesArea.appendChild(messageDiv);
+            
+            console.log('📍 [POSITION] User message appended:', {
+                messageIndex: messagesArea.children.length - 1,
+                totalMessages: messagesArea.children.length,
+                newScrollHeight: messagesArea.scrollHeight
+            });
+            
+            // Ensure scroll happens after DOM update with small delay
+            setTimeout(() => {
+                scrollToBottom();
+                console.log('📜 [SCROLL] After user message:', {
+                    scrollTop: messagesArea.scrollTop,
+                    scrollHeight: messagesArea.scrollHeight,
+                    clientHeight: messagesArea.clientHeight
+                });
+            }, 50); // 50ms delay to ensure rendering
+        }
+
+        // Format sbsCategory for display
+        function formatCategory(category) {
+            const categoryMap = {
+                'BN-CLOTHES': 'Brand New Clothes',
+                'BN-SHOES': 'Brand New Shoes',
+                'PO-CLOTHES': 'Pre-Owned Clothes',
+                'PO-SHOES': 'Pre-Owned Shoes'
+            };
+            return categoryMap[category] || category || 'Clothing';
+        }
+
+        function addBotMessage(text, quickReplies = []) {
+            console.log('🤖 [BOT MESSAGE] Adding:', {
+                text: text.substring(0, 100),
+                quickRepliesCount: quickReplies.length,
+                currentScrollTop: messagesArea.scrollTop,
+                scrollHeight: messagesArea.scrollHeight,
+                timestamp: new Date().toISOString()
+            });
+
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message bot';
+            
+            let html = `
+                <div class="avatar">
+                    <img src="/SBS%20(Your%20Story).png" alt="SBS" onerror="this.style.display='none'; this.parentElement.innerHTML='👔';">
+                </div>
+                <div>
+                    <div class="bubble">${text}</div>
+            `;
+            
+            if (quickReplies.length > 0) {
+                html += '<div class="quick-replies">';
+                quickReplies.forEach(reply => {
+                    html += `<button class="quick-reply-chip" data-reply="${escapeHtml(reply)}">${reply}</button>`;
+                });
+                html += '</div>';
+            }
+            
+            html += '</div>';
+            messageDiv.innerHTML = html;
+            messagesArea.appendChild(messageDiv);
+            
+            console.log('📍 [POSITION] Message appended:', {
+                messageIndex: messagesArea.children.length - 1,
+                totalMessages: messagesArea.children.length,
+                newScrollHeight: messagesArea.scrollHeight,
+                messageOffsetTop: messageDiv.offsetTop,
+                messageHeight: messageDiv.offsetHeight
+            });
+            
+            // Add event listeners to quick reply buttons
+            messageDiv.querySelectorAll('.quick-reply-chip').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    selectQuickReply(btn.getAttribute('data-reply'));
+                });
+            });
+            
+            // Ensure scroll happens after DOM update with small delay for images to load
+            setTimeout(() => {
+                scrollToBottom();
+                console.log('📜 [SCROLL] After bot message:', {
+                    scrollTop: messagesArea.scrollTop,
+                    scrollHeight: messagesArea.scrollHeight,
+                    clientHeight: messagesArea.clientHeight
+                });
+            }, 100); // 100ms delay to ensure images/content loaded
+        }
+
+        function addSuccessMessage(data) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message bot';
+            messageDiv.innerHTML = `
+                <div class="avatar">🤖</div>
+                <div>
+                    <div class="bubble">
+                        ✅ Perfect! I've got all the details.
+                        <div class="success-badge">
+                            <span>✓</span>
+                            <span>Ready to list</span>
+                        </div>
+                        <div class="extracted-data">
+                            <div class="data-item">
+                                <div class="data-label">Brand</div>
+                                <div class="data-value">${data.brand}</div>
+                            </div>
+                            <div class="data-item">
+                                <div class="data-label">Size</div>
+                                <div class="data-value">${data.size}</div>
+                            </div>
+                            <div class="data-item">
+                                <div class="data-label">Condition</div>
+                                <div class="data-value">${data.condition}</div>
+                            </div>
+                            <div class="data-item">
+                                <div class="data-label">Category</div>
+                                <div class="data-value">${formatCategory(data.category)}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            messagesArea.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        function showTyping() {
+            console.log('⏳ [TYPING] Bot is thinking... Disabling inputs');
+            typingIndicator.classList.add('show');
+            
+            // Disable inputs while bot is typing
+            messageInput.disabled = true;
+            messageInput.placeholder = "Bot is typing...";
+            sendBtn.disabled = true;
+            photoBtn.disabled = true;
+            
+            // Visual feedback
+            messageInput.style.opacity = '0.5';
+            sendBtn.style.opacity = '0.3';
+            photoBtn.style.opacity = '0.3';
+            
+            scrollToBottom(true); // Instant scroll, no animation
+        }
+
+        function hideTyping() {
+            console.log('✅ [TYPING] Bot finished. Re-enabling inputs');
+            typingIndicator.classList.remove('show');
+            
+            // Re-enable inputs
+            messageInput.disabled = false;
+            messageInput.placeholder = "Describe your item...";
+            sendBtn.disabled = false;
+            photoBtn.disabled = false;
+            
+            // Restore visual state
+            messageInput.style.opacity = '1';
+            sendBtn.style.opacity = '1';
+            photoBtn.style.opacity = '0.7';
+            
+            // Refocus input for smooth UX
+            messageInput.focus();
+        }
+
+        // 🎯 FLOW-BASED MESSAGE HANDLER
+        async function sendMessage() {
+            maybeShowPrivacyBanner();
+            
+            const message = messageInput.value.trim();
+            if (!message && uploadedPhotos.length === 0) return;
+
+            // Add user message
+            addUserMessage(message, uploadedPhotos);
+            
+            // Clear input
+            messageInput.value = '';
+            messageInput.style.height = 'auto';
+            sendBtn.disabled = true;
+            
+            // Process based on current step (with AI validation)
+            await processConversationStep(message);
+        }
+
+        // 🎯 PROCESS EACH CONVERSATION STEP (async for AI validation)
+        async function processConversationStep(userMessage) {
+            const msg = userMessage.toLowerCase();
+            
+            console.log('🎯 [FLOW] Current step:', conversationFlow.step, '| Message:', userMessage);
+            
+            switch (conversationFlow.step) {
+                case 'type':
+                    handleTypeStep(msg, userMessage);
+                    break;
+                case 'brand':
+                case 'brand-custom':
+                    await handleBrandStep(userMessage);
+                    break;
+                case 'size':
+                case 'size-custom':
+                    await handleSizeStep(userMessage);
+                    break;
+                case 'condition':
+                    handleConditionStep(userMessage);
+                    break;
+                case 'price':
+                    handlePriceStep(userMessage);
+                    break;
+                case 'photos':
+                    await handlePhotosStep();
+                    break;
+                default:
+                    addBotMessage("Let's start over!", ["👕 Clothes", "👟 Shoes"]);
+                    conversationFlow.step = 'type';
+            }
+        }
+
+        // STEP 1: Choose clothes or shoes (AI generates next prompt)
+        async function handleTypeStep(msgLower, originalMsg) {
+            // Handle greetings - just re-prompt
+            if (msgLower.match(/\b(hi|hey|hello|yo|sup|hiya|heya|gg|good)\b/)) {
+                addBotMessage(
+                    "Hey! 👋 Clothes or shoes?",
+                    ["👕 Clothes", "👟 Shoes"]
+                );
+                return;
+            }
+            
+            if (msgLower.includes('clothes') || msgLower.includes('👕') || msgLower.includes('cloth')) {
+                conversationFlow.data.type = 'clothes';
+                conversationFlow.step = 'brand';
+                
+                showTyping();
+                
+                // Ask AI to generate brand prompt
+                const aiPrompt = await generateAIPrompt('brand', { type: 'clothes' });
+                
+                hideTyping();
+                
+                addBotMessage(
+                    aiPrompt.message || "Cool boss! 😎 What brand?",
+                    aiPrompt.suggestions || ["YELIR", "North Face", "Monterrain", "Nike", "Other brand"]
+                );
+            } else if (msgLower.includes('shoes') || msgLower.includes('👟') || msgLower.includes('shoe') || msgLower.includes('trainer')) {
+                conversationFlow.data.type = 'shoes';
+                conversationFlow.step = 'brand';
+                
+                showTyping();
+                
+                // Ask AI to generate brand prompt
+                const aiPrompt = await generateAIPrompt('brand', { type: 'shoes' });
+                
+                hideTyping();
+                
+                addBotMessage(
+                    aiPrompt.message || "Cool boss! 😎 What brand?",
+                    aiPrompt.suggestions || ["Nike", "New Balance", "Asics", "Adidas", "Other brand"]
+                );
+            } else {
+                addBotMessage(
+                    "Sorry, I didn't catch that! Clothes or shoes?",
+                    ["👕 Clothes", "👟 Shoes"]
+                );
+            }
+        }
+        
+        // 🤖 AI PROMPT GENERATOR - Let AI create contextual prompts and suggestions
+        async function generateAIPrompt(nextStep, context) {
+            try {
+                // Build context message for AI
+                let contextMessage = `User is selling ${context.type || 'items'}. `;
+                if (conversationFlow.data.brand) contextMessage += `Brand: ${conversationFlow.data.brand}. `;
+                if (conversationFlow.data.size) contextMessage += `Size: ${conversationFlow.data.size}. `;
+                contextMessage += `Next step: ${nextStep}`;
+                
+                console.log('🤖 [AI PROMPT] ============ CALLING WORKER ============');
+                console.log('🤖 [AI PROMPT] Step:', nextStep);
+                console.log('🤖 [AI PROMPT] Context:', context);
+                console.log('🤖 [AI PROMPT] Message:', contextMessage);
+                console.log('🤖 [AI PROMPT] API URL:', API_URL);
+                
+                // Call worker to generate contextual prompt
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userMessage: contextMessage,
+                        sessionId: sessionId,
+                        photos: [],
+                        mode: currentMode, // Include current mode (guided/express)
+                        generatePrompt: true, // Flag to tell worker we want a prompt
+                        promptStep: nextStep,
+                        promptContext: context
+                    })
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    console.log('✅ [AI PROMPT] ============ WORKER RESPONSE ============');
+                    console.log('✅ [AI PROMPT] Status:', response.status);
+                    console.log('✅ [AI PROMPT] Result:', JSON.stringify(result, null, 2));
+                    
+                    // If AI returned a custom prompt, use it
+                    if (result.prompt) {
+                        console.log('✅ [AI PROMPT] Using AI-generated prompt');
+                        return {
+                            message: result.prompt.message,
+                            suggestions: result.prompt.suggestions || []
+                        };
+                    }
+                }
+                
+                // Fallback to smart defaults if AI doesn't return prompt
+                console.log('⚠️ [AI PROMPT] No AI prompt in response, using fallback defaults');
+                console.log('⚠️ [AI PROMPT] Response status:', response.status);
+                return getFallbackPrompt(nextStep, context);
+                
+            } catch (error) {
+                console.error('❌ [AI PROMPT ERROR] ============ FAILED ============');
+                console.error('❌ [AI PROMPT ERROR] Error:', error.message);
+                console.error('❌ [AI PROMPT ERROR] Stack:', error.stack);
+                console.log('⚠️ [AI PROMPT] Falling back to defaults');
+                return getFallbackPrompt(nextStep, context);
+            }
+        }
+        
+        // Fallback prompts if AI is unavailable
+        function getFallbackPrompt(nextStep, context) {
+            if (nextStep === 'brand') {
+                if (context.type === 'shoes') {
+                    return {
+                        message: "Cool boss! 😎 What brand shoes?",
+                        suggestions: ["Nike", "New Balance", "Asics", "Adidas", "Other brand"]
+                    };
+                } else {
+                    return {
+                        message: "Cool boss! 😎 What brand clothing?",
+                        suggestions: ["YELIR", "North Face", "Monterrain", "Nike", "Other brand"]
+                    };
+                }
+            }
+            
+            if (nextStep === 'size') {
+                if (context.type === 'shoes') {
+                    return {
+                        message: `Amazing! What size ${context.brand}?`,
+                        suggestions: ["UK 8", "UK 9", "UK 10", "UK 11", "Other size"]
+                    };
+                } else {
+                    return {
+                        message: `Amazing! What size ${context.brand}?`,
+                        suggestions: ["S", "M", "L", "XL", "Other size"]
+                    };
+                }
+            }
+            
+            if (nextStep === 'condition') {
+                return {
+                    message: "Brilliant! Now what's the condition?",
+                    suggestions: ["Brand New Tagged", "Mint", "Like New", "Decent"]
+                };
+            }
+            
+            if (nextStep === 'price') {
+                return {
+                    message: "Sweet! 💰 What price would you like?",
+                    suggestions: ["€30", "€50", "€80", "€100+"]
+                };
+            }
+            
+            if (nextStep === 'photos') {
+                return {
+                    message: "Perfect! 📸 Finally, we'd love some photos!",
+                    suggestions: []
+                };
+            }
+            
+            return {
+                message: "What's next?",
+                suggestions: []
+            };
+        }
+
+        // STEP 2: Get brand (with AI validation)
+        async function handleBrandStep(brand) {
+            // Check if user wants to type their own brand
+            if (brand.toLowerCase().includes('other brand')) {
+                conversationFlow.step = 'brand-custom';
+                addBotMessage(
+                    "Cool! What's the brand name?",
+                    []
+                );
+                return;
+            }
+            
+            // If we're in brand-custom step, validate with AI
+            if (conversationFlow.step === 'brand-custom') {
+                showTyping();
+                
+                try {
+                    // Validate brand with worker/taxonomy - send structured validation message
+                    const itemType = conversationFlow.data.type === 'shoes' ? 'shoes' : 'clothing';
+                    const validationMessage = `${brand} ${itemType} size M brand new`;
+                    
+                    console.log('🏷️ [BRAND VALIDATION] Input:', brand);
+                    console.log('🏷️ [BRAND VALIDATION] Sending to worker:', validationMessage);
+                    
+                    const response = await fetch(API_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            userMessage: validationMessage,
+                            sessionId: sessionId,
+                            photos: [],
+                            mode: currentMode
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    hideTyping();
+                    
+                    console.log('🏷️ [BRAND VALIDATION] Response:', JSON.stringify(result, null, 2));
+                    console.log('🏷️ [BRAND VALIDATION] Parsed brand:', result.parsed?.brand);
+                    console.log('🏷️ [BRAND VALIDATION] isValid:', result.parsed?.isValid);
+                    
+                    // Check if brand is rejected
+                    if (result.parsed?.isValid === false) {
+                        addBotMessage(result.parsed.rejectReason || "Sorry, we don't accept that brand.");
+                        addBotMessage(
+                            "Try one of these brands:",
+                            conversationFlow.data.type === 'shoes' 
+                                ? ["Nike", "New Balance", "Asics", "Other brand"]
+                                : ["YELIR", "North Face", "Monterrain", "Hugo Boss", "Other brand"]
+                        );
+                        // Reset to brand step so they can try again
+                        conversationFlow.step = 'brand-custom';
+                        return;
+                    }
+                    
+                    // Brand accepted! Use AI-corrected brand name
+                    const correctedBrand = result.parsed?.brand || brand;
+                    conversationFlow.data.brand = correctedBrand;
+                    conversationFlow.step = 'size';
+                    
+                    console.log('✅ [BRAND ACCEPTED]:', correctedBrand, '(was:', brand, ')');
+                    
+                    // If brand was auto-corrected, show confirmation
+                    if (correctedBrand.toLowerCase() !== brand.toLowerCase()) {
+                        addBotMessage(`Great! I'll list it as "${correctedBrand}" ✓`);
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                    }
+                    
+                    // Let AI generate the size question
+                    const sizePrompt = await generateAIPrompt('size', { 
+                        type: conversationFlow.data.type,
+                        brand: conversationFlow.data.brand 
+                    });
+                    
+                    addBotMessage(sizePrompt.message, sizePrompt.suggestions);
+                    
+                } catch (error) {
+                    console.error('❌ [BRAND VALIDATION ERROR]:', error);
+                    hideTyping();
+                    
+                    // Accept brand anyway if validation fails
+                    conversationFlow.data.brand = brand;
+                    conversationFlow.step = 'size';
+                    
+                    // Get AI-generated size prompt (with fallback)
+                    const sizePrompt = await generateAIPrompt('size', { 
+                        type: conversationFlow.data.type,
+                        brand: brand 
+                    });
+                    
+                    addBotMessage(sizePrompt.message, sizePrompt.suggestions);
+                }
+                return;
+            }
+            
+            // Normal brand selection - but STILL validate it (in case user typed instead of clicking)
+            showTyping();
+            
+            try {
+                // ALWAYS validate brand with worker/taxonomy
+                const itemType = conversationFlow.data.type === 'shoes' ? 'shoes' : 'clothing';
+                const validationMessage = `${brand} ${itemType} size M brand new`;
+                
+                console.log('🏷️ [BRAND VALIDATION] Validating:', validationMessage);
+                
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userMessage: validationMessage,
+                        sessionId: sessionId,
+                        photos: [],
+                        mode: currentMode
+                    })
+                });
+                
+                const result = await response.json();
+                hideTyping();
+                
+                console.log('🏷️ [BRAND VALIDATION] Result:', result);
+                
+                // Check if brand is rejected
+                if (result.parsed?.isValid === false) {
+                    addBotMessage(result.parsed.rejectReason || "Sorry, we don't accept that brand.");
+                    setTimeout(() => {
+                        addBotMessage(
+                            "Try one of these brands:",
+                            conversationFlow.data.type === 'shoes' 
+                                ? ["Nike", "New Balance", "Asics", "Adidas"]
+                                : ["YELIR", "North Face", "Monterrain", "Nike"]
+                        );
+                    }, 500);
+                    return;
+                }
+                
+                // Brand accepted! Use corrected brand from worker (e.g., "ike" → "Nike")
+                conversationFlow.data.brand = result.parsed?.brand || brand;
+                conversationFlow.step = 'size';
+                
+                console.log('✅ [BRAND ACCEPTED]:', conversationFlow.data.brand);
+                
+                // Get AI-generated size prompt
+                const sizePrompt = await generateAIPrompt('size', { 
+                    type: conversationFlow.data.type,
+                    brand: conversationFlow.data.brand 
+                });
+                
+                addBotMessage(sizePrompt.message, sizePrompt.suggestions);
+                
+            } catch (error) {
+                console.error('❌ [BRAND VALIDATION ERROR]:', error);
+                hideTyping();
+                
+                // Accept brand if validation fails
+                conversationFlow.data.brand = brand;
+                conversationFlow.step = 'size';
+                
+                const sizePrompt = await generateAIPrompt('size', { 
+                    type: conversationFlow.data.type,
+                    brand: brand 
+                });
+                
+                addBotMessage(sizePrompt.message, sizePrompt.suggestions);
+            }
+        }
+
+        // STEP 3: Get size (with validation)
+        async function handleSizeStep(size) {
+            // Check if user wants to type their own size
+            if (size.toLowerCase().includes('other size')) {
+                conversationFlow.step = 'size-custom';
+                addBotMessage(
+                    "What size is it?",
+                    []
+                );
+                return;
+            }
+            
+            // If we're in size-custom step, validate with AI
+            if (conversationFlow.step === 'size-custom') {
+                showTyping();
+                
+                try {
+                    // Validate size with worker
+                    const response = await fetch(API_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            userMessage: `${conversationFlow.data.brand} size ${size} ${conversationFlow.data.type}`,
+                            sessionId: sessionId,
+                            photos: [],
+                            mode: currentMode
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    hideTyping();
+                    
+                    console.log('📏 [SIZE VALIDATION]:', result);
+                    
+                    // Check if size is rejected
+                    if (result.parsed?.isValid === false) {
+                        addBotMessage(result.parsed.rejectReason || "That size isn't valid.");
+                        addBotMessage(
+                            "Try one of these sizes:",
+                            conversationFlow.data.type === 'shoes' 
+                                ? ["UK 8", "UK 9", "UK 10", "UK 11"]
+                                : ["S", "M", "L", "XL"]
+                        );
+                        return;
+                    }
+                    
+                    // Size accepted! Get AI-generated condition prompt
+                    conversationFlow.data.size = result.parsed?.size || size;
+                    conversationFlow.step = 'condition';
+                    
+                    const conditionPrompt = await generateAIPrompt('condition', {
+                        type: conversationFlow.data.type,
+                        brand: conversationFlow.data.brand,
+                        size: conversationFlow.data.size
+                    });
+                    
+                    addBotMessage(conditionPrompt.message, conditionPrompt.suggestions);
+                    
+                } catch (error) {
+                    console.error('❌ [SIZE VALIDATION ERROR]:', error);
+                    hideTyping();
+                    
+                    // Accept size anyway if validation fails
+                    conversationFlow.data.size = size;
+                    conversationFlow.step = 'condition';
+                    
+                    const conditionPrompt = await generateAIPrompt('condition', {
+                        type: conversationFlow.data.type,
+                        brand: conversationFlow.data.brand,
+                        size: size
+                    });
+                    
+                    addBotMessage(conditionPrompt.message, conditionPrompt.suggestions);
+                }
+                return;
+            }
+            
+            // Normal size selection (from quick replies - already validated)
+            conversationFlow.data.size = size;
+            conversationFlow.step = 'condition';
+            
+            const conditionPrompt = await generateAIPrompt('condition', {
+                type: conversationFlow.data.type,
+                brand: conversationFlow.data.brand,
+                size: size
+            });
+            
+            addBotMessage(conditionPrompt.message, conditionPrompt.suggestions);
+        }
+
+        // STEP 4: Get condition (AI generates price prompt)
+        async function handleConditionStep(condition) {
+            conversationFlow.data.condition = condition;
+            conversationFlow.step = 'price';
+            
+            showTyping();
+            const pricePrompt = await generateAIPrompt('price', {
+                type: conversationFlow.data.type,
+                brand: conversationFlow.data.brand,
+                size: conversationFlow.data.size,
+                condition: condition
+            });
+            hideTyping();
+            
+            addBotMessage(pricePrompt.message, pricePrompt.suggestions);
+        }
+
+        // STEP 5: Get price (AI generates photo prompt)
+        async function handlePriceStep(price) {
+            conversationFlow.data.price = price.replace(/[€$£]/g, '').trim();
+            conversationFlow.step = 'photos';
+            
+            showTyping();
+            const photoPrompt = await generateAIPrompt('photos', {
+                type: conversationFlow.data.type,
+                brand: conversationFlow.data.brand,
+                size: conversationFlow.data.size,
+                condition: conversationFlow.data.condition,
+                price: conversationFlow.data.price
+            });
+            hideTyping();
+            
+            addBotMessage(photoPrompt.message, photoPrompt.suggestions);
+            
+            // Highlight photo button
+            photoBtn.style.animation = 'pulse 1s ease-in-out 3';
+        }
+
+        // STEP 6: Photos uploaded, validate with worker and submit!
+        async function handlePhotosStep() {
+            if (uploadedPhotos.length === 0) {
+                addBotMessage("Please upload at least 1 photo! 📸");
+                return;
+            }
+            
+            conversationFlow.step = 'complete';
+            const data = conversationFlow.data;
+            
+            console.log('📊 [SUBMIT] Collected data:', data);
+            
+            // Build validation message for worker
+            const validationMessage = `${data.brand} size ${data.size} ${data.condition}`;
+            
+            showTyping();
+            
+            try {
+                // Call worker to validate and structure data properly
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userMessage: validationMessage,
+                        sessionId: sessionId,
+                        photos: uploadedPhotos.map(p => ({ name: p.name, size: p.size })),
+                        mode: currentMode
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const result = await response.json();
+                hideTyping();
+                
+                console.log('✅ [WORKER RESPONSE]:', result);
+                
+                // Show success with validated data from worker
+                if (result.parsed) {
+                    console.log('📊 [FINAL DATA]:', {
+                        brand: result.parsed.brand,
+                        size: result.parsed.size,
+                        condition: result.parsed.condition,
+                        sbsCategory: result.parsed.sbsCategory || result.parsed.category,
+                        isValid: result.parsed.isValid
+                    });
+                    
+                    // Use sbsCategory from worker (properly validated)
+                    const category = result.parsed.sbsCategory || result.parsed.category;
+                    
+                    addSuccessMessage({
+                        brand: result.parsed.brand || data.brand,
+                        size: result.parsed.size || data.size,
+                        condition: result.parsed.condition || data.condition,
+                        category: category || (data.type === 'shoes' ? 
+                            (data.condition.toLowerCase().includes('brand new') || data.condition.toLowerCase().includes('tagged') ? 'BN-SHOES' : 'PO-SHOES') : 
+                            (data.condition.toLowerCase().includes('brand new') || data.condition.toLowerCase().includes('tagged') ? 'BN-CLOTHES' : 'PO-CLOTHES'))
+                    });
+                }
+                
+                setTimeout(() => {
+                    addBotMessage(
+                        "All done! 🎉 Want to list another?",
+                        ["Yes, list another", "No, that's all"]
+                    );
+                }, 1000);
+                
+            } catch (error) {
+                console.error('❌ [SUBMIT ERROR]:', error);
+                hideTyping();
+                
+                // Show success anyway with client-side data
+                addSuccessMessage({
+                    brand: data.brand,
+                    size: data.size,
+                    condition: data.condition,
+                    category: data.type === 'shoes' ? 
+                        (data.condition.toLowerCase().includes('brand new') ? 'BN-SHOES' : 'PO-SHOES') : 
+                        (data.condition.toLowerCase().includes('brand new') ? 'BN-CLOTHES' : 'PO-CLOTHES')
+                });
+                
+                setTimeout(() => {
+                    addBotMessage(
+                        "All done! 🎉 Want to list another?",
+                        ["Yes, list another", "No, that's all"]
+                    );
+                }, 1000);
+            }
+        }
+
+        // OLD AI RESPONSE HANDLER - Not used anymore with flow-based system
+        function handleAIResponse_OLD(data) {
+            console.log('🎯 [HANDLE RESPONSE] Processing AI response:', {
+                data: data,
+                parsed: data.parsed,
+                hasSuccess: !!(data.parsed?.brand && data.parsed?.size && data.parsed?.condition),
+                needsClarification: data.parsed?.needsClarification,
+                isValid: data.parsed?.isValid,
+                timestamp: new Date().toISOString()
+            });
+
+            const parsed = data.parsed;
+            
+            // Complete extraction - success!
+            if (parsed.brand && parsed.size && parsed.condition && !parsed.needsClarification) {
+                console.log('✅ [COMPLETE] All details extracted:', parsed);
+                addSuccessMessage(parsed);
+                // Offer to start again
+                setTimeout(() => {
+                    addBotMessage(
+                        "Want to list another item?",
+                        ["Yes, list another", "No, that's all"]
+                    );
+                }, 1000);
+                return;
+            }
+            
+            // Rejected - invalid brand/size
+            if (parsed.isValid === false && !parsed.needsClarification) {
+                console.log('❌ [REJECTED] Invalid item:', parsed.rejectReason);
+                addBotMessage(`${parsed.rejectReason}`);
+                setTimeout(() => {
+                    // Smart suggestions after rejection
+                    const rejectLower = parsed.rejectReason.toLowerCase();
+                    let suggestions = [];
+                    
+                    if (rejectLower.includes('brand')) {
+                        suggestions = ['YELIR', 'Nike shoes', 'North Face'];
+                    } else if (rejectLower.includes('size') && rejectLower.includes('shoe')) {
+                        suggestions = ['UK 8', 'UK 9', 'UK 10', 'UK 11'];
+                    } else if (rejectLower.includes('size')) {
+                        suggestions = ['S', 'M', 'L', 'XL'];
+                    } else {
+                        suggestions = ['What brands?', 'Got clothes', 'Got shoes'];
+                    }
+                    
+                    addBotMessage("Try one of these brands:", suggestions);
+                }, 800);
+                return;
+            }
+            
+            // Needs clarification - guide them
+            if (parsed.needsClarification) {
+                // Update context
+                if (parsed.brand && parsed.brand !== 'Unknown') conversationContext.brand = parsed.brand;
+                if (parsed.size && parsed.size !== 'Unknown') conversationContext.size = parsed.size;
+                if (parsed.condition && parsed.condition !== 'Unknown') conversationContext.condition = parsed.condition;
+                
+                // Build contextual message
+                let contextMsg = '';
+                if (conversationContext.brand) contextMsg += `Brand: ${conversationContext.brand} ✓\n`;
+                if (conversationContext.size) contextMsg += `Size: ${conversationContext.size} ✓\n`;
+                if (conversationContext.condition) contextMsg += `Condition: ${conversationContext.condition} ✓\n`;
+                
+                if (contextMsg) {
+                    addBotMessage(`Great! I've got:\n${contextMsg}\n${parsed.question}`);
+                } else {
+                    addBotMessage(parsed.question);
+                }
+                
+                // Add helpful quick replies
+                const quickReplies = generateQuickReplies(parsed);
+                if (quickReplies.length > 0) {
+                    setTimeout(() => {
+                        const lastMessage = messagesArea.lastElementChild;
+                        const bubble = lastMessage.querySelector('.bubble');
+                        let repliesHtml = '<div class="quick-replies">';
+                        quickReplies.forEach(reply => {
+                            repliesHtml += `<button class="quick-reply-chip" data-reply="${escapeHtml(reply)}">${reply}</button>`;
+                        });
+                        repliesHtml += '</div>';
+                        bubble.insertAdjacentHTML('afterend', repliesHtml);
+                        
+                        // Add event listeners to the new buttons
+                        bubble.nextElementSibling.querySelectorAll('.quick-reply-chip').forEach(btn => {
+                            btn.addEventListener('click', () => {
+                                selectQuickReply(btn.getAttribute('data-reply'));
+                            });
+                        });
+                    }, 300);
+                }
+                return;
+            }
+            
+            // Conversational/general question
+            if (parsed.question || data.metadata.model === 'conversational-handler') {
+                addBotMessage(parsed.question || data.aiResponse);
+                return;
+            }
+            
+            // Fallback
+            addBotMessage("I didn't quite understand that. Could you tell me the brand, size, and condition?");
+        }
+
+        function generateQuickReplies(parsed) {
+            console.log('🎯 [QUICK REPLIES] Generating for:', {
+                parsedBrand: parsed.brand,
+                parsedSize: parsed.size,
+                parsedCondition: parsed.condition,
+                contextBrand: conversationContext.brand,
+                contextSize: conversationContext.size,
+                contextCondition: conversationContext.condition
+            });
+
+            // Determine what's ACTUALLY missing based on parsed + context
+            const hasBrand = (parsed.brand && parsed.brand !== 'Unknown') || conversationContext.brand;
+            const hasSize = (parsed.size && parsed.size !== 'Unknown') || conversationContext.size;
+            const hasCondition = (parsed.condition && parsed.condition !== 'Unknown') || conversationContext.condition;
+            
+            const missing = [];
+            if (!hasBrand) missing.push('brand');
+            if (!hasSize) missing.push('size');
+            if (!hasCondition) missing.push('condition');
+            
+            console.log('🔍 [MISSING]', missing, '| Has:', {hasBrand, hasSize, hasCondition});
+            
+            // Generate NATURAL user questions/statements (CLOTHES & SHOES ONLY)
+            if (missing.length === 3) {
+                // Nothing yet - what users actually ask
+                return ['What brands?', 'Got clothes', 'Got shoes'];
+            }
+            
+            if (missing.includes('brand') && missing.length === 1) {
+                // Only brand missing - user says which brand
+                const lastMessages = Array.from(messagesArea.querySelectorAll('.user')).slice(-3);
+                const recentText = lastMessages.map(m => m.textContent.toLowerCase()).join(' ');
+                const mentionsShoes = recentText.includes('shoe') || recentText.includes('trainer') || 
+                                     recentText.includes('sneaker') || recentText.includes('nike') ||
+                                     recentText.includes('UK ');
+                
+                return mentionsShoes 
+                    ? ['Nike', 'New Balance', 'Asics'] 
+                    : ['YELIR', 'North Face', 'Monterrain'];
+            }
+            
+            if (missing.includes('size') && missing.length === 1) {
+                // Only size missing - direct size answers
+                const brand = parsed.brand || conversationContext.brand || '';
+                const isShoeBrand = ['Nike', 'New Balance', 'Asics'].includes(brand);
+                
+                return isShoeBrand 
+                    ? ['UK 8', 'UK 9', 'UK 10', 'UK 11'] 
+                    : ['S', 'M', 'L', 'XL'];
+            }
+            
+            if (missing.includes('condition') && missing.length === 1) {
+                // Only condition missing - simple condition answers
+                return ['Brand new', 'Like new', 'Mint', 'Decent'];
+            }
+            
+            // Multiple things missing
+            if (missing.length === 2) {
+                if (hasBrand) {
+                    // Have brand, need size + condition
+                    const brand = parsed.brand || conversationContext.brand;
+                    const isShoeBrand = ['Nike', 'New Balance', 'Asics'].includes(brand);
+                    return isShoeBrand 
+                        ? ['UK 8', 'UK 9', 'UK 10'] 
+                        : ['S', 'M', 'L'];
+                } else if (hasSize) {
+                    // Have size, need brand + condition
+                    return ['YELIR', 'North Face', 'Nike'];
+                } else if (hasCondition) {
+                    // Have condition, need brand + size
+                    return ['YELIR M', 'Nike UK 10', 'North Face L'];
+                }
+            }
+            
+            console.log('ℹ️ [QUICK REPLIES] No suggestions generated');
+            return [];
+        }
+
+        function selectQuickReply(text) {
+            // Handle special actions
+            if (text === 'Yes, list another') {
+                // Reset flow
+                conversationFlow = {
+                    step: 'type',
+                    data: { type: null, brand: null, size: null, condition: null, price: null, photos: [] }
+                };
+                uploadedPhotos = [];
+                updatePhotoPreview();
+                addBotMessage(
+                    "👋 Great! Clothes or shoes this time?",
+                    ["👕 Clothes", "👟 Shoes"]
+                );
+                return;
+            }
+            if (text === "No, that's all") {
+                addBotMessage("Perfect! Thanks for using SBS Sell! 🎉");
+                return;
+            }
+            if (text === 'Retry') {
+                const lastUserMsg = Array.from(document.querySelectorAll('.message.user')).pop();
+                if (lastUserMsg) {
+                    messageInput.value = lastUserMsg.querySelector('.bubble').textContent;
+                    sendMessage();
+                }
+                return;
+            }
+            if (text === 'Open WhatsApp') {
+                window.location.href = 'https://wa.me/353851234567';
+                return;
+            }
+            
+            messageInput.value = text;
+            sendBtn.disabled = false;
+            sendBtn.setAttribute('aria-disabled', 'false');
+            sendMessage();
+        }
+
+        function showConditionChips() {
+            const conditions = ['Brand New with Tags', 'Like New', 'Mint', 'Decent', 'Poor'];
+            addBotMessage(
+                "What's the condition?",
+                conditions
+            );
+        }
+
+        function scrollToBottom(immediate = false) {
+            const beforeScroll = {
+                scrollTop: messagesArea.scrollTop,
+                scrollHeight: messagesArea.scrollHeight,
+                clientHeight: messagesArea.clientHeight
+            };
+
+            // Helper to perform the actual scroll
+            const doScroll = () => {
+                // Scroll to a very large number to ensure we reach the bottom
+                messagesArea.scrollTop = messagesArea.scrollHeight + 1000;
+                
+                const afterScroll = {
+                    scrollTop: messagesArea.scrollTop,
+                    scrollHeight: messagesArea.scrollHeight,
+                    maxScroll: messagesArea.scrollHeight - messagesArea.clientHeight
+                };
+                
+                console.log(immediate ? '⚡ [SCROLL IMMEDIATE]' : '🎬 [SCROLL RAF]', {
+                    before: beforeScroll,
+                    after: afterScroll,
+                    isAtBottom: afterScroll.scrollTop >= afterScroll.maxScroll - 10
+                });
+            };
+
+            if (immediate) {
+                // Instant scroll
+                doScroll();
+            } else {
+                // Double RAF to ensure DOM has fully rendered
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        doScroll();
+                    });
+                });
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
