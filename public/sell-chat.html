@@ -892,7 +892,7 @@
             showError('Connection issue. Please check your network or use WhatsApp.');
         });
 
-        const API_URL = 'https://ai-parse-tech.fredbademosi1.workers.dev/chat-sell';
+        const API_URL = 'https://ai-parse-tech.fredbademosi1.workers.dev';
         const messagesArea = document.getElementById('messagesArea');
         const messageInput = document.getElementById('messageInput');
         const sendBtn = document.getElementById('sendBtn');
@@ -1040,6 +1040,7 @@
         let sessionId = 'chat-' + Date.now();
         console.log('🆔 [SESSION] New session ID:', sessionId);
         
+        let conversationHistory = []; // Track full conversation for AI context
         let conversationContext = {
             brand: null,
             size: null,
@@ -1565,6 +1566,40 @@
             const message = messageInput.value.trim();
             if (!message && uploadedPhotos.length === 0) return;
 
+            // Check for mode change commands
+            const msgLower = message.toLowerCase();
+            if (msgLower === 'express' || msgLower === 'express mode' || msgLower === 'switch to express') {
+                messageInput.value = '';
+                if (currentMode === 'express') {
+                    addUserMessage(message);
+                    addBotMessage("You're already in Express mode ⚡️! Type \"guided\" to switch back.");
+                } else {
+                    currentMode = 'express';
+                    localStorage.setItem('sbsMode', 'express');
+                    addUserMessage(message);
+                    showModeToast('⚡️ Express Mode');
+                    addBotMessage("Switched to Express mode ⚡️! Faster, fewer tips. Let's continue!");
+                }
+                sendBtn.disabled = true;
+                return;
+            }
+            
+            if (msgLower === 'guided' || msgLower === 'guided mode' || msgLower === 'switch to guided') {
+                messageInput.value = '';
+                if (currentMode === 'guided') {
+                    addUserMessage(message);
+                    addBotMessage("You're already in Guided mode 🎓! Type \"express\" for faster mode.");
+                } else {
+                    currentMode = 'guided';
+                    localStorage.setItem('sbsMode', 'guided');
+                    addUserMessage(message);
+                    showModeToast('🎓 Guided Mode');
+                    addBotMessage("Switched to Guided mode 🎓! I'll give you more help and tips. Let's continue!");
+                }
+                sendBtn.disabled = true;
+                return;
+            }
+
             // Add user message
             addUserMessage(message, uploadedPhotos);
             
@@ -1573,8 +1608,90 @@
             messageInput.style.height = 'auto';
             sendBtn.disabled = true;
             
-            // Process based on current step (with AI validation)
-            await processConversationStep(message);
+            // 🎯 PURE AI MODE: Send EVERYTHING through the 3-tier parser (like the tests!)
+            await processWithAI(message);
+        }
+
+        // 🤖 PURE AI PROCESSOR - Works exactly like terminal tests!
+        async function processWithAI(userMessage) {
+            showTyping();
+            
+            try {
+                console.log('🤖 [AI] Sending to 3-tier parser:', userMessage);
+                console.log('🤖 [AI] Conversation history:', conversationHistory);
+                
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        message: userMessage,
+                        mode: currentMode,
+                        conversationHistory: conversationHistory
+                    })
+                });
+                
+                const result = await response.json();
+                hideTyping();
+                
+                console.log('✅ [AI] Result:', result);
+                
+                // Add to conversation history
+                conversationHistory.push({
+                    userMessage: userMessage,
+                    accepted: result.accepted,
+                    mode: currentMode
+                });
+                
+                // Display AI's message
+                addBotMessage(result.message);
+                
+                // If item accepted and complete, ask for photos
+                if (result.accepted && result.data) {
+                    conversationFlow.data = {
+                        type: result.data.itemType || 'unknown',
+                        brand: result.data.brand,
+                        size: result.data.size,
+                        condition: result.data.condition,
+                        price: result.data.price,
+                        category: result.data.category
+                    };
+                    
+                    // If no photos yet, ask for them
+                    if (uploadedPhotos.length === 0) {
+                        setTimeout(() => {
+                            addBotMessage("📸 Finally, we'd love some photos!", []);
+                            photoBtn.style.animation = 'pulse 1s ease-in-out 3';
+                        }, 1000);
+                    } else {
+                        // Photos already uploaded, show success
+                        setTimeout(() => {
+                            showFinalSuccess(result.data);
+                        }, 1000);
+                    }
+                }
+                
+            } catch (error) {
+                console.error('❌ [AI ERROR]:', error);
+                hideTyping();
+                addBotMessage("Oops! Something went wrong. Try again? 🔄");
+            }
+        }
+        
+        // Show final success card
+        function showFinalSuccess(data) {
+            addSuccessMessage({
+                brand: data.brand,
+                size: data.size,
+                condition: data.condition,
+                category: data.category || 'Unknown'
+            });
+            
+            setTimeout(() => {
+                addBotMessage(
+                    "All done! 🎉 Want to list another?",
+                    ["Yes, list another", "No, that's all"]
+                );
+            }, 1000);
         }
 
         // 🎯 PROCESS EACH CONVERSATION STEP (async for AI validation)
@@ -1582,6 +1699,98 @@
             const msg = userMessage.toLowerCase();
             
             console.log('🎯 [FLOW] Current step:', conversationFlow.step, '| Message:', userMessage);
+            
+            // 🤖 SMART DETECTION: Check if user is typing a full item description
+            // If message contains multiple fields (brand + size OR condition + price), use AI parser
+            const hasSize = /\b(uk[- ]?\d+|eu[- ]?\d+|\d+uk|\d+eu|size[- ]?\d+|[sml]|xs|xl|xxl|small|medium|large)\b/i.test(msg);
+            const hasPrice = /\b(\d{2,3}|€\d+|\$\d+|£\d+|euros?|pounds?|dollars?)\b/i.test(msg);
+            const hasCondition = /\b(brand new|bnwt|mint|like new|decent|used|worn|poor|tags|tagged)\b/i.test(msg);
+            const hasBrand = msg.split(/\s+/).length >= 2 && !msg.match(/^(what|how|why|help|who)/);
+            
+            // Check for clothing/shoe type indicators
+            const clothingWords = /\b(tracksuit|hoodie|jacket|jumper|sweater|tshirt|t-shirt|shirt|pants|jeans|shorts|coat|gilet|top|clothes?|clothing)\b/i;
+            const shoeWords = /\b(shoes?|trainers?|sneakers?|boots?|runners?|kicks|footwear)\b/i;
+            
+            const fieldCount = (hasSize ? 1 : 0) + (hasPrice ? 1 : 0) + (hasCondition ? 1 : 0) + (hasBrand ? 1 : 0);
+            
+            // If user mentioned item type, auto-select it
+            if (conversationFlow.step === 'type') {
+                if (clothingWords.test(msg)) {
+                    console.log('👕 [AUTO-DETECT] User mentioned clothing:', userMessage);
+                    conversationFlow.data.type = 'clothes';
+                    conversationFlow.step = 'brand';
+                    
+                    // If they also provided brand/size/price, use AI parser
+                    if (fieldCount >= 2) {
+                        console.log('🤖 [SMART MODE] Full description detected, using AI parser!');
+                        await handleNaturalLanguageInput(userMessage);
+                        return;
+                    }
+                    
+                    // Otherwise go to brand step
+                    showTyping();
+                    const aiPrompt = await generateAIPrompt('brand', { type: 'clothes' });
+                    hideTyping();
+                    addBotMessage(
+                        aiPrompt.message || "Cool boss! 😎 What brand?",
+                        aiPrompt.suggestions || ["YELIR", "North Face", "Monterrain", "Nike", "Other brand"]
+                    );
+                    return;
+                }
+                
+                if (shoeWords.test(msg)) {
+                    console.log('👟 [AUTO-DETECT] User mentioned shoes:', userMessage);
+                    conversationFlow.data.type = 'shoes';
+                    conversationFlow.step = 'brand';
+                    
+                    // If they also provided brand/size/price, use AI parser
+                    if (fieldCount >= 2) {
+                        console.log('🤖 [SMART MODE] Full description detected, using AI parser!');
+                        await handleNaturalLanguageInput(userMessage);
+                        return;
+                    }
+                    
+                    // Otherwise go to brand step
+                    showTyping();
+                    const aiPrompt = await generateAIPrompt('brand', { type: 'shoes' });
+                    hideTyping();
+                    addBotMessage(
+                        aiPrompt.message || "Cool boss! 😎 What brand shoes?",
+                        aiPrompt.suggestions || ["Nike", "New Balance", "Asics", "Adidas", "Other brand"]
+                    );
+                    return;
+                }
+            }
+            
+            // If user provided 2+ fields without type, use AI parser
+            if (fieldCount >= 2 && conversationFlow.step === 'type') {
+                console.log('🤖 [SMART MODE] Detected full item description, using AI parser!');
+                await handleNaturalLanguageInput(userMessage);
+                return;
+            }
+            
+            // Global commands that work in ANY step
+            if (msg === 'help' || msg === 'help me') {
+                showHelpModal();
+                addBotMessage("Check out the help guide! 📚");
+                return;
+            }
+            
+            if (msg.includes('who') && (msg.includes('sbs') || msg.includes('you'))) {
+                addBotMessage("We're SBS - Dublin's premium streetwear reseller! 🔥 We buy & sell authentic streetwear and sneakers.");
+                return;
+            }
+            
+            if (msg === 'restart' || msg === 'start over' || msg === 'reset') {
+                conversationFlow = {
+                    step: 'type',
+                    data: { type: null, brand: null, size: null, condition: null, price: null, photos: [] }
+                };
+                uploadedPhotos = [];
+                updatePhotoPreview();
+                addBotMessage("Let's start fresh! 👋 Clothes or shoes?", ["👕 Clothes", "👟 Shoes"]);
+                return;
+            }
             
             switch (conversationFlow.step) {
                 case 'type':
@@ -1610,8 +1819,108 @@
             }
         }
 
+        // 🤖 NATURAL LANGUAGE HANDLER - Use the 3-tier AI parser!
+        async function handleNaturalLanguageInput(userMessage) {
+            showTyping();
+            
+            try {
+                console.log('🤖 [AI PARSER] Sending to 3-tier system:', userMessage);
+                
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        message: userMessage,
+                        mode: currentMode,
+                        conversationHistory: []
+                    })
+                });
+                
+                const result = await response.json();
+                hideTyping();
+                
+                console.log('✅ [AI PARSER] Result:', result);
+                
+                // Display AI's message
+                addBotMessage(result.message);
+                
+                // If accepted, fill in the data and ask for photos
+                if (result.accepted && result.data) {
+                    conversationFlow.data = {
+                        type: result.data.itemType || 'shoes',
+                        brand: result.data.brand,
+                        size: result.data.size,
+                        condition: result.data.condition,
+                        price: result.data.price
+                    };
+                    conversationFlow.step = 'photos';
+                    
+                    setTimeout(() => {
+                        addBotMessage("📸 Finally, we'd love some photos!", []);
+                        photoBtn.style.animation = 'pulse 1s ease-in-out 3';
+                    }, 1000);
+                } else {
+                    // If not accepted or missing fields, continue with button flow
+                    conversationFlow.step = 'type';
+                    addBotMessage("Let's try the guided flow! Clothes or shoes?", ["👕 Clothes", "👟 Shoes"]);
+                }
+                
+            } catch (error) {
+                console.error('❌ [AI PARSER ERROR]:', error);
+                hideTyping();
+                addBotMessage("Oops, let's use the step-by-step flow instead! Clothes or shoes?", ["👕 Clothes", "👟 Shoes"]);
+                conversationFlow.step = 'type';
+            }
+        }
+
         // STEP 1: Choose clothes or shoes (AI generates next prompt)
         async function handleTypeStep(msgLower, originalMsg) {
+            // Handle help command
+            if (msgLower === 'help' || msgLower === 'help me') {
+                showHelpModal();
+                addBotMessage(
+                    "Check out the help guide! 📚 Clothes or shoes?",
+                    ["👕 Clothes", "👟 Shoes"]
+                );
+                return;
+            }
+            
+            // Handle "what can I sell" questions
+            if (msgLower.includes('what can') || msgLower.includes('what do') || msgLower.includes('can i sell')) {
+                addBotMessage(
+                    "You can sell premium streetwear clothes & sneakers! 👕👟 Brands like YELIR, Nike, North Face, Stone Island, Arc'teryx & more.\n\nClothes or shoes?",
+                    ["👕 Clothes", "👟 Shoes"]
+                );
+                return;
+            }
+            
+            // Handle brand questions
+            if (msgLower.includes('what brand') || msgLower.includes('which brand') || msgLower.includes('brands')) {
+                addBotMessage(
+                    "We accept premium brands! 💎 Popular ones: YELIR, North Face, Nike, Adidas, Monterrain, Stone Island, Arc'teryx, and more!\n\nClothes or shoes first?",
+                    ["👕 Clothes", "👟 Shoes"]
+                );
+                return;
+            }
+            
+            // Handle "who is sbs" or general questions
+            if (msgLower.includes('who') || msgLower.includes('sbs') || msgLower.includes('about')) {
+                addBotMessage(
+                    "We're SBS - Dublin's premium streetwear reseller! 🔥 We buy & sell authentic streetwear and sneakers.\n\nReady to sell? Clothes or shoes?",
+                    ["👕 Clothes", "👟 Shoes"]
+                );
+                return;
+            }
+            
+            // Handle confused/unclear responses
+            if (msgLower.includes('neither') || msgLower.includes('none') || msgLower.includes('no')) {
+                addBotMessage(
+                    "No worries! If you change your mind, I'm here. 👋 Otherwise, choose clothes or shoes to get started!",
+                    ["👕 Clothes", "👟 Shoes"]
+                );
+                return;
+            }
+            
             // Handle greetings - just re-prompt
             if (msgLower.match(/\b(hi|hey|hello|yo|sup|hiya|heya|gg|good)\b/)) {
                 addBotMessage(
@@ -1652,10 +1961,57 @@
                     aiPrompt.suggestions || ["Nike", "New Balance", "Asics", "Adidas", "Other brand"]
                 );
             } else {
-                addBotMessage(
-                    "Sorry, I didn't catch that! Clothes or shoes?",
-                    ["👕 Clothes", "👟 Shoes"]
-                );
+                // Smart client-side responses based on keywords
+                const responses = {
+                    // Questions about the service
+                    'what': "This is SBS Sell Chat! Quick way to sell your premium streetwear & sneakers. 🔥 Clothes or shoes?",
+                    'how': "Easy! Tell me what you're selling, I'll check if we can take it, then arrange collection. 📦 Clothes or shoes?",
+                    'why': "We buy premium streetwear & authentic sneakers for resale! Fair prices, fast deals. � Clothes or shoes?",
+                    'when': "Right now, boss! Let's get started. ⚡️ Clothes or shoes?",
+                    
+                    // Uncertainty
+                    'sure': "100% legit, boss! SBS Dublin - check our Instagram @thesbsofficial. 💯 Clothes or shoes?",
+                    'maybe': "No pressure! Just here when you're ready. 😊 Want to sell clothes or shoes?",
+                    'idk': "All good! Pick whichever you want to list first. Clothes or shoes?",
+                    'dunno': "No stress! Start with whatever - clothes or shoes?",
+                    
+                    // Pricing questions  
+                    'price': "Prices depend on brand, size, condition. Let's check what you have! Clothes or shoes?",
+                    'much': "I pay fair based on condition & market value. 💶 Tell me what you got - clothes or shoes?",
+                    'pay': "Fair prices, fast payment! 💰 What are you selling - clothes or shoes?",
+                    
+                    // Multiple items
+                    'both': "Legend! Let's do one at a time. Start with clothes or shoes?",
+                    'and': "Nice! Let's go one by one. Clothes or shoes first?",
+                    
+                    // Acknowledgements
+                    'ok': "Let's go! 🔥 Clothes or shoes?",
+                    'cool': "Sound! 😎 Clothes or shoes?",
+                    'alright': "Sorted! Clothes or shoes?",
+                    'yeah': "Right so! Clothes or shoes?",
+                    
+                    // Typos of commands
+                    'xpress': "Switch to Express mode? Type 'express mode'. Otherwise, clothes or shoes?",
+                    'guid': "Want Guided mode? Type 'guided mode'. Or choose: clothes or shoes?"
+                };
+                
+                // Find matching response
+                let matched = false;
+                for (const [keyword, response] of Object.entries(responses)) {
+                    if (msgLower.includes(keyword)) {
+                        addBotMessage(response, ["👕 Clothes", "👟 Shoes"]);
+                        matched = true;
+                        break;
+                    }
+                }
+                
+                // Generic fallback for unmatched
+                if (!matched) {
+                    addBotMessage(
+                        "I'm here to help you sell premium gear! 😊 Clothes or shoes?",
+                        ["👕 Clothes", "👟 Shoes"]
+                    );
+                }
             }
         }
         
@@ -1778,8 +2134,23 @@
 
         // STEP 2: Get brand (with AI validation)
         async function handleBrandStep(brand) {
+            const brandLower = brand.toLowerCase().trim();
+            
+            // Reject obviously invalid inputs
+            if (brandLower.length < 2 || 
+                brandLower.match(/^(what|how|why|when|where|who|which|what's|ok|okay|alright|yeah|yes|no|maybe)/) ||
+                brandLower.match(/^[0-9]+$/)) {
+                addBotMessage(
+                    "Please tell me the brand name:",
+                    conversationFlow.data.type === 'shoes'
+                        ? ["Nike", "New Balance", "Asics", "Adidas", "Other brand"]
+                        : ["YELIR", "North Face", "Monterrain", "Nike", "Other brand"]
+                );
+                return;
+            }
+            
             // Check if user wants to type their own brand
-            if (brand.toLowerCase().includes('other brand')) {
+            if (brandLower.includes('other brand')) {
                 conversationFlow.step = 'brand-custom';
                 addBotMessage(
                     "Cool! What's the brand name?",
@@ -2035,7 +2406,53 @@
 
         // STEP 4: Get condition (AI generates price prompt)
         async function handleConditionStep(condition) {
-            conversationFlow.data.condition = condition;
+            const condLower = condition.toLowerCase().trim();
+            
+            // Validate condition - check if it matches known conditions
+            const validConditions = {
+                'brand new': 'Brand New with Tags',
+                'brand new tagged': 'Brand New with Tags',
+                'brand new with tags': 'Brand New with Tags',
+                'tagged': 'Brand New with Tags',
+                'bnwt': 'Brand New with Tags',
+                'new': 'Brand New with Tags',
+                'mint': 'Mint',
+                'perfect': 'Mint',
+                'like new': 'Like New',
+                'excellent': 'Like New',
+                'great': 'Like New',
+                'decent': 'Decent',
+                'good': 'Decent',
+                'ok': 'Decent',
+                'okay': 'Decent',
+                'alright': 'Decent',
+                'fair': 'Decent',
+                'worn': 'Decent',
+                'used': 'Decent',
+                'poor': 'Poor',
+                'bad': 'Poor',
+                'rough': 'Poor'
+            };
+            
+            // Try to match condition
+            let mappedCondition = null;
+            for (const [key, value] of Object.entries(validConditions)) {
+                if (condLower.includes(key)) {
+                    mappedCondition = value;
+                    break;
+                }
+            }
+            
+            // If no valid condition found, re-ask
+            if (!mappedCondition) {
+                addBotMessage(
+                    "I didn't catch that condition. Please choose one:",
+                    ["Brand New Tagged", "Mint", "Like New", "Decent", "Poor"]
+                );
+                return;
+            }
+            
+            conversationFlow.data.condition = mappedCondition;
             conversationFlow.step = 'price';
             
             showTyping();
@@ -2043,7 +2460,7 @@
                 type: conversationFlow.data.type,
                 brand: conversationFlow.data.brand,
                 size: conversationFlow.data.size,
-                condition: condition
+                condition: mappedCondition
             });
             hideTyping();
             
@@ -2083,21 +2500,24 @@
             
             console.log('📊 [SUBMIT] Collected data:', data);
             
-            // Build validation message for worker
-            const validationMessage = `${data.brand} size ${data.size} ${data.condition}`;
+            // Build validation message for worker WITH PRICE for full validation
+            const validationMessage = `${data.brand} size ${data.size} ${data.condition} ${data.price}`;
+            
+            console.log('🔍 [VALIDATION MESSAGE]:', validationMessage);
             
             showTyping();
             
             try {
-                // Call worker to validate and structure data properly
+                // Call worker to validate and structure data properly (includes price validation!)
                 const response = await fetch(API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        userMessage: validationMessage,
+                        message: validationMessage,  // Changed from userMessage to message
                         sessionId: sessionId,
                         photos: uploadedPhotos.map(p => ({ name: p.name, size: p.size })),
-                        mode: currentMode
+                        mode: currentMode,
+                        conversationHistory: []
                     })
                 });
                 
@@ -2110,35 +2530,47 @@
                 
                 console.log('✅ [WORKER RESPONSE]:', result);
                 
-                // Show success with validated data from worker
-                if (result.parsed) {
-                    console.log('📊 [FINAL DATA]:', {
-                        brand: result.parsed.brand,
-                        size: result.parsed.size,
-                        condition: result.parsed.condition,
-                        sbsCategory: result.parsed.sbsCategory || result.parsed.category,
-                        isValid: result.parsed.isValid
-                    });
+                // CHECK IF REJECTED BY WORKER!
+                if (result.accepted === false || (result.data && result.data.isValid === false)) {
+                    console.log('❌ [REJECTED]:', result.message);
                     
-                    // Use sbsCategory from worker (properly validated)
-                    const category = result.parsed.sbsCategory || result.parsed.category;
+                    // Show rejection message from worker
+                    addBotMessage(result.message || "Sorry, can't accept that item!");
                     
-                    addSuccessMessage({
-                        brand: result.parsed.brand || data.brand,
-                        size: result.parsed.size || data.size,
-                        condition: result.parsed.condition || data.condition,
-                        category: category || (data.type === 'shoes' ? 
-                            (data.condition.toLowerCase().includes('brand new') || data.condition.toLowerCase().includes('tagged') ? 'BN-SHOES' : 'PO-SHOES') : 
-                            (data.condition.toLowerCase().includes('brand new') || data.condition.toLowerCase().includes('tagged') ? 'BN-CLOTHES' : 'PO-CLOTHES'))
-                    });
+                    // Reset to start
+                    setTimeout(() => {
+                        addBotMessage(
+                            "Want to try another item? 🔄",
+                            ["Yes, list another", "No, that's all"]
+                        );
+                    }, 1000);
+                    return;
                 }
                 
-                setTimeout(() => {
-                    addBotMessage(
-                        "All done! 🎉 Want to list another?",
-                        ["Yes, list another", "No, that's all"]
-                    );
-                }, 1000);
+                // Show success with validated data from worker
+                if (result.accepted && result.data) {
+                    console.log('📊 [ACCEPTED]:', result.data);
+                    
+                    // Use validated category from worker
+                    const category = result.data.category || result.data.sbsCategory;
+                    
+                    addSuccessMessage({
+                        brand: result.data.brand || data.brand,
+                        size: result.data.size || data.size,
+                        condition: result.data.condition || data.condition,
+                        category: category || (data.type === 'shoes' ? 'PO-SHOES' : 'PO-CLOTHES')
+                    });
+                    
+                    setTimeout(() => {
+                        addBotMessage(
+                            "All done! 🎉 Want to list another?",
+                            ["Yes, list another", "No, that's all"]
+                        );
+                    }, 1000);
+                } else {
+                    // Fallback if no clear accepted/rejected status
+                    addBotMessage("Hmm, something went wrong. Want to try again?", ["Yes, list another"]);
+                }
                 
             } catch (error) {
                 console.error('❌ [SUBMIT ERROR]:', error);
@@ -2348,16 +2780,17 @@
         function selectQuickReply(text) {
             // Handle special actions
             if (text === 'Yes, list another') {
-                // Reset flow
+                // Reset everything
+                conversationHistory = [];
                 conversationFlow = {
-                    step: 'type',
+                    step: 'welcome',
                     data: { type: null, brand: null, size: null, condition: null, price: null, photos: [] }
                 };
                 uploadedPhotos = [];
                 updatePhotoPreview();
                 addBotMessage(
-                    "👋 Great! Clothes or shoes this time?",
-                    ["👕 Clothes", "👟 Shoes"]
+                    "👋 Right boss! What are you selling?",
+                    []
                 );
                 return;
             }
@@ -2378,6 +2811,7 @@
                 return;
             }
             
+            // All other quick replies just go through AI
             messageInput.value = text;
             sendBtn.disabled = false;
             sendBtn.setAttribute('aria-disabled', 'false');
