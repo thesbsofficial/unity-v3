@@ -284,7 +284,52 @@ body {
 }
 
 /* ============================================
-   📱 MOBILE UNDO BUTTON - OPTIMIZED
+   � QUICK REPLY CHIPS (SUGGESTION BUBBLES)
+   ============================================ */
+
+.quick-replies {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+  animation: slideIn 0.4s ease;
+}
+
+.quick-reply-chip {
+  background: white;
+  border: 2px solid var(--sbs-primary);
+  color: var(--sbs-primary);
+  padding: 10px 18px;
+  border-radius: 24px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: var(--min-touch-target);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: rgba(0, 122, 255, 0.1);
+}
+
+.quick-reply-chip:active {
+  background: var(--sbs-primary);
+  color: white;
+  transform: scale(0.97);
+  box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
+}
+
+@media (hover: hover) {
+  .quick-reply-chip:hover {
+    background: var(--sbs-primary);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+  }
+}
+
+/* ============================================
+   �📱 MOBILE UNDO BUTTON - OPTIMIZED
    ============================================ */
 
 .undo-container {
