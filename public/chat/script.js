@@ -18,13 +18,20 @@ const confirmationModal = document.querySelector("#confirmation-modal");
 const state = {
   conversationHistory: [],
   currentStep: 1,
-  maxSteps: 3,
+  maxSteps: 7,
   waitingForResponse: false,
+  // GUIDED MODE: Step-by-step collection (ONLY MODE)
+  guidedMode: true,
+  guidedStep: 'itemType', // 7 steps: itemType -> brand -> size -> condition -> price -> details -> photos -> complete
+  stepHistory: [], // Track steps for UNDO functionality
   currentItem: {
+    itemType: null,
     brand: null,
     size: null,
     condition: null,
-    price: null
+    price: null,
+    details: null,
+    photos: null
   }
 };
 
@@ -47,12 +54,136 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function initializeChat() {
-  // Add initial greeting after a delay
+  // GUIDED MODE: Start with item type question (7 STEPS)
   setTimeout(() => {
     addBotMessage(
-      "For example, try: <strong>\"Nike UK-9 brand new 80 euros\"</strong> or <strong>\"North Face jacket size M excellent 120 euros\"</strong>"
+      "👋 <strong>Welcome to SBS!</strong> I'll guide you through 7 quick steps to sell your item.",
+      'success'
     );
+  }, 500);
+  
+  setTimeout(() => {
+    askForItemType();
   }, 1500);
+}
+
+// ============================================
+// 🎯 GUIDED MODE QUESTIONS (7 STEPS)
+// ============================================
+
+function askForItemType() {
+  state.guidedStep = 'itemType';
+  state.stepHistory.push('itemType');
+  addBotMessage(
+    "🏷️ <strong>Step 1 of 7:</strong> What type of item are you selling?<br><br>" +
+    "<em>Examples: Shoes, Trainers, Jacket, Hoodie, T-Shirt, Tracksuit, etc.</em>"
+  );
+}
+
+function askForBrand() {
+  state.guidedStep = 'brand';
+  state.stepHistory.push('brand');
+  addBotMessage(
+    "📦 <strong>Step 2 of 7:</strong> What brand is your item?<br><br>" +
+    "<em>Examples: Nike, North Face, HUGO, Asics, New Balance, OnCloud, etc.</em>"
+  );
+}
+
+function askForSize() {
+  state.guidedStep = 'size';
+  state.stepHistory.push('size');
+  addBotMessage(
+    "📏 <strong>Step 3 of 7:</strong> What size is it?<br><br>" +
+    "<em>Examples: UK-9, US-10, L, XL, 42, Medium, etc.</em>"
+  );
+}
+
+function askForCondition() {
+  state.guidedStep = 'condition';
+  state.stepHistory.push('condition');
+  addBotMessage(
+    "✨ <strong>Step 4 of 7:</strong> What's the condition?<br><br>" +
+    "<em>Examples: Brand new, Excellent, Good, Fair, Worn, etc.</em>"
+  );
+}
+
+function askForPrice() {
+  state.guidedStep = 'price';
+  state.stepHistory.push('price');
+  addBotMessage(
+    "💰 <strong>Step 5 of 7:</strong> What price are you asking (in euros)?<br><br>" +
+    "<em>Examples: 80, 120, 50 euros, €100, etc.</em>"
+  );
+}
+
+function askForDetails() {
+  state.guidedStep = 'details';
+  state.stepHistory.push('details');
+  addBotMessage(
+    "📝 <strong>Step 6 of 7:</strong> Any additional details?<br><br>" +
+    "<em>Examples: Original box, receipt included, limited edition, worn once, etc.</em>"
+  );
+}
+
+function askForPhotos() {
+  state.guidedStep = 'photos';
+  state.stepHistory.push('photos');
+  addBotMessage(
+    "📸 <strong>Step 7 of 7:</strong> Do you have photos? (Type 'yes' or 'no')<br><br>" +
+    "<em>We'll help you upload them after submission</em>"
+  );
+}
+
+// ============================================
+// ↩️ UNDO FUNCTIONALITY
+// ============================================
+
+function undoLastStep() {
+  if (state.stepHistory.length === 0) {
+    addBotMessage("❌ Nothing to undo!");
+    return;
+  }
+  
+  // Go back one step
+  const currentStepIndex = state.stepHistory.indexOf(state.guidedStep);
+  if (currentStepIndex > 0) {
+    const previousStep = state.stepHistory[currentStepIndex - 1];
+    state.guidedStep = previousStep;
+    
+    // Clear the current field
+    state.currentItem[state.guidedStep] = null;
+    
+    addBotMessage("↩️ <strong>Going back...</strong>", 'info');
+    
+    // Re-ask the previous question
+    setTimeout(() => {
+      switch (previousStep) {
+        case 'itemType': askForItemType(); break;
+        case 'brand': askForBrand(); break;
+        case 'size': askForSize(); break;
+        case 'condition': askForCondition(); break;
+        case 'price': askForPrice(); break;
+        case 'details': askForDetails(); break;
+        case 'photos': askForPhotos(); break;
+      }
+    }, 500);
+  } else {
+    addBotMessage("❌ You're already at the first step!");
+  }
+}
+
+function addUndoButton() {
+  const undoButtonHTML = `
+    <button class="undo-btn" onclick="undoLastStep()">
+      ↩️ UNDO Last Step
+    </button>
+  `;
+  
+  const undoDiv = document.createElement('div');
+  undoDiv.className = 'undo-container';
+  undoDiv.innerHTML = undoButtonHTML;
+  chatBody.appendChild(undoDiv);
+  scrollToBottom();
 }
 
 // ============================================
@@ -60,15 +191,13 @@ function initializeChat() {
 // ============================================
 
 function setupEventListeners() {
-  // Send message on button click
+  // Send message on button click ONLY (no Enter key)
   sendMessageButton.addEventListener("click", (e) => handleOutgoingMessage(e));
   
-  // Send on Enter key (desktop only)
+  // Disable Enter key sending - allow Shift+Enter for new lines
   messageInput.addEventListener("keydown", (e) => {
-    const userMessage = e.target.value.trim();
-    if (e.key === "Enter" && userMessage && !e.shiftKey && window.innerWidth > 768) {
-      e.preventDefault();
-      handleOutgoingMessage(e);
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault(); // Block Enter key from sending
     }
   });
   
@@ -142,7 +271,10 @@ async function handleOutgoingMessage(e) {
       },
       body: JSON.stringify({
         message: userMessage,
-        conversationHistory: state.conversationHistory
+        conversationHistory: state.conversationHistory,
+        guidedMode: state.guidedMode,
+        guidedStep: state.guidedStep,
+        currentItem: state.currentItem
       })
     });
     
@@ -181,6 +313,12 @@ function handleWorkerResponse(data) {
     return;
   }
   
+  // GUIDED MODE: Process step-by-step
+  if (state.guidedMode) {
+    handleGuidedResponse(data);
+    return;
+  }
+  
   // Ready for submission
   if (readyForSubmission && parsed) {
     updateItemState(parsed);
@@ -208,6 +346,168 @@ function handleWorkerResponse(data) {
   // Default response
   addBotMessage(message || "I didn't quite get that. Could you rephrase?");
 }
+
+// ============================================
+// 🎯 GUIDED MODE HANDLER (7 STEPS + UNDO)
+// ============================================
+
+function handleGuidedResponse(data) {
+  const { accepted, parsed, message } = data;
+  
+  // Extract what we got from the worker
+  if (parsed) updateItemState(parsed);
+  
+  // Process based on current step
+  switch (state.guidedStep) {
+    case 'itemType':
+      if (state.currentItem.itemType || parsed?.itemType) {
+        const itemType = state.currentItem.itemType || parsed.itemType;
+        addBotMessage(`✅ Item Type: <strong>${itemType}</strong>`, 'success');
+        addUndoButton();
+        setTimeout(() => askForBrand(), 1000);
+      } else {
+        addBotMessage("I didn't catch the item type. Could you try again?<br><em>Examples: Shoes, Jacket, Hoodie, Trainers</em>");
+      }
+      break;
+    
+    case 'brand':
+      if (state.currentItem.brand) {
+        addBotMessage(`✅ Brand: <strong>${state.currentItem.brand}</strong>`, 'success');
+        addUndoButton();
+        setTimeout(() => askForSize(), 1000);
+      } else {
+        addBotMessage("I didn't catch the brand. Could you try again?<br><em>Examples: Nike, North Face, HUGO, Asics</em>");
+      }
+      break;
+      
+    case 'size':
+      if (state.currentItem.size) {
+        addBotMessage(`✅ Size: <strong>${state.currentItem.size}</strong>`, 'success');
+        addUndoButton();
+        setTimeout(() => askForCondition(), 1000);
+      } else {
+        addBotMessage("I didn't catch the size. Could you try again?<br><em>Examples: UK-9, L, 42, Medium</em>");
+      }
+      break;
+      
+    case 'condition':
+      if (state.currentItem.condition) {
+        addBotMessage(`✅ Condition: <strong>${state.currentItem.condition}</strong>`, 'success');
+        addUndoButton();
+        setTimeout(() => askForPrice(), 1000);
+      } else {
+        addBotMessage("I didn't catch the condition. Could you try again?<br><em>Examples: Brand new, Excellent, Good, Fair</em>");
+      }
+      break;
+      
+    case 'price':
+      if (state.currentItem.price) {
+        addBotMessage(`✅ Price: <strong>${state.currentItem.price}</strong>`, 'success');
+        addUndoButton();
+        setTimeout(() => askForDetails(), 1000);
+      } else {
+        addBotMessage("I didn't catch the price. Could you try again?<br><em>Examples: 80, 120 euros, €100</em>");
+      }
+      break;
+      
+    case 'details':
+      // Details are optional, accept anything
+      const details = state.currentItem.details || parsed?.details || 'None';
+      state.currentItem.details = details;
+      addBotMessage(`✅ Details noted: <strong>${details}</strong>`, 'success');
+      addUndoButton();
+      setTimeout(() => askForPhotos(), 1000);
+      break;
+      
+    case 'photos':
+      // Photos response is just yes/no
+      const photos = state.currentItem.photos || parsed?.photos || 'Not specified';
+      state.currentItem.photos = photos;
+      addBotMessage(`✅ Photos: <strong>${photos}</strong>`, 'success');
+      addUndoButton();
+      setTimeout(() => {
+        showCompletionOptions();
+      }, 1000);
+      break;
+  }
+}
+
+// ============================================
+// 🎯 COMPLETION OPTIONS (STEP 8)
+// ============================================
+
+function showCompletionOptions() {
+  const optionsHTML = `
+    <div style="margin: 20px 0;">
+      <strong>🎉 All steps complete! What would you like to do?</strong>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
+      <button class="option-btn" onclick="addMoreDetail()">
+        📝 Add More Detail
+      </button>
+      <button class="option-btn" onclick="addMoreItems()">
+        ➕ Add More Items
+      </button>
+      <button class="option-btn primary" onclick="finishSubmission()">
+        ✅ Finish & Submit
+      </button>
+    </div>
+  `;
+  
+  addBotMessage(optionsHTML);
+}
+
+window.addMoreDetail = function() {
+  const messageContent = `<div class="message-text">📝 Add More Detail</div>`;
+  const userDiv = createMessageElement(messageContent, "user-message");
+  chatBody.appendChild(userDiv);
+  scrollToBottom();
+  
+  addBotMessage("Sure! Which step would you like to add more detail to?");
+  setTimeout(() => {
+    addBotMessage("Type the step name: <strong>item type, brand, size, condition, price, details, or photos</strong>");
+  }, 500);
+};
+
+window.addMoreItems = function() {
+  const messageContent = `<div class="message-text">➕ Add More Items</div>`;
+  const userDiv = createMessageElement(messageContent, "user-message");
+  chatBody.appendChild(userDiv);
+  scrollToBottom();
+  
+  // Reset for new item
+  state.currentItem = {
+    itemType: null,
+    brand: null,
+    size: null,
+    condition: null,
+    price: null,
+    details: null,
+    photos: null
+  };
+  state.stepHistory = [];
+  
+  setTimeout(() => {
+    addBotMessage("Great! Let's add another item. 🎉", 'success');
+  }, 500);
+  setTimeout(() => {
+    askForItemType();
+  }, 1500);
+};
+
+window.finishSubmission = function() {
+  const messageContent = `<div class="message-text">✅ Finish & Submit</div>`;
+  const userDiv = createMessageElement(messageContent, "user-message");
+  chatBody.appendChild(userDiv);
+  scrollToBottom();
+  
+  setTimeout(() => {
+    addBotMessage("Perfect! Let me show you a summary of your item...", 'success');
+  }, 500);
+  setTimeout(() => {
+    showConfirmation(state.currentItem);
+  }, 1500);
+};
 
 function showTypoCorrections(corrections, fullData) {
   const correctionList = Object.keys(corrections).map(word => 
@@ -250,7 +550,7 @@ window.acceptCorrections = async function(corrections) {
   });
   
   // Add user's confirmation
-  const messageContent = `<div class="message-text">Yes, I meant: ${escapeHtml(correctedMessage)}</div>`;
+  const messageContent = `<div class="message-text">✓ Yes, fix them</div>`;
   const confirmDiv = createMessageElement(messageContent, "user-message");
   chatBody.appendChild(confirmDiv);
   scrollToBottom();
@@ -267,7 +567,9 @@ window.acceptCorrections = async function(corrections) {
       body: JSON.stringify({
         message: correctedMessage,
         conversationHistory: state.conversationHistory,
-        corrected: true
+        corrected: true,
+        guidedMode: state.guidedMode,
+        guidedStep: state.guidedStep
       })
     });
     
@@ -283,19 +585,22 @@ window.acceptCorrections = async function(corrections) {
 };
 
 window.rejectCorrections = function() {
-  const messageContent = `<div class="message-text">No, keep my original message</div>`;
+  const messageContent = `<div class="message-text">✗ No, keep as is</div>`;
   const rejectDiv = createMessageElement(messageContent, "user-message");
   chatBody.appendChild(rejectDiv);
   scrollToBottom();
   
-  addBotMessage("Got it! Keeping it as you wrote it.");
+  addBotMessage("Got it! Keeping it as you wrote it. Try answering the question again.");
 };
 
 function updateItemState(parsed) {
+  if (parsed.itemType) state.currentItem.itemType = parsed.itemType;
   if (parsed.brand) state.currentItem.brand = parsed.brand;
   if (parsed.size) state.currentItem.size = parsed.size;
   if (parsed.condition) state.currentItem.condition = parsed.condition;
   if (parsed.price) state.currentItem.price = parsed.price;
+  if (parsed.details) state.currentItem.details = parsed.details;
+  if (parsed.photos) state.currentItem.photos = parsed.photos;
 }
 
 // ============================================
@@ -375,6 +680,10 @@ function showConfirmation(parsed) {
   const summary = document.getElementById('item-summary');
   summary.innerHTML = `
     <div class="summary-item">
+      <span class="summary-label">Item Type</span>
+      <span class="summary-value">${parsed.itemType || 'Not specified'}</span>
+    </div>
+    <div class="summary-item">
       <span class="summary-label">Brand</span>
       <span class="summary-value">${parsed.brand || 'Not specified'}</span>
     </div>
@@ -389,6 +698,14 @@ function showConfirmation(parsed) {
     <div class="summary-item">
       <span class="summary-label">Price</span>
       <span class="summary-value">${parsed.price || 'Not specified'}</span>
+    </div>
+    <div class="summary-item">
+      <span class="summary-label">Details</span>
+      <span class="summary-value">${parsed.details || 'None'}</span>
+    </div>
+    <div class="summary-item">
+      <span class="summary-label">Photos</span>
+      <span class="summary-value">${parsed.photos || 'Not specified'}</span>
     </div>
   `;
   
@@ -422,15 +739,21 @@ window.submitItem = async function() {
     hideThinking();
     
     addBotMessage(
-      "🎉 Awesome! Your item has been submitted to SBS. We'll review it and get back to you soon!",
+      "🎉 <strong>Awesome!</strong> Your item has been submitted to SBS.<br><br>" +
+      "We'll review it and get back to you soon via WhatsApp or email!",
       'success'
     );
     
-    // Reset state
+    // Reset state for next item
     setTimeout(() => {
-      addBotMessage("Want to sell something else? Just tell me about it!");
+      addBotMessage("Want to sell another item? Let's start again! 👇", 'success');
       state.currentItem = { brand: null, size: null, condition: null, price: null };
-    }, 2500);
+      state.guidedStep = 'brand';
+    }, 2000);
+    
+    setTimeout(() => {
+      askForBrand();
+    }, 3000);
     
   } catch (error) {
     console.error('Error submitting:', error);
